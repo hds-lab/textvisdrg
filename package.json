@@ -1,0 +1,17 @@
+{
+  "name": "textvisdrg",
+  "version": "0.1.0",
+  "description": "Prototype for exploratory visual data analysis of large social message datasets",
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hds-lab/textvisdrg.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hds-lab/textvisdrg/issues"
+  },
+  "homepage": "https://github.com/hds-lab/textvisdrg"
+}

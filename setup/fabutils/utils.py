@@ -116,7 +116,7 @@ def manage_py(args):
     """Run a manage.py task"""
 
     with lcd(SITE_ROOT):
-        if _wrap_path('manage.py').exists():
+        if _wrap_path(SITE_ROOT / 'manage.py').exists():
             local('python manage.py %s' % args)
             return True
         else:
@@ -164,7 +164,7 @@ def npm_install():
     print "Installing npm modules..."
 
     with lcd(PROJECT_ROOT):
-        if path('package.json').exists():
+        if path(PROJECT_ROOT / 'package.json').exists():
             if symlink_supported():
                 local('ls && pwd')
                 local('npm install')
@@ -184,7 +184,7 @@ def bower_install():
     print "Installing bower packages..."
 
     with lcd(PROJECT_ROOT):
-        if path('bower.json').exists():
+        if path(PROJECT_ROOT / 'bower.json').exists():
             print "Installing bower requirements..."
             local('bower prune --config.interactive=false')
             local('bower install --config.interactive=false')

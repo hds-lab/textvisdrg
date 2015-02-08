@@ -1,0 +1,15 @@
+{
+  "name": "textvisdrg",
+  "version": "0.1.0",
+  "homepage": "https://github.com/hds-lab/textvisdrg",
+  "description": "Prototype for exploratory visual data analysis of large social message datasets",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

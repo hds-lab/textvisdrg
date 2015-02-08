@@ -59,7 +59,7 @@ set -e
 # Create a database table
 DBHOST=localhost
 DBPORT=3306
-DBNAME=codingdb
+DBNAME=textvisdrg
 DBUSER=dbuser
 DBPASS=dbpass
 

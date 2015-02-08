@@ -20,6 +20,7 @@ from fabutils import utils as fabutils
 
 fabutils.configure(PROJECT_ROOT, django_project_name)
 
+
 def dependencies():
     """Installs Python, NPM, and Bower packages"""
 
@@ -59,19 +60,22 @@ def runserver():
 def load_test_data():
     """Load test data from test_data.json"""
 
-    infile = PROJECT_ROOT / 'setup' / 'test_data.json'
+    infile = PROJECT_ROOT / 'setup' / 'fixtures' / 'test_data.json'
 
-    print green("Loading test data from %s" % infile)
-    if fabutils.manage_py("loaddata %s" % infile):
-        print "Load test data successful."
+    if infile.exists():
+        print green("Loading test data from %s" % infile)
+        if fabutils.manage_py("loaddata %s" % infile):
+            print "Load test data successful."
+    else:
+        print yellow("No test data found")
 
 
 def make_test_data():
     """Updates the test_data.json file based on what is in the database"""
 
-    outfile = PROJECT_ROOT / 'setup' / 'test_data.json'
-    print green("Saving test data from %s to %s" % (test_data_apps, outfile))
+    outfile = PROJECT_ROOT / 'setup' / 'fixtures' / 'test_data.json'
 
+    print green("Saving test data from %s to %s" % (test_data_apps, outfile))
     args = ' '.join(test_data_apps + ('--exclude=auth.Permission',))
     if fabutils.manage_py("dumpdata --indent=2 %s > %s" % (args, outfile)):
         print "Make test data successful."
@@ -80,21 +84,29 @@ def make_test_data():
 def reset_db():
     """Removes all of the tables"""
 
-    print red("WARNING! Deleting the database!")
+    settings = fabutils.django_settings()
+    denv = fabutils.dot_env()
+    print denv
+    print red("WARNING! Deleting the database! (%s)" % settings.DATABASES['default']['NAME'])
+
     fabutils.manage_py("reset_db")
 
 
 def clear_cache():
     """Deletes the cached static files"""
 
-    settings = fabutils.django_settings
-    cache_dir = settings.COMPRESS_ROOT / settings.COMPRESS_OUTPUT_DIR
+    settings = fabutils.django_settings()
 
-    # a safety check
-    if cache_dir.endswith("CACHE"):
-        print green("Removing %s" % cache_dir)
-        cache_dir.rmdir_p()
-        print "Clear cache successful."
+    if hasattr(settings, 'COMPRESS_ROOT'):
+        cache_dir = settings.COMPRESS_ROOT / settings.COMPRESS_OUTPUT_DIR
+
+        # a safety check
+        if cache_dir.exists() and cache_dir.endswith("CACHE"):
+            print green("Removing %s" % cache_dir)
+            cache_dir.rmdir_p()
+            print "Clear cache successful."
+    else:
+        print yellow("Django not configured for static file compression")
 
 
 def pull():
@@ -144,6 +156,7 @@ def interpolate_env(outpath=None):
 
     fabutils.django_render(dot_env_path, outpath, os.environ)
 
+
 def gunicorn_restart():
     """Restart a local gunicorn process"""
 
@@ -182,5 +195,6 @@ def deploy():
                 print green("Installing Fabric...")
                 run('pip install Fabric path.py')
 
-        run('fab pull dependencies migrate build_static gunicorn_restart')
+        run('fab pull')
+        run('fab dependencies migrate build_static gunicorn_restart')
 
