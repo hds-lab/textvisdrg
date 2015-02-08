@@ -102,7 +102,9 @@ MEDIA_URL = '/media/'
 
 ########## STATIC FILE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
-STATIC_ROOT = (SITE_ROOT / 'assets').normpath()
+STATIC_ROOT = get_env_setting('STATIC_ROOT', (SITE_ROOT / 'assets').normpath())
+if not isinstance(STATIC_ROOT, path):
+    STATIC_ROOT = path(STATIC_ROOT)
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
 STATIC_URL = '/static/'
