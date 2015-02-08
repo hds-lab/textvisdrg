@@ -1,0 +1,15 @@
+# Fill in these values with your deployment settings
+
+DJANGO_SETTINGS_MODULE=msgvis.settings
+
+SERVER_HOST={{ SERVER_HOST }}
+PORT={{ PORT }}
+
+# Where is your database?
+# https://github.com/kennethreitz/dj-database-url
+# e.g. mysql://USER:PASSWORD@HOST:PORT/NAME
+
+DATABASE_URL=mysql://{{ DATABASE_USER }}:{{ DATABASE_PASS }}@{{ DATABASE_HOST }}:{{ DATABASE_PORT }}/{{ DATABASE_NAME}}
+
+SECRET_KEY={{ SECRET_KEY }}
+GOOGLE_ANALYTICS_ID={{ GOOGLE_ANALYTICS_ID }}

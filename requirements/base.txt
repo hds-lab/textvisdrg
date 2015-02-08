@@ -1,0 +1,27 @@
+# Django stuff
+Django>=1.7.2
+
+# Database Adapter
+MySQL-python
+
+# Templates
+django_compressor
+
+# Mixins
+ipython
+
+# Admin
+django-debug-toolbar
+
+# utils
+path.py
+django-extensions
+dj-database-url
+
+# rest api
+djangorestframework
+markdown
+django-filter
+
+# angular
+django-angular
