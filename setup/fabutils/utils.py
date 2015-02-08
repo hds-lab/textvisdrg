@@ -116,7 +116,12 @@ def manage_py(args):
     """Run a manage.py task"""
 
     with lcd(SITE_ROOT):
-        local('python manage.py %s' % args)
+        if _wrap_path('manage.py').exists():
+            local('python manage.py %s' % args)
+            return True
+        else:
+            print yellow("Django script manage.py doesn't exist")
+            return False
 
 
 @_require_configured
@@ -130,7 +135,7 @@ def pip_install(requirements):
     if not pip_path.exists():
         print pip_path
         print red("Cannot find pip!")
-        return
+        return False
 
     use_sudo = False
     if pip_path.get_owner() == 'root':
@@ -141,18 +146,16 @@ def pip_install(requirements):
     with lcd(PROJECT_ROOT):
 
         for req in requirements:
-            if _wrap_path(req).exists():
-
-                if use_sudo:
-                    result = local('sudo pip install %s' % req)
-                else:
-                    result = local('pip install %s' % req)
-
-                if not result.succeeded:
-                    print red("Failed to install %s" % req)
+            if use_sudo:
+                result = local('sudo pip install %s' % req)
             else:
-                print yellow("Pip requirement %s doesn't exist" % req)
-
+                result = local('pip install %s' % req)
+                
+            if not result.succeeded:
+                print red("Failed to install %s" % req)
+                return False
+    
+    return True
 
 @_require_configured
 def npm_install():
@@ -168,9 +171,12 @@ def npm_install():
             else:
                 print yellow("Symbolic links not supported. Using no-bin-link option.")
                 local('npm install --no-bin-link')
+                
+            return True
+            
         else:
             print yellow("Node.js package.json doesn't exist")
-
+            return False
 
 @_require_configured
 def bower_install():
@@ -182,9 +188,11 @@ def bower_install():
             print "Installing bower requirements..."
             local('bower prune --config.interactive=false')
             local('bower install --config.interactive=false')
+            
+            return True
         else:
             print yellow("File bower.json doesn't exist")
-
+            return False
 
 def django_render(template_file, output_file, context):
     """Use the Django template engine to render a template with a context dict"""

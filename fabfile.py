@@ -24,18 +24,18 @@ def dependencies():
     """Installs Python, NPM, and Bower packages"""
 
     print green("Updating dependencies...")
-    fabutils.pip_install(pip_requirements)
-    fabutils.npm_install()
-    fabutils.bower_install()
-    print "Dependency update successful."
+    if fabutils.pip_install(pip_requirements) and \
+        fabutils.npm_install() and \
+        fabutils.bower_install():
+        print "Dependency update successful."
 
 
 def migrate():
     """Runs migrations"""
 
     print green("Running migrations...")
-    fabutils.manage_py('migrate')
-    print "Migrations successful."
+    if fabutils.manage_py('migrate'):
+        print "Migrations successful."
 
 
 def build_static():
@@ -62,8 +62,8 @@ def load_test_data():
     infile = PROJECT_ROOT / 'setup' / 'test_data.json'
 
     print green("Loading test data from %s" % infile)
-    fabutils.manage_py("loaddata %s" % infile)
-    print "Load test data successful."
+    if fabutils.manage_py("loaddata %s" % infile):
+        print "Load test data successful."
 
 
 def make_test_data():
@@ -73,8 +73,8 @@ def make_test_data():
     print green("Saving test data from %s to %s" % (test_data_apps, outfile))
 
     args = ' '.join(test_data_apps + ('--exclude=auth.Permission',))
-    fabutils.manage_py("dumpdata --indent=2 %s > %s" % (args, outfile))
-    print "Make test data successful."
+    if fabutils.manage_py("dumpdata --indent=2 %s > %s" % (args, outfile)):
+        print "Make test data successful."
 
 
 def reset_db():
