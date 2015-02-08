@@ -127,7 +127,7 @@ def pip_install(requirements):
         requirements = (requirements,)
 
     pip_path = path(local('which pip', capture=True))
-    if not pip_path.exists:
+    if not pip_path.exists():
         print pip_path
         print red("Cannot find pip!")
         return
@@ -141,7 +141,7 @@ def pip_install(requirements):
     with lcd(PROJECT_ROOT):
 
         for req in requirements:
-            if _wrap_path(req).exists:
+            if _wrap_path(req).exists():
 
                 if use_sudo:
                     result = local('sudo pip install %s' % req)
@@ -161,8 +161,9 @@ def npm_install():
     print "Installing npm modules..."
 
     with lcd(PROJECT_ROOT):
-        if path('package.json').exists:
+        if path('package.json').exists():
             if symlink_supported():
+                local('ls && pwd')
                 local('npm install')
             else:
                 print yellow("Symbolic links not supported. Using no-bin-link option.")
@@ -177,7 +178,7 @@ def bower_install():
     print "Installing bower packages..."
 
     with lcd(PROJECT_ROOT):
-        if path('bower.json').exists:
+        if path('bower.json').exists():
             print "Installing bower requirements..."
             local('bower prune --config.interactive=false')
             local('bower install --config.interactive=false')
