@@ -49,7 +49,7 @@ def configure(project_root, django_project_name):
     SITE_ROOT = PROJECT_ROOT / django_project_name
     DJANGO_PROJECT_NAME = django_project_name
 
-    sys.path.append(SITE_ROOT)
+    sys.path.append(PROJECT_ROOT)
 
 
 @_require_configured

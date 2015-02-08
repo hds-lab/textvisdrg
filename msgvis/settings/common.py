@@ -30,24 +30,17 @@ def get_env_setting(setting, default=None):
             raise ImproperlyConfigured(error_msg)
 
 ########## PATH CONFIGURATION
-# Absolute filesystem path to the Django project directory:
-DJANGO_ROOT = path(__file__).abspath().realpath().dirname().parent
-
 # Absolute filesystem path to the django site folder
-SITE_ROOT = DJANGO_ROOT.parent
+SITE_ROOT = path(__file__).abspath().realpath().dirname().parent
 
 # Absolute path to the top-level project folder
 PROJECT_ROOT = SITE_ROOT.parent
 
 # Site name:
-SITE_NAME = DJANGO_ROOT.basename()
+SITE_NAME = SITE_ROOT.basename()
 
 # Id for the Sites framework
 SITE_ID = 1
-
-# Add our project to our pythonpath, this way we don't need to type our project
-# name in our dotted import paths:
-sys.path.append(DJANGO_ROOT)
 
 ########## END PATH CONFIGURATION
 
