@@ -152,7 +152,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.csrf',
     'django.core.context_processors.tz',
     'django.contrib.messages.context_processors.messages',
-    'base.context_processors.google_analytics',
+    'msgvis.base.context_processors.google_analytics',
 )
 
 
@@ -317,7 +317,7 @@ COMPRESS_PRECOMPILERS = (
     ('text/less', BIN_LESSC_COMMAND),
 )
 
-COMPRESS_ROOT = (SITE_ROOT / 'static').normpath()
+COMPRESS_ROOT = STATIC_ROOT
 COMPRESS_OUTPUT_DIR = 'CACHE'
 ########## END COMPRESSOR CONFIGURATION
 
