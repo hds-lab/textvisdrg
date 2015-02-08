@@ -55,5 +55,5 @@ target/
 
 /.idea
 /.vagrant
-/.env
+/.env*
 /node_modules

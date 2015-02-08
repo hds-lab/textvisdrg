@@ -10,7 +10,7 @@ test_data_apps = ('msgvis',)
 import sys
 import os
 from path import path
-from fabric.api import local
+from fabric.api import local, run
 from fabric.colors import red, green, yellow
 
 
@@ -143,3 +143,19 @@ def interpolate_env(outpath=None):
     dot_env_path = PROJECT_ROOT / 'setup' / 'templates' / 'dot_env'
 
     fabutils.django_render(dot_env_path, outpath, os.environ)
+
+def gunicorn_restart():
+    """Restart a local gunicorn process"""
+
+
+def deploy():
+    """
+    SSH into a remote server, run commands to update deployment,
+    and start the server.
+    
+    This requires that the server is already running a 
+    fairly recent copy of the code.
+    """
+
+    run('fab pull dependencies migrate build_static gunicorn_restart')
+
