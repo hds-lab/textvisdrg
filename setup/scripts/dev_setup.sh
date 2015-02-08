@@ -230,9 +230,10 @@ SECRET_KEY=$(generateRandomString)
 GOOGLE_ANALYTICS_ID=
 SERVER_HOST=0.0.0.0
 PORT=8000
+SETTINGS_MODULE=msgvis.settings.prod
 export DATABASE_HOST DATABASE_PORT DATABASE_NAME DATABASE_USER DATABASE_PASS
 export SECRET_KEY GOOGLE_ANALYTICS_ID
-export SERVER_HOST PORT
+export SERVER_HOST PORT SETTINGS_MODULE
 fab interpolate_env
 
 loggy "Installing additional dependencies and migrating database..."

@@ -1,6 +1,6 @@
 # Fill in these values with your deployment settings
 
-DJANGO_SETTINGS_MODULE=msgvis.settings
+DJANGO_SETTINGS_MODULE={{ SETTINGS_MODULE }}
 
 SERVER_HOST={{ SERVER_HOST }}
 PORT={{ PORT }}
