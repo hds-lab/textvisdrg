@@ -1,4 +1,4 @@
 -r base.txt
 
 gunicorn
-
+django-supervisor

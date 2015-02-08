@@ -162,8 +162,10 @@ def interpolate_env(outpath=None):
     fabutils.django_render(dot_env_path, outpath, os.environ)
 
 
-def gunicorn_restart():
+def restart_webserver():
     """Restart a local gunicorn process"""
+    print green("Restarting gunicorn...")
+    fabutils.manage_py('supervisor restart webserver')
 
 
 def check_database():
@@ -180,6 +182,7 @@ def print_env():
     """Print the local .env file contents"""
     denv = fabutils.dot_env()
     import pprint
+
     pprint.pprint(denv)
 
 
@@ -220,5 +223,5 @@ def deploy():
         run('fab pull')
         run('fab dependencies:prod')
         run('fab print_env check_database migrate')
-        run('fab build_static gunicorn_restart')
+        run('fab build_static restart_webserver')
 

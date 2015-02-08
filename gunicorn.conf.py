@@ -19,6 +19,8 @@ bind = "%(ip)s:%(port)s" % {
 from django.conf import settings
 workers = os.environ.get("GUNICORN_WORKERS", 1)
 
-accesslog = PROJECT_ROOT / 'gunicorn.access.log'
-errorlog = PROJECT_ROOT / 'gunicorn.error.log'
-loglevel = 'debug'
+accesslog = settings.LOGS_ROOT / 'gunicorn.access.log'
+errorlog = settings.LOGS_ROOT / 'gunicorn.error.log'
+
+if settings.DEBUG:
+    loglevel = 'debug'

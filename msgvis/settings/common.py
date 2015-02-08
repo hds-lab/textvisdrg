@@ -224,6 +224,12 @@ INSTALLED_APPS = DJANGO_APPS + LOCAL_APPS
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/dev/topics/logging for
 # more details on how to customize your logging configuration.
+LOGS_ROOT = get_env_setting('LOGS_ROOT', PROJECT_ROOT / 'logs')
+if not isinstance(LOGS_ROOT, path):
+    LOGS_ROOT = path(LOGS_ROOT)
+if not LOGS_ROOT.exists():
+    LOGS_ROOT.mkdir()
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
