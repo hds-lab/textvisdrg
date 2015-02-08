@@ -167,6 +167,10 @@ def restart_webserver():
     print green("Restarting gunicorn...")
     fabutils.manage_py('supervisor restart webserver')
 
+def supervisor():
+    """Starts the supervisor process"""
+    print green("Supervisor launching...")
+    fabutils.manage_py('supervisor')
 
 def check_database():
     """Makes sure the database is accessible"""
