@@ -12,7 +12,7 @@ import os
 from path import path
 from fabric.api import local, run, env, prefix, quiet
 from fabric.colors import red, green, yellow
-
+from fabric.operations import prompt
 
 PROJECT_ROOT = path(__file__).abspath().realpath().dirname()
 sys.path.append(PROJECT_ROOT / 'setup')
@@ -161,6 +161,16 @@ def gunicorn_restart():
     """Restart a local gunicorn process"""
 
 
+def check_database():
+    """Makes sure the database is accessible"""
+
+    if fabutils.test_database():
+        print green("Database is available")
+    else:
+        settings = fabutils.django_settings()
+        print red("Database is not available! (%s)" % settings.DATABASES['default']['NAME'])
+
+
 def deploy():
     """
     SSH into a remote server, run commands to update deployment,
@@ -196,5 +206,7 @@ def deploy():
                 run('pip install Fabric path.py')
 
         run('fab pull')
-        run('fab dependencies migrate build_static gunicorn_restart')
+        run('fab dependencies')
+        run('fab check_database migrate')
+        run('fab build_static gunicorn_restart')
 

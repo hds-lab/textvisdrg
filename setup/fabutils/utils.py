@@ -194,6 +194,7 @@ def bower_install():
             print yellow("File bower.json doesn't exist")
             return False
 
+@_require_configured
 def django_render(template_file, output_file, context):
     """Use the Django template engine to render a template with a context dict"""
     from django.template import Template, Context
@@ -216,3 +217,14 @@ def django_render(template_file, output_file, context):
         with open(output_file, 'wb') as outfile:
             outfile.write(template.render(Context(context)))
 
+
+@_require_configured
+def test_database():
+    """Return true if the database is accessible."""
+    django_settings()
+    from django import db
+    try:
+        db.connection.cursor()
+        return True
+    except db.OperationalError:
+        return False
