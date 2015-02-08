@@ -1,7 +1,9 @@
 # Fill in these values with your deployment settings
 
 DJANGO_SETTINGS_MODULE={{ SETTINGS_MODULE }}
+# DEBUG=
 
+# Set the web server listening address
 SERVER_HOST={{ SERVER_HOST }}
 PORT={{ PORT }}
 
@@ -14,12 +16,16 @@ DATABASE_URL=mysql://{{ DATABASE_USER }}:{{ DATABASE_PASS }}@{{ DATABASE_HOST }}
 SECRET_KEY={{ SECRET_KEY }}
 GOOGLE_ANALYTICS_ID={{ GOOGLE_ANALYTICS_ID }}
 
-# # Set these for deployment
+# Development Settings
+
+# Set these for deployment
 # DEPLOY_HOST=<username>@<hostname>
-# DEPLOY_VIRTUALENV=<virualenvname>
+# DEPLOY_VIRTUALENV=<virtualenvname>
+
+# Production Settings
 
 # Point this to where you will serve static files from
 # STATIC_ROOT=/var/www/static
 
-# DEBUG=
+# Comma-separated list of host names
 # ALLOWED_HOSTS=localhost
