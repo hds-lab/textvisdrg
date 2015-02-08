@@ -171,6 +171,13 @@ def check_database():
         print red("Database is not available! (%s)" % settings.DATABASES['default']['NAME'])
 
 
+def print_env():
+    """Print the local .env file contents"""
+    denv = fabutils.dot_env()
+    import pprint
+    pprint.pprint(denv)
+
+
 def deploy():
     """
     SSH into a remote server, run commands to update deployment,
@@ -207,6 +214,6 @@ def deploy():
 
         run('fab pull')
         run('fab dependencies')
-        run('fab check_database migrate')
+        run('fab print_env check_database migrate')
         run('fab build_static gunicorn_restart')
 

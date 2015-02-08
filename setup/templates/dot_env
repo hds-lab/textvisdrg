@@ -14,5 +14,6 @@ DATABASE_URL=mysql://{{ DATABASE_USER }}:{{ DATABASE_PASS }}@{{ DATABASE_HOST }}
 SECRET_KEY={{ SECRET_KEY }}
 GOOGLE_ANALYTICS_ID={{ GOOGLE_ANALYTICS_ID }}
 
-DEPLOY_HOST=<username>@<hostname>
-DEPLOY_VIRTUALENV=<virualenvname>
+# # Set these for deployment
+# DEPLOY_HOST=<username>@<hostname>
+# DEPLOY_VIRTUALENV=<virualenvname>
