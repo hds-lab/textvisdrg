@@ -4,7 +4,10 @@ For more info: http://docs.fabfile.org/en/latest/
 """
 
 django_project_name = 'msgvis'
-pip_requirements = ('-r requirements/dev.txt',)
+pip_requirements = {
+    'dev': ('-r requirements/dev.txt',),
+    'prod': ('-r requirements/prod.txt',)
+}
 test_data_apps = ('msgvis',)
 
 import sys
@@ -21,11 +24,13 @@ from fabutils import utils as fabutils
 fabutils.configure(PROJECT_ROOT, django_project_name)
 
 
-def dependencies():
+def dependencies(environment='dev'):
     """Installs Python, NPM, and Bower packages"""
 
-    print green("Updating dependencies...")
-    if fabutils.pip_install(pip_requirements) and \
+    print green("Updating %s dependencies..." % environment)
+
+    reqs = pip_requirements[environment]
+    if fabutils.pip_install(reqs) and \
         fabutils.npm_install() and \
         fabutils.bower_install():
         print "Dependency update successful."
@@ -213,7 +218,7 @@ def deploy():
                 run('pip install Fabric path.py')
 
         run('fab pull')
-        run('fab dependencies')
+        run('fab dependencies:prod')
         run('fab print_env check_database migrate')
         run('fab build_static gunicorn_restart')
 
