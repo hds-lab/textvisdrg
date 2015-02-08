@@ -20,3 +20,6 @@ GOOGLE_ANALYTICS_ID={{ GOOGLE_ANALYTICS_ID }}
 
 # Point this to where you will serve static files from
 # STATIC_ROOT=/var/www/static
+
+# DEBUG=
+# ALLOWED_HOSTS=localhost
