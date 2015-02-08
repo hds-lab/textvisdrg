@@ -35,7 +35,7 @@ def _require_configured(fn):
     def real_fn(*args, **kwargs):
         if not configured():
             raise Exception("Call configure() first.")
-        fn(*args, **kwargs)
+        return fn(*args, **kwargs)
 
     return real_fn
 
