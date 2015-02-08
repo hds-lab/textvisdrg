@@ -249,8 +249,8 @@ LOGGING = {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
             'propagate': True,
-            },
-        }
+        },
+    }
 }
 ########## END LOGGING CONFIGURATION
 
@@ -276,14 +276,15 @@ MIDDLEWARE_CLASSES += (
 def custom_show_toolbar(request):
     return request.user.is_superuser
 
+
 DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
-    'SHOW_TOOLBAR_CALLBACK': '%s.settings.base.custom_show_toolbar' % SITE_NAME,
+    'SHOW_TOOLBAR_CALLBACK': '%s.settings.common.custom_show_toolbar' % SITE_NAME,
     'HIDE_DJANGO_SQL': True,
     'TAG': 'body',
     'SHOW_TEMPLATE_CONTEXT': True,
     'ENABLE_STACKTRACES': True,
-    }
+}
 
 DEBUG_TOOLBAR_PATCH_SETTINGS = False
 
@@ -297,6 +298,7 @@ INTERNAL_IPS = ('127.0.0.1',)
 INSTALLED_APPS += (
     'compressor',
 )
+
 
 def find_node_bin(package_name='less', bin_name='lessc'):
     p = PROJECT_ROOT / 'node_modules' / '.bin' / bin_name
@@ -337,9 +339,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissions'
     ],
-    'DEFAULT_PAGINATION_SERIALIZER_CLASS':
-        'base.api_utils.CustomPaginationSerializer',
-    }
+}
 ######### END REST FRAMEWORK
 
 
