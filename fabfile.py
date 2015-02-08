@@ -10,7 +10,7 @@ test_data_apps = ('msgvis',)
 import sys
 import os
 from path import path
-from fabric.api import local, run, env, prefix
+from fabric.api import local, run, env, prefix, quiet
 from fabric.colors import red, green, yellow
 
 
@@ -160,6 +160,7 @@ def deploy():
     """
 
     denv = fabutils.dot_env()
+
     host = denv.get('DEPLOY_HOST', None)
     virtualenv = denv.get('DEPLOY_VIRTUALENV', None)
 
@@ -173,5 +174,13 @@ def deploy():
     env.host_string = host
 
     with prefix('workon %s' % virtualenv):
+
+        # Check prereqs
+        with quiet():
+            pips = run('pip freeze')
+            if "Fabric" not in pips or 'path.py' not in pips:
+                print green("Installing Fabric...")
+                run('pip install Fabric path.py')
+
         run('fab pull dependencies migrate build_static gunicorn_restart')
 
