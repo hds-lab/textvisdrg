@@ -10,7 +10,7 @@ test_data_apps = ('msgvis',)
 import sys
 import os
 from path import path
-from fabric.api import local, run
+from fabric.api import local, run, env, prefix
 from fabric.colors import red, green, yellow
 
 
@@ -50,9 +50,9 @@ def runserver():
     """Runs the Django development server"""
 
     print green("Running the development webserver...")
-    env = fabutils.dot_env()
-    host = env.get('SERVER_HOST', '0.0.0.0')
-    port = env.get('PORT', '8000')
+    denv = fabutils.dot_env()
+    host = denv.get('SERVER_HOST', '0.0.0.0')
+    port = denv.get('PORT', '8000')
     fabutils.manage_py('runserver %s:%s' % (host, port))
 
 
@@ -155,7 +155,23 @@ def deploy():
     
     This requires that the server is already running a 
     fairly recent copy of the code.
+
+    Furthermore, the app must use a
     """
 
-    run('fab pull dependencies migrate build_static gunicorn_restart')
+    denv = fabutils.dot_env()
+    host = denv.get('DEPLOY_HOST', None)
+    virtualenv = denv.get('DEPLOY_VIRTUALENV', None)
+
+    if host is None:
+        print red("No DEPLOY_HOST in .env file")
+        return
+    if virtualenv is None:
+        print red("No DEPLOY_VIRTUALENV in .env file")
+        return
+
+    env.host_string = host
+
+    with prefix('workon %s' % virtualenv):
+        run('fab pull dependencies migrate build_static gunicorn_restart')
 
