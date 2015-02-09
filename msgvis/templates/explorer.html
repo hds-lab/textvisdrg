@@ -1,0 +1,18 @@
+{% extends '_layouts/base.html' %}
+{% load staticfiles %}
+
+{% block page_title %}Message Explorer{% endblock %}
+
+{% block js %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% static 'bower/angular/angular.js' %}"></script>
+    <script type="text/javascript" src="{% static 'bower/angular-resource/angular-resource.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Message Explorer</h1>
+
+    <p>Data goes here...</p>
+</div>
+{% endblock %}
