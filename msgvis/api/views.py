@@ -1,5 +1,8 @@
 from rest_framework.views import APIView, Response
-from msgvis.api import serializers
+from django.core.urlresolvers import NoReverseMatch
+from rest_framework.reverse import reverse
+
+from rest_framework.compat import get_resolver_match, OrderedDict
 
 
 class DataTableView(APIView):
@@ -39,6 +42,7 @@ class ExampleMessagesView(APIView):
     that specifies values for one or both of the given dimensions,
     keyed by name.
     """
+
     def post(self, request, format=None):
         return Response()
 
@@ -53,6 +57,7 @@ class ResearchQuestionsView(APIView):
 
     The response will be a list of research questions.
     """
+
     def post(self, request, format=None):
         return Response()
 
@@ -68,6 +73,7 @@ class DimensionDistributionView(APIView):
     The response will include a `domain` property that is a list
     of values for the dimension with a message count at each value.
     """
+
     def post(self, request, format=None):
         return Response()
 
@@ -82,8 +88,35 @@ class FilterSummaryView(APIView):
     The response will add a `summary` object
     that includes some statistics about the filter.
     """
+
     def post(self, request, format=None):
         return Response()
 
 
+class APIRoot(APIView):
+    """
+    The Text Visualization DRG API.
 
+    Refer to the full documentation [here](https://github.com/hds-lab/textvisdrg/blob/master/docs/API.md).
+    """
+    root_urls = {}
+
+    def get(self, request, *args, **kwargs):
+        ret = OrderedDict()
+        namespace = get_resolver_match(request).namespace
+        for key, urlconf in self.root_urls.iteritems():
+            url_name = urlconf.name
+            if namespace:
+                url_name = namespace + ':' + url_name
+            try:
+                ret[key] = reverse(
+                    url_name,
+                    request=request,
+                    format=kwargs.get('format', None)
+                )
+                print ret[key]
+            except NoReverseMatch:
+                # Don't bail out if eg. no list routes exist, only detail routes.
+                continue
+
+        return Response(ret)
