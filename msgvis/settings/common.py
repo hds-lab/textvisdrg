@@ -210,6 +210,7 @@ DJANGO_APPS = (
 # Apps specific for this project go here.
 LOCAL_APPS = (
     'msgvis.base',
+    'msgvis.api',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -336,10 +337,6 @@ INSTALLED_APPS += (
 )
 
 REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions.
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissions'
-    ],
 }
 ######### END REST FRAMEWORK
 
