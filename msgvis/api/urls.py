@@ -13,11 +13,18 @@ api_root_urls = {
     'example-messages': url(r'^message/$', views.ExampleMessagesView.as_view(), name='example-messages'),
     'research-questions': url(r'^questions/$', views.ResearchQuestionsView.as_view(), name='research-questions'),
     'dimension-distributions': url(r'^dimension/$', views.DimensionDistributionView.as_view(),
-                     name='dimension-distribution'),
+                                   name='dimension-distribution'),
     'filter-summaries': url(r'^filter/$', views.FilterSummaryView.as_view(), name='filter-summary'),
 }
 
+
 class APIRoot(views.APIView):
+    """
+    The Text Visualization DRG API.
+
+    Refer to the full documentation [here](https://github.com/hds-lab/textvisdrg/blob/master/docs/API.md).
+    """
+
     def get(self, request, *args, **kwargs):
         ret = OrderedDict()
         namespace = get_resolver_match(request).namespace
