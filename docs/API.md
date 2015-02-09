@@ -42,7 +42,7 @@ can select to visualize the dataset. An example is below:
 
 ```json
 {
-  "id": 5
+  "id": 5,
   "name": "time",
   "description": "the time the message was sent",
   "scope": "open",
