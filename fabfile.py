@@ -8,7 +8,10 @@ pip_requirements = {
     'dev': ('-r requirements/dev.txt',),
     'prod': ('-r requirements/prod.txt',)
 }
-test_data_apps = ('msgvis',)
+test_data_apps = ('base', 'api', 'corpus',
+                  'dimensions', 'datatable',
+                  'import', 'enhance', 'questions',
+                  'auth',)
 
 import sys
 import os
@@ -51,12 +54,23 @@ def build_static():
     fabutils.manage_py('collectstatic --noinput')
     fabutils.manage_py('compress')
 
+
 def docs():
     """Build the documentation"""
 
     print green("Rebuilding the Sphinx documentation...")
     with lcd(PROJECT_ROOT / 'docs'):
         local('rm -rf _build && make html')
+
+
+def manage(command):
+    """Run a Django management command."""
+    fabutils.manage_py(command)
+
+
+def test(settings_module='msgvis.settings.test'):
+    """Run Django tests"""
+    fabutils.manage_py('test --settings=%s' % settings_module)
 
 
 def runserver():
@@ -95,12 +109,6 @@ def make_test_data():
 
 def reset_db():
     """Removes all of the tables"""
-
-    settings = fabutils.django_settings()
-    denv = fabutils.dot_env()
-    print denv
-    print red("WARNING! Deleting the database! (%s)" % settings.DATABASES['default']['NAME'])
-
     fabutils.manage_py("reset_db")
 
 
@@ -174,10 +182,12 @@ def restart_webserver():
     print green("Restarting gunicorn...")
     fabutils.manage_py('supervisor restart webserver')
 
+
 def supervisor():
     """Starts the supervisor process"""
     print green("Supervisor launching...")
     fabutils.manage_py('supervisor')
+
 
 def check_database():
     """Makes sure the database is accessible"""

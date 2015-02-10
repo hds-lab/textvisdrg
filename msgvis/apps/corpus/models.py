@@ -42,6 +42,13 @@ class Url(models.Model):
     """The full url"""
 
 
+class Hashtag(models.Model):
+    """A hashtag in a message"""
+
+    text = models.CharField(max_length=100)
+    """The text of the hashtag, without the hash"""
+
+
 class Media(models.Model):
     """
     Linked media, e.g. photos or videos.
@@ -158,13 +165,13 @@ class Message(models.Model):
     urls = models.ManyToManyField(Url)
     """The set of :class:`Url` in the message."""
 
-    hashtags = models.ManyToManyField(Person)
+    hashtags = models.ManyToManyField(Hashtag)
     """The set of :class:`Hashtag` in the message."""
 
     media = models.ManyToManyField(Media)
     """The set of :class:`Media` in the message."""
 
-    mentions = models.ManyToManyField(Person)
+    mentions = models.ManyToManyField(Person, related_name="mentioned_in")
     """The set of :class:`Person` mentioned in the message."""
 
     text = models.TextField()

@@ -269,9 +269,7 @@ class FilterSummaryView(APIView):
 
 class APIRoot(APIView):
     """
-    The Text Visualization DRG API.
-
-    Refer to the full documentation [here](https://github.com/hds-lab/textvisdrg/blob/master/docs/API.md).
+    The Text Visualization DRG Root API View.
     """
     root_urls = {}
 

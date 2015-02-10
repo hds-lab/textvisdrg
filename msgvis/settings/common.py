@@ -211,6 +211,12 @@ DJANGO_APPS = (
 LOCAL_APPS = (
     'msgvis.apps.base',
     'msgvis.apps.api',
+    'msgvis.apps.corpus',
+    'msgvis.apps.dimensions',
+    'msgvis.apps.datatable',
+    'msgvis.apps.import',
+    'msgvis.apps.enhance',
+    'msgvis.apps.questions',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -270,14 +276,9 @@ INSTALLED_APPS += (
     'debug_toolbar',
 )
 
-MIDDLEWARE_CLASSES += (
-    'debug_toolbar.middleware.DebugToolbarMiddleware',
-)
-
 # Only show the debug toolbar to users with the superuser flag.
 def custom_show_toolbar(request):
     return request.user.is_superuser
-
 
 DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
@@ -337,6 +338,7 @@ INSTALLED_APPS += (
 )
 
 REST_FRAMEWORK = {
+    'VIEW_DESCRIPTION_FUNCTION': 'msgvis.apps.api.drf.get_view_description'
 }
 ######### END REST FRAMEWORK
 

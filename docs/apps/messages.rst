@@ -4,13 +4,13 @@ Messages
 .. contents::
     :local:
 
-.. automodule:: msgvis.apps.messages
+.. automodule:: msgvis.apps.corpus
     :members:
 
 
 Models
 ------
 
-.. automodule:: msgvis.apps.messages.models
+.. automodule:: msgvis.apps.corpus.models
     :members:
 
