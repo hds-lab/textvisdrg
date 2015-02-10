@@ -52,7 +52,6 @@ def get_tweepy_auth():
         # Example w/o callback (desktop)
         verifier = raw_input('Paste the verifier here: ')
 
-
         # Convert the verifier into an access token
         try:
             auth.get_access_token(verifier)

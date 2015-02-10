@@ -1,0 +1,266 @@
+[
+{
+  "fields": {
+    "code": "fr",
+    "name": "French"
+  },
+  "model": "corpus.language",
+  "pk": 1
+},
+{
+  "fields": {
+    "code": "en",
+    "name": "English"
+  },
+  "model": "corpus.language",
+  "pk": 2
+},
+{
+  "fields": {
+    "code": "ar",
+    "name": "Arabic"
+  },
+  "model": "corpus.language",
+  "pk": 3
+},
+{
+  "fields": {
+    "code": "ja",
+    "name": "Japanese"
+  },
+  "model": "corpus.language",
+  "pk": 4
+},
+{
+  "fields": {
+    "code": "es",
+    "name": "Spanish"
+  },
+  "model": "corpus.language",
+  "pk": 5
+},
+{
+  "fields": {
+    "code": "de",
+    "name": "German"
+  },
+  "model": "corpus.language",
+  "pk": 6
+},
+{
+  "fields": {
+    "code": "it",
+    "name": "Italian"
+  },
+  "model": "corpus.language",
+  "pk": 7
+},
+{
+  "fields": {
+    "code": "id",
+    "name": "Indonesian"
+  },
+  "model": "corpus.language",
+  "pk": 8
+},
+{
+  "fields": {
+    "code": "pt",
+    "name": "Portuguese"
+  },
+  "model": "corpus.language",
+  "pk": 9
+},
+{
+  "fields": {
+    "code": "ko",
+    "name": "Korean"
+  },
+  "model": "corpus.language",
+  "pk": 10
+},
+{
+  "fields": {
+    "code": "tr",
+    "name": "Turkish"
+  },
+  "model": "corpus.language",
+  "pk": 11
+},
+{
+  "fields": {
+    "code": "ru",
+    "name": "Russian"
+  },
+  "model": "corpus.language",
+  "pk": 12
+},
+{
+  "fields": {
+    "code": "nl",
+    "name": "Dutch"
+  },
+  "model": "corpus.language",
+  "pk": 13
+},
+{
+  "fields": {
+    "code": "fil",
+    "name": "Filipino"
+  },
+  "model": "corpus.language",
+  "pk": 14
+},
+{
+  "fields": {
+    "code": "msa",
+    "name": "Malay"
+  },
+  "model": "corpus.language",
+  "pk": 15
+},
+{
+  "fields": {
+    "code": "zh-tw",
+    "name": "Traditional Chinese"
+  },
+  "model": "corpus.language",
+  "pk": 16
+},
+{
+  "fields": {
+    "code": "zh-cn",
+    "name": "Simplified Chinese"
+  },
+  "model": "corpus.language",
+  "pk": 17
+},
+{
+  "fields": {
+    "code": "hi",
+    "name": "Hindi"
+  },
+  "model": "corpus.language",
+  "pk": 18
+},
+{
+  "fields": {
+    "code": "no",
+    "name": "Norwegian"
+  },
+  "model": "corpus.language",
+  "pk": 19
+},
+{
+  "fields": {
+    "code": "sv",
+    "name": "Swedish"
+  },
+  "model": "corpus.language",
+  "pk": 20
+},
+{
+  "fields": {
+    "code": "fi",
+    "name": "Finnish"
+  },
+  "model": "corpus.language",
+  "pk": 21
+},
+{
+  "fields": {
+    "code": "da",
+    "name": "Danish"
+  },
+  "model": "corpus.language",
+  "pk": 22
+},
+{
+  "fields": {
+    "code": "pl",
+    "name": "Polish"
+  },
+  "model": "corpus.language",
+  "pk": 23
+},
+{
+  "fields": {
+    "code": "hu",
+    "name": "Hungarian"
+  },
+  "model": "corpus.language",
+  "pk": 24
+},
+{
+  "fields": {
+    "code": "fa",
+    "name": "Persian"
+  },
+  "model": "corpus.language",
+  "pk": 25
+},
+{
+  "fields": {
+    "code": "he",
+    "name": "Hebrew"
+  },
+  "model": "corpus.language",
+  "pk": 26
+},
+{
+  "fields": {
+    "code": "th",
+    "name": "Thai"
+  },
+  "model": "corpus.language",
+  "pk": 27
+},
+{
+  "fields": {
+    "code": "uk",
+    "name": "Ukrainian"
+  },
+  "model": "corpus.language",
+  "pk": 28
+},
+{
+  "fields": {
+    "code": "cs",
+    "name": "Czech"
+  },
+  "model": "corpus.language",
+  "pk": 29
+},
+{
+  "fields": {
+    "code": "ro",
+    "name": "Romanian"
+  },
+  "model": "corpus.language",
+  "pk": 30
+},
+{
+  "fields": {
+    "code": "en-gb",
+    "name": "British English"
+  },
+  "model": "corpus.language",
+  "pk": 31
+},
+{
+  "fields": {
+    "code": "vi",
+    "name": "Vietnamese"
+  },
+  "model": "corpus.language",
+  "pk": 32
+},
+{
+  "fields": {
+    "code": "bn",
+    "name": "Bengali"
+  },
+  "model": "corpus.language",
+  "pk": 33
+}
+]

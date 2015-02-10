@@ -1,0 +1,23 @@
+[
+{
+  "fields": {
+    "name": "original"
+  },
+  "model": "corpus.messagetype",
+  "pk": 1
+},
+{
+  "fields": {
+    "name": "retweet"
+  },
+  "model": "corpus.messagetype",
+  "pk": 2
+},
+{
+  "fields": {
+    "name": "reply"
+  },
+  "model": "corpus.messagetype",
+  "pk": 3
+}
+]

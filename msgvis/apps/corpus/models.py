@@ -17,9 +17,11 @@ class Dataset(models.Model):
 class MessageType(models.Model):
     """The type of a message, e.g. retweet, reply, original, system..."""
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     """The name of the message type"""
 
+    def __unicode__(self):
+        return self.name
 
 class Language(models.Model):
     """Represents the language of a message or a user"""
@@ -29,6 +31,9 @@ class Language(models.Model):
 
     name = models.CharField(max_length=100)
     """The full name of the language"""
+
+    def __unicode__(self):
+        return "%s:%s" % (self.code, self.name)
 
 
 class Url(models.Model):
@@ -78,9 +83,14 @@ class Timezone(models.Model):
 class Sentiment(models.Model):
     """A sentiment label"""
 
+    value = models.SmallIntegerField(unique=True)
+    """A numeric value of the sentiment label"""
+
     name = models.CharField(max_length=25)
     """The name of the sentiment label"""
 
+    def __unicode__(self):
+        return "%d:%s" % (self.value, self.name)
 
 class Topic(models.Model):
     """Topics in messages"""
