@@ -144,7 +144,7 @@ def django_tests(settings_module, coverage=False):
         return False
 
     if coverage:
-        test_cmd = 'coverage run --source={SOURCE} {TEST_CMD}'.format(
+        test_cmd = 'coverage run --source={SOURCE} {TEST_CMD} && coverage report'.format(
             SOURCE=SITE_ROOT,
             TEST_CMD=test_cmd
         )
