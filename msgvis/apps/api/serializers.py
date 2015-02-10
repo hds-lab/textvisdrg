@@ -19,21 +19,6 @@ from msgvis.apps.dimensions.models import Dimension
 
 
 class PersonSerializer(serializers.ModelSerializer):
-    """
-    JSON representation of :class:`.Person`
-    objects for the API.
-
-    ::
-
-        {
-            "id": 2,
-            "dataset": 1
-            "original_id": 2568434,
-            "username": "my_name",
-            "full_name": "My Name"
-        }
-
-    """
 
     class Meta:
         model = Person
@@ -60,12 +45,6 @@ class MessageSerializer(serializers.ModelSerializer):
             "original_id": 2568434,
             "username": "my_name",
             "full_name": "My Name"
-            "language": "en",
-            "replied_to_count": 25,
-            "shared_count": null,
-            "mentioned_count": 24,
-            "friend_count": 62,
-            "follower_count": 0
           },
           "time": "2010-02-25T00:23:53Z"
         }
