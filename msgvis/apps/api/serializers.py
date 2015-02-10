@@ -176,7 +176,7 @@ class FilterSerializer(serializers.Serializer):
     Although every filter has a ``dimension`` field, the specific properties
     vary depending on the type of the dimension and the kind of filter.
 
-    At this time, there are two types of filters:
+    At this time, there are three types of filters:
 
     -  Quantitative dimensions can be filtered using one or both of the
        ``min`` and ``max`` properties (inclusive).

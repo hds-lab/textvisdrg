@@ -145,11 +145,10 @@ class ExampleMessagesView(APIView):
 
 class ResearchQuestionsView(APIView):
     """
-    Get a list of research questions related to a selection of dimensions
-    and filters. The request should include a list of dimension ids and active filters.
+    Get a list of research questions related to a selection of dimensions and filters.
+    The request should include a list of :class:`Dimension` ids and filter specifications.
 
-    The response will be a list of `research
-    questions <#research-questions>`_.
+    The response will be a list of Research :class:`Questions`.
 
     **Request:** ``POST /api/questions``
 
