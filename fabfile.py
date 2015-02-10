@@ -11,7 +11,7 @@ pip_requirements = {
 }
 test_data_apps = ('base', 'api', 'corpus',
                   'dimensions', 'datatable',
-                  'import', 'enhance', 'questions',
+                  'importer', 'enhance', 'questions',
                   'auth',)
 
 import sys

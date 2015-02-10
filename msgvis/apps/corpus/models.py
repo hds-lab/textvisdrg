@@ -24,7 +24,7 @@ class MessageType(models.Model):
 class Language(models.Model):
     """Represents the language of a message or a user"""
 
-    code = models.CharField(max_length=10)
+    code = models.SlugField(max_length=10, unique=True)
     """A short language code like 'en'"""
 
     name = models.CharField(max_length=100)

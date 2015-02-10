@@ -214,7 +214,7 @@ LOCAL_APPS = (
     'msgvis.apps.corpus',
     'msgvis.apps.dimensions',
     'msgvis.apps.datatable',
-    'msgvis.apps.import',
+    'msgvis.apps.importer',
     'msgvis.apps.enhance',
     'msgvis.apps.questions',
 )
@@ -358,3 +358,11 @@ INSTALLED_APPS += (
 DOCS_ROOT = PROJECT_ROOT / 'docs' / '_build' / 'html'
 DOCS_ACCESS = 'staff'
 ######### END DJANGO DOCS
+
+
+######### TWITTER SETTINGS
+TWITTER_CONSUMER_KEY = get_env_setting('TWITTER_CONSUMER_KEY', '')
+TWITTER_CONSUMER_SECRET = get_env_setting('TWITTER_CONSUMER_SECRET', '')
+TWITTER_ACCESS_TOKEN = get_env_setting('TWITTER_ACCESS_TOKEN', '')
+TWITTER_ACCESS_TOKEN_SECRET = get_env_setting('TWITTER_ACCESS_TOKEN_SECRET', '')
+######### END TWITTER SETTINGS
