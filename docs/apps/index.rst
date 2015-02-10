@@ -6,7 +6,7 @@ Apps
 
     base
     dimensions
-    messages
+    corpus
     questions
     api
 

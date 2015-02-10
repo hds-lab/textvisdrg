@@ -66,7 +66,7 @@ class Timezone(models.Model):
     """
 
     olson_code = models.CharField(max_length=40)
-    """The timezone code in :py:mod:`pytz`"""
+    """The timezone code from pytz."""
 
     name = models.CharField(max_length=150)
     """Another name for the timezone, perhaps the country where it is located?"""

@@ -1,5 +1,5 @@
-Messages
-========
+Corpus
+======
 
 .. contents::
     :local:

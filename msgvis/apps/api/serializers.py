@@ -37,7 +37,8 @@ class MessageSerializer(serializers.ModelSerializer):
     Additional fields may be added later.
     """
 
-    model = Message
+    class Meta:
+        model = Message
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -74,7 +75,8 @@ class QuestionSerializer(serializers.ModelSerializer):
     is associated with.
     """
 
-    model = Question
+    class Meta:
+        model = Question
 
 
 class DimensionSerializer(serializers.ModelSerializer):
@@ -96,7 +98,9 @@ class DimensionSerializer(serializers.ModelSerializer):
         }
     """
 
-    model_class = Dimension
+    class Meta:
+        model_class = Dimension
+
 
 class FilterSerializer(serializers.Serializer):
     """
