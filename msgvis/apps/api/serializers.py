@@ -17,6 +17,29 @@ from msgvis.apps.corpus.models import Message, Person
 from msgvis.apps.questions.models import Question, Article
 from msgvis.apps.dimensions.models import Dimension
 
+
+class PersonSerializer(serializers.ModelSerializer):
+    """
+    JSON representation of :class:`.Person`
+    objects for the API.
+
+    ::
+
+        {
+            "id": 2,
+            "dataset": 1
+            "original_id": 2568434,
+            "username": "my_name",
+            "full_name": "My Name"
+        }
+
+    """
+
+    class Meta:
+        model = Person
+        fields = ('id', 'dataset', 'original_id', 'username', 'full_name',)
+
+
 class MessageSerializer(serializers.ModelSerializer):
     """
     JSON representation of :class:`.Message`
@@ -29,16 +52,38 @@ class MessageSerializer(serializers.ModelSerializer):
 
         {
           "id": 52,
+          "dataset": 2,
           "text": "Some sort of thing or other",
-          "sender": "A name",
+          "sender": {
+            "id": 2,
+            "dataset": 1
+            "original_id": 2568434,
+            "username": "my_name",
+            "full_name": "My Name"
+            "language": "en",
+            "replied_to_count": 25,
+            "shared_count": null,
+            "mentioned_count": 24,
+            "friend_count": 62,
+            "follower_count": 0
+          },
           "time": "2010-02-25T00:23:53Z"
         }
 
     Additional fields may be added later.
     """
 
+    sender = PersonSerializer()
+
     class Meta:
         model = Message
+        fields = ('id', 'dataset', 'text', 'sender', 'time')
+
+
+class ArticleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Article
+        fields = ('id', 'authors', 'link', 'title', 'year', 'venue',)
 
 
 class QuestionSerializer(serializers.ModelSerializer):
@@ -62,10 +107,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             "year": "2001",
             "venue": "International Journal of Names"
           },
-          "dimensions": [
-            "time",
-            "user"
-          ]
+          "dimensions": [4, 5]
         }
 
     The ``source`` object describes a research article reference where the
@@ -75,8 +117,11 @@ class QuestionSerializer(serializers.ModelSerializer):
     is associated with.
     """
 
+    source = ArticleSerializer()
+
     class Meta:
         model = Question
+        fields = ('id', 'source', 'dimensions', 'text',)
 
 
 class DimensionSerializer(serializers.ModelSerializer):

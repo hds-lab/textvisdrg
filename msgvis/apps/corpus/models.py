@@ -13,11 +13,13 @@ class Dataset(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     """The :py:class:`datetime.datetime` when the dataset was created."""
 
+
 class MessageType(models.Model):
     """The type of a message, e.g. retweet, reply, original, system..."""
 
     name = models.CharField(max_length=100)
     """The name of the message type"""
+
 
 class Language(models.Model):
     """Represents the language of a message or a user"""
@@ -60,6 +62,7 @@ class Media(models.Model):
     media_url = models.CharField(max_length=250)
     """A url where the media may be accessed"""
 
+
 class Timezone(models.Model):
     """
     The timezone of a message or user
@@ -71,11 +74,13 @@ class Timezone(models.Model):
     name = models.CharField(max_length=150)
     """Another name for the timezone, perhaps the country where it is located?"""
 
+
 class Sentiment(models.Model):
     """A sentiment label"""
 
     name = models.CharField(max_length=25)
     """The name of the sentiment label"""
+
 
 class Topic(models.Model):
     """Topics in messages"""
@@ -86,21 +91,22 @@ class Topic(models.Model):
     description = models.TextField()
     """A longer description"""
 
+
 class Person(models.Model):
     """
     A person who sends messages in a dataset.
     """
 
-    dataset_id = models.ForeignKey(Dataset)
+    dataset = models.ForeignKey(Dataset)
     """Which :class:`Dataset` this person belongs to"""
 
     original_id = models.BigIntegerField(null=True, blank=True, default=None)
     """An external id for the person, e.g. a user id from Twitter"""
 
-    username = models.CharField(max_length=150, blank=True, default=None)
+    username = models.CharField(max_length=150, null=True, blank=True, default=None)
     """Username is a short system-y name."""
 
-    full_name = models.CharField(max_length=250, blank=True, default=None)
+    full_name = models.CharField(max_length=250, null=True, blank=True, default=None)
     """Full name is a longer user-friendly name"""
 
     language = models.ForeignKey(Language, null=True, blank=True, default=None)
@@ -120,6 +126,7 @@ class Person(models.Model):
 
     follower_count = models.PositiveIntegerField(blank=True, default=0)
     """The number of people who have connected to this person"""
+
 
 class Message(models.Model):
     """
