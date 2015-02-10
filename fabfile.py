@@ -13,7 +13,7 @@ test_data_apps = ('msgvis',)
 import sys
 import os
 from path import path
-from fabric.api import local, run, env, prefix, quiet
+from fabric.api import local, run, env, prefix, quiet, lcd
 from fabric.colors import red, green, yellow
 from fabric.operations import prompt
 
@@ -50,6 +50,13 @@ def build_static():
     print green("Gathering and preprocessing static files...")
     fabutils.manage_py('collectstatic --noinput')
     fabutils.manage_py('compress')
+
+def docs():
+    """Build the documentation"""
+
+    print green("Rebuilding the Sphinx documentation...")
+    with lcd(PROJECT_ROOT / 'docs'):
+        local('rm -rf _build && make html')
 
 
 def runserver():

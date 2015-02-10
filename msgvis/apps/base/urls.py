@@ -1,7 +1,7 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 
-from msgvis.base import views
+from msgvis.apps.base import views
 
 urlpatterns = patterns('',
                        url(r'^$', views.HomeView.as_view(), name='home'),

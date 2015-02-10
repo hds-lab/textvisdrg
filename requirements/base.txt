@@ -12,6 +12,7 @@ ipython
 
 # Admin
 django-debug-toolbar
+django-docs
 
 # utils
 path.py

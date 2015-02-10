@@ -102,7 +102,7 @@ MEDIA_URL = '/media/'
 
 ########## STATIC FILE CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
-STATIC_ROOT = get_env_setting('STATIC_ROOT', (SITE_ROOT / 'assets').normpath())
+STATIC_ROOT = get_env_setting('STATIC_ROOT', (PROJECT_ROOT / 'assets').normpath())
 if not isinstance(STATIC_ROOT, path):
     STATIC_ROOT = path(STATIC_ROOT)
 
@@ -154,7 +154,7 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     'django.core.context_processors.csrf',
     'django.core.context_processors.tz',
     'django.contrib.messages.context_processors.messages',
-    'msgvis.base.context_processors.google_analytics',
+    'msgvis.apps.base.context_processors.google_analytics',
 )
 
 
@@ -209,8 +209,8 @@ DJANGO_APPS = (
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
-    'msgvis.base',
-    'msgvis.api',
+    'msgvis.apps.base',
+    'msgvis.apps.api',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -347,3 +347,12 @@ INSTALLED_APPS += (
 )
 
 ######### END ANGULAR CONFIG
+
+
+######### DJANGO DOCS
+INSTALLED_APPS += (
+    'docs',
+)
+DOCS_ROOT = PROJECT_ROOT / 'docs' / '_build' / 'html'
+DOCS_ACCESS = 'staff'
+######### END DJANGO DOCS

@@ -1,6 +1,6 @@
 from django.conf.urls import url
 
-from msgvis.api import views
+from msgvis.apps.api import views
 
 api_root_urls = {
     'data-tables': url(r'^table/$', views.DataTableView.as_view(), name='data-table'),

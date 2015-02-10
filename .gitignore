@@ -48,7 +48,9 @@ coverage.xml
 *.log
 
 # Sphinx documentation
-docs/_build/
+/docs/_build/
+/docs/_static/
+/docs/_template/
 
 # PyBuilder
 target/
@@ -58,5 +60,5 @@ target/
 /.env*
 /node_modules
 /msgvis/static/bower
-/msgvis/assets
+/assets
 *.sqlite
