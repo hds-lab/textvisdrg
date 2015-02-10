@@ -1,0 +1,7 @@
+-r base.txt
+
+# Documentation
+Sphinx
+
+# Coverage
+coverage

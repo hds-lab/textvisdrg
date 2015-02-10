@@ -8,7 +8,8 @@ before_install:
 # command to install dependencies
 install:
   - "pip install Fabric path.py"
-  - "fab dependencies"
+  - "fab make_test_env"
+  - "fab dependencies:test"
 
 # command to run tests
 script: "fab test"

@@ -163,6 +163,15 @@ def reset_dev(pull=None):
     print "\n"
     clear_cache()
 
+def make_test_env(outpath=None):
+    if outpath is None:
+        outpath = PROJECT_ROOT / '.env'
+    else:
+        outpath = path(outpath)
+
+    # An empty file for now
+    local('touch %s' % outpath)
+
 
 def interpolate_env(outpath=None):
     """Writes a .env file with variables interpolated from the current environment"""

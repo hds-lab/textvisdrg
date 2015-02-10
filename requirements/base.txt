@@ -1,3 +1,6 @@
+# Fabric
+Fabric
+
 # Django stuff
 Django>=1.7.2
 
