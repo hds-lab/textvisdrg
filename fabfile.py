@@ -73,8 +73,13 @@ def manage(command):
 
 
 def test(settings_module='msgvis.settings.test'):
-    """Run Django tests"""
-    fabutils.manage_py('test --settings=%s' % settings_module)
+    """Run tests"""
+    fabutils.django_tests(settings_module, coverage=False)
+
+
+def test_coverage(settings_module='msgvis.settings.test'):
+    """Run tests with coverage"""
+    fabutils.django_tests(settings_module, coverage=True)
 
 
 def runserver():
@@ -166,6 +171,7 @@ def reset_dev(pull=None):
 
     print "\n"
     clear_cache()
+
 
 def make_test_env(outpath=None):
     if outpath is None:

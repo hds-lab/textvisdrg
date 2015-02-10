@@ -116,12 +116,42 @@ def manage_py(args):
     """Run a manage.py task"""
 
     with lcd(SITE_ROOT):
-        if _wrap_path(SITE_ROOT / 'manage.py').exists():
+        if (SITE_ROOT / 'manage.py').exists():
             local('python manage.py %s' % args)
             return True
         else:
-            print yellow("Django script manage.py doesn't exist")
+            print yellow("Django script manage.py doesn't exist in %s" % SITE_ROOT)
             return False
+
+
+def _django_test_command(settings_module):
+    """Get the manage.py test command for Django"""
+    manage_script = SITE_ROOT / 'manage.py'
+    if not manage_script.exists():
+        print yellow("Django script manage.py doesn't exist in %s" % SITE_ROOT)
+        return None
+
+    return '{MANAGE_PY} test --settings={SETTINGS}'.format(
+        MANAGE_PY=manage_script,
+        SETTINGS=settings_module
+    )
+
+
+def django_tests(settings_module, coverage=False):
+    """Run django tests, optionally with coverage."""
+    test_cmd = _django_test_command(settings_module)
+    if test_cmd is None:
+        return False
+
+    if coverage:
+        test_cmd = 'coverage run --source={SOURCE} {TEST_CMD}'.format(
+            SOURCE=SITE_ROOT,
+            TEST_CMD=test_cmd
+        )
+
+    with lcd(PROJECT_ROOT):
+        local(test_cmd)
+        return True
 
 
 @_require_configured
@@ -150,12 +180,13 @@ def pip_install(requirements):
                 result = local('sudo pip install %s' % req)
             else:
                 result = local('pip install %s' % req)
-                
+
             if not result.succeeded:
                 print red("Failed to install %s" % req)
                 return False
-    
+
     return True
+
 
 @_require_configured
 def npm_install():
@@ -171,12 +202,13 @@ def npm_install():
             else:
                 print yellow("Symbolic links not supported. Using no-bin-link option.")
                 local('npm install --no-bin-link')
-                
+
             return True
-            
+
         else:
             print yellow("Node.js package.json doesn't exist")
             return False
+
 
 @_require_configured
 def bower_install():
@@ -188,11 +220,12 @@ def bower_install():
             print "Installing bower requirements..."
             local('bower prune --config.interactive=false')
             local('bower install --config.interactive=false')
-            
+
             return True
         else:
             print yellow("File bower.json doesn't exist")
             return False
+
 
 @_require_configured
 def django_render(template_file, output_file, context):
@@ -223,6 +256,7 @@ def test_database():
     """Return true if the database is accessible."""
     django_settings()
     from django import db
+
     try:
         db.connection.cursor()
         return True
