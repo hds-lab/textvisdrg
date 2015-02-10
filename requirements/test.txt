@@ -5,7 +5,7 @@ Sphinx
 sphinx_rtd_theme
 
 # Coverage
-coverage
+coveralls
 
 # Mocking
 mock
