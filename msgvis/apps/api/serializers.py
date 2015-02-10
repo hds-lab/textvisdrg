@@ -144,7 +144,8 @@ class DimensionSerializer(serializers.ModelSerializer):
     """
 
     class Meta:
-        model_class = Dimension
+        model = Dimension
+        fields = ('id', 'name', 'description', 'scope', 'type')
 
 
 class FilterSerializer(serializers.Serializer):
@@ -156,8 +157,8 @@ class FilterSerializer(serializers.Serializer):
 
         [{
           "dimension": 5,
-          "min": "2010-02-25T00:23:53Z",
-          "max": "2010-02-30T00:23:53Z"
+          "min_time": "2010-02-25T00:23:53Z",
+          "max_time": "2010-02-30T00:23:53Z"
         },
         {
           "dimension": 2,
@@ -179,6 +180,18 @@ class FilterSerializer(serializers.Serializer):
 
     -  Quantitative dimensions can be filtered using one or both of the
        ``min`` and ``max`` properties (inclusive).
+    -  The time dimension can be filtered using one or both of the ``min_time``
+       and ``max_time`` properties (inclusive).
     -  Categorical dimensions can be filtered by specifying an ``include``
        list. All other items are assumed to be excluded.
     """
+
+    dimension = serializers.PrimaryKeyRelatedField(queryset=Dimension.objects.all())
+
+    min = serializers.FloatField(required=False)
+    max = serializers.FloatField(required=False)
+
+    min_time = serializers.DateTimeField(required=False)
+    max_time = serializers.DateTimeField(required=False)
+
+    include = serializers.ListSerializer(child=serializers.CharField(), required=False)
