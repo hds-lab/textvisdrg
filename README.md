@@ -5,8 +5,6 @@
 
 Prototype for exploratory visual data analysis of large social message datasets
 
-## Documentation
+Documentation is available on [ReadTheDocs](http://textvisdrg.readthedocs.org/en/latest/).
 
-- [Development setup](docs/Development.md)
-- [API documentation](docs/API.md)
 
