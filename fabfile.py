@@ -6,7 +6,8 @@ For more info: http://docs.fabfile.org/en/latest/
 django_project_name = 'msgvis'
 pip_requirements = {
     'dev': ('-r requirements/dev.txt',),
-    'prod': ('-r requirements/prod.txt',)
+    'prod': ('-r requirements/prod.txt',),
+    'test': ('-r requirements/test.txt',),
 }
 test_data_apps = ('base', 'api', 'corpus',
                   'dimensions', 'datatable',
