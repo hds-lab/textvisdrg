@@ -2,6 +2,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/textvisdrg/badge/?version=latest)](https://readthedocs.org/projects/textvisdrg/?badge=latest)
 [![Build Status](https://travis-ci.org/hds-lab/textvisdrg.svg?branch=master)](https://travis-ci.org/hds-lab/textvisdrg)
+[![Coverage Status](https://coveralls.io/repos/hds-lab/textvisdrg/badge.svg)](https://coveralls.io/r/hds-lab/textvisdrg)
 
 Prototype for exploratory visual data analysis of large social message datasets
 
