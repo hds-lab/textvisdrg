@@ -13,7 +13,7 @@ This module defines serializers for the main API data objects:
 
 from rest_framework import serializers
 
-from msgvis.apps.messages.models import Message, Person
+from msgvis.apps.corpus.models import Message, Person
 from msgvis.apps.questions.models import Question, Article
 from msgvis.apps.dimensions.models import Dimension
 

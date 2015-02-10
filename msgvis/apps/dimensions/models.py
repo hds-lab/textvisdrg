@@ -1,6 +1,6 @@
 from django.db import models
 
-# Create your models here.
+
 class Dimension(models.Model):
     """
     A dimension of the message data.

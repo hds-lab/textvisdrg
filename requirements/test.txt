@@ -5,3 +5,6 @@ Sphinx
 
 # Coverage
 coverage
+
+# Mocking
+mock

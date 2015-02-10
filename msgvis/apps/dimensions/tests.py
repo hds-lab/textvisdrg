@@ -2,6 +2,7 @@ from django.test import TestCase
 
 from msgvis.apps.dimensions.models import Dimension
 
+
 class DimensionModelTest(TestCase):
     def setUp(self):
         Dimension.objects.create(name='Time', slug='time',
@@ -15,8 +16,8 @@ class DimensionModelTest(TestCase):
                                  type=Dimension.TYPE_CATEGORICAL)
 
 
-    def test_dimensions(self):
-        """A stupid model test"""
+    def test_can_get_by_slug(self):
+        """A stupid model retrieval test"""
         dtime = Dimension.objects.get(slug='time')
         dsentiment = Dimension.objects.get(slug='sentiment')
 
