@@ -1,3 +1,4 @@
 from django.contrib import admin
 
-# Register your models here.
+from msgvis.apps.dimensions import models
+admin.site.register(models.Dimension)
