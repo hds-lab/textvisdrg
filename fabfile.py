@@ -56,12 +56,15 @@ def build_static():
     fabutils.manage_py('compress')
 
 
-def docs():
+def docs(easy=None):
     """Build the documentation"""
 
     print green("Rebuilding the Sphinx documentation...")
     with lcd(PROJECT_ROOT / 'docs'):
-        local('rm -rf _build && make html')
+        if easy is not None:
+            local('make clean html')
+        else:
+            local('make clean html SPHINXOPTS="-n -W -T"')
 
 
 def manage(command):
