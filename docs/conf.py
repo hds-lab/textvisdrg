@@ -32,7 +32,7 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
 # Make sure the project root is on the path
 from path import path
 PROJECT_ROOT = path(__file__).abspath().realpath().dirname().parent
-sys.path.append(PROJECT_ROOT)
+sys.path.insert(0, PROJECT_ROOT)
 
 # If that didn't set the settings module...
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "msgvis.settings.prod")
@@ -250,6 +250,7 @@ latex_documents = [
 intersphinx_mapping = {
     'python': ('http://docs.python.org/2.7/', None),
     'django': ('http://docs.djangoproject.com/en/1.7/', 'http://docs.djangoproject.com/en/1.7/_objects/'),
+    'tweepy': ('http://tweepy.readthedocs.org/en/latest/', None),
 }
 
 # -- Options for manual page output ---------------------------------------

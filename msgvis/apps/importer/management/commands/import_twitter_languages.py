@@ -5,6 +5,22 @@ from msgvis.apps.corpus import models as corpus_models
 
 
 class Command(BaseCommand):
+    """
+    Import supported languages from the Twitter API into the database.
+    If the languages already exist in the database, they will not be duplicated.
+
+    .. note::
+
+        Requires the `tweepy <https://github.com/tweepy/tweepy>`_ Twitter API library:
+        ``pip install tweepy``
+
+    Example:
+
+    .. code-block :: bash
+
+        $ python manage.py import_twitter_languages
+
+    """
     help = "Import supported languages from the Twitter API." \
            "If the languages already exist in the database, they will not be duplicated."
 

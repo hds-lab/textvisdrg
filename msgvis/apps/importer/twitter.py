@@ -9,12 +9,13 @@ except ImportError:
 
 
 def tweepy_installed():
-    return tweepy
+    """Return True if tweepy is installed"""
+    return tweepy is not None
 
 def get_tweepy_auth():
     """
     Interactive commands for getting Twitter API authorization.
-    Returns a :class:`tweepy.OAuthHandler`.
+    Returns a tweepy.OAuthHandler.
     """
 
     from django.conf import settings
@@ -74,3 +75,9 @@ def get_languages():
     api = tweepy.API(auth_handler=auth)
     return api.supported_languages()
 
+def ror_installed():
+    """Return True if Ruby on Rails is installed"""
+
+def get_timezones():
+    """Get a list of twitter-supported timezones"""
+    # http://api.rubyonrails.org/classes/ActiveSupport/TimeZone.html

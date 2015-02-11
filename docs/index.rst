@@ -16,12 +16,10 @@ Contents:
 
    apps/index
    setup/development
-
+   setup/workflow
 
 Indices and tables
 ==================
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
-

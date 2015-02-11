@@ -5,6 +5,9 @@ To run this project, you can either set up your own machine or use a
 virtual Ubuntu machine with Vagrant. There are separate instructions for
 each below:
 
+.. contents::
+    :local:
+
 Run in a VM
 -----------
 
