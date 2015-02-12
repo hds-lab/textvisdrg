@@ -164,6 +164,9 @@ class Message(models.Model):
     sentiment = models.ForeignKey(Sentiment, null=True, blank=True, default=None)
     """The :class:`Sentiment` label for message."""
 
+    timezone = models.ForeignKey(Timezone, null=True, blank=True, default=None)
+    """The :class:`Timezone` of the message."""
+
     topics = models.ManyToManyField(Topic, null=True, blank=True, default=None)
     """The set of :class:`Topic` associated with the message."""
 
