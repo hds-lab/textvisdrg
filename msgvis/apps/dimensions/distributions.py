@@ -98,6 +98,11 @@ class QuantitativeDistribution(CategoricalDistribution):
 
 
 class TimeDistribution(QuantitativeDistribution):
+    """
+    Calculates distribution for time dimensions with
+    human-friendly binning using heuristics from d3.
+    """
+
     # Convert to unix timestamp. Divide by bin size. Floor. Multiply by bin size. Convert to datetime.
     grouping_expression_template = 'FROM_UNIXTIME({bin_size} * FLOOR(UNIX_TIMESTAMP(`{field_name}`) / {bin_size}))'
 
