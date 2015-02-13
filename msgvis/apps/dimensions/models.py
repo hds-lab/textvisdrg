@@ -1,4 +1,6 @@
 from django.db import models
+from msgvis.apps.corpus import models as corpus_models
+from msgvis.apps.dimensions import distributions
 
 
 class Dimension(models.Model):
@@ -35,3 +37,30 @@ class Dimension(models.Model):
 
     type = models.CharField(max_length=1, choices=TYPE_CHOICES)
     """The type of the dimension, e.g. quantitative/categorical"""
+
+    field_name = models.CharField(max_length=50)
+    """The name of the underlying Message field that stores this dimension"""
+
+    def __unicode__(self):
+        return self.slug
+
+    def get_distribution(self, dataset):
+        """Get the distribution of the dimension within the dataset."""
+
+        field_attr = getattr(corpus_models.Message, self.field_name, None)
+        if field_attr is None:
+            raise AttributeError("Field %s is not on the Message model" % self.field_name)
+
+        field_name, db_field = field_attr.field.get_attname_column()
+
+        dist = None
+        if self.type == self.TYPE_CATEGORICAL:
+            dist = distributions.CategoricalDistribution(db_field)
+        else:
+            raise NotImplementedError("Distributions not yet implemented for the %s dimension." % self.name)
+
+        result = dist.group_by(dataset.message_set.all())
+
+        # We might want to look up related models somehow, e.g. for Sentiment
+
+        return result

@@ -9,6 +9,7 @@ pip_requirements = {
     'prod': ('-r requirements/prod.txt',),
     'test': ('-r requirements/test.txt',),
 }
+
 test_data_apps = ('base', 'api', 'corpus',
                   'dimensions', 'datatable',
                   'importer', 'enhance', 'questions',
@@ -17,7 +18,7 @@ test_data_apps = ('base', 'api', 'corpus',
 # Model keys to fixture paths from PROJECT_ROOT
 model_fixtures = {
     'corpus.Language': 'msgvis/apps/corpus/fixtures/languages.json',
-    'corpus.MessageType': 'msgvis/apps/corpus/fixtures/message_types.json',
+    'corpus.MessageType': 'msgvis/apps/corpus/fixtures/messagetypes.json',
     'corpus.Sentiment': 'msgvis/apps/corpus/fixtures/sentiments.json',
     'corpus.Timezone': 'msgvis/apps/corpus/fixtures/timezones.json',
 }
@@ -171,15 +172,13 @@ def load_fixtures(app_or_model=None):
         else:
             app_filter = '%s.' % app_or_model
 
-    fixtures = []
     for model, fixturefile in model_fixtures.iteritems():
         if model_filter and model != model_filter:
             continue
         if app_filter and not model.startswith(app_filter):
             continue
-        fixtures.append(PROJECT_ROOT / fixturefile)
+        fabutils.manage_py('syncdata %s' % (PROJECT_ROOT / fixturefile,))
 
-    fabutils.manage_py('syncdata %s' % ' '.join(fixtures))
 
 
 def reset_db():
