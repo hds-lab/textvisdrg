@@ -13,6 +13,9 @@ class Dataset(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     """The :py:class:`datetime.datetime` when the dataset was created."""
 
+    def __unicode__(self):
+        return self.name
+
 
 class MessageType(models.Model):
     """The type of a message, e.g. retweet, reply, original, system..."""
@@ -22,6 +25,7 @@ class MessageType(models.Model):
 
     def __unicode__(self):
         return self.name
+
 
 class Language(models.Model):
     """Represents the language of a message or a user"""
@@ -92,6 +96,7 @@ class Sentiment(models.Model):
     def __unicode__(self):
         return "%d:%s" % (self.value, self.name)
 
+
 class Topic(models.Model):
     """Topics in messages"""
 
@@ -137,6 +142,9 @@ class Person(models.Model):
     follower_count = models.PositiveIntegerField(blank=True, default=0)
     """The number of people who have connected to this person"""
 
+    def __unicode__(self):
+        return self.username
+
 
 class Message(models.Model):
     """
@@ -146,10 +154,10 @@ class Message(models.Model):
     dataset = models.ForeignKey(Dataset)
     """Which :class:`Dataset` the message belongs to"""
 
-    original_id = models.BigIntegerField(null=True, default=None)
+    original_id = models.BigIntegerField(null=True, blank=True, default=None)
     """An external id for the message, e.g. a tweet id from Twitter"""
 
-    type = models.ForeignKey(MessageType, null=True, default=None)
+    type = models.ForeignKey(MessageType, null=True, blank=True, default=None)
     """The :class:`MessageType` Message type: retweet, reply, origin..."""
 
     sender = models.ForeignKey(Person, null=True, blank=True, default=None)
@@ -179,16 +187,16 @@ class Message(models.Model):
     contains_mention = models.BooleanField(blank=True, default=False)
     """True if the message mentions any :class:`Person`."""
 
-    urls = models.ManyToManyField(Url)
+    urls = models.ManyToManyField(Url, null=True, blank=True, default=None)
     """The set of :class:`Url` in the message."""
 
-    hashtags = models.ManyToManyField(Hashtag)
+    hashtags = models.ManyToManyField(Hashtag, null=True, blank=True, default=None)
     """The set of :class:`Hashtag` in the message."""
 
-    media = models.ManyToManyField(Media)
+    media = models.ManyToManyField(Media, null=True, blank=True, default=None)
     """The set of :class:`Media` in the message."""
 
-    mentions = models.ManyToManyField(Person, related_name="mentioned_in")
+    mentions = models.ManyToManyField(Person, related_name="mentioned_in", null=True, blank=True, default=None)
     """The set of :class:`Person` mentioned in the message."""
 
     text = models.TextField()
