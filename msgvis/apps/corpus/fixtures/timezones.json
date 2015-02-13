@@ -1,2 +1,8 @@
-[
-]
+[{
+  "fields": {
+    "name": "Pacific Time (US & Canada)",
+    "olson_code": "America/Los_Angeles"
+  },
+  "model": "corpus.timezone",
+  "pk": 1
+}]

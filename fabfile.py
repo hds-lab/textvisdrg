@@ -172,15 +172,13 @@ def load_fixtures(app_or_model=None):
         else:
             app_filter = '%s.' % app_or_model
 
-    fixtures = []
     for model, fixturefile in model_fixtures.iteritems():
         if model_filter and model != model_filter:
             continue
         if app_filter and not model.startswith(app_filter):
             continue
-        fixtures.append(PROJECT_ROOT / fixturefile)
+        fabutils.manage_py('syncdata %s' % (PROJECT_ROOT / fixturefile,))
 
-    fabutils.manage_py('syncdata %s' % ' '.join(fixtures))
 
 
 def reset_db():
