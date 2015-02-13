@@ -9,6 +9,7 @@ DATABASES = {
         "PASSWORD": "",
         "HOST": "",
         "PORT": "",
+        'OPTIONS': {'charset': 'utf8mb4'},
         },
     }
 
