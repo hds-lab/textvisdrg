@@ -122,6 +122,9 @@ class Person(models.Model):
     language = models.ForeignKey(Language, null=True, blank=True, default=None)
     """The person's primary :class:`Language`"""
 
+    message_count = models.PositiveIntegerField(blank=True, default=0)
+    """The number of messages the person produced"""
+
     replied_to_count = models.PositiveIntegerField(blank=True, default=0)
     """The number of times the person's messages were replied to"""
 
@@ -163,6 +166,9 @@ class Message(models.Model):
 
     sentiment = models.ForeignKey(Sentiment, null=True, blank=True, default=None)
     """The :class:`Sentiment` label for message."""
+
+    timezone = models.ForeignKey(Timezone, null=True, blank=True, default=None)
+    """The :class:`Timezone` of the message."""
 
     topics = models.ManyToManyField(Topic, null=True, blank=True, default=None)
     """The set of :class:`Topic` associated with the message."""
