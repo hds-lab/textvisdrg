@@ -48,32 +48,7 @@ class Command(BaseCommand):
         if tweet_data.get('time_zone') is not None:
             tweet.timezone, created = Timezone.objects.get_or_create(name=tweet_data['time_zone'])
 
-        if len(tweet_data['entities']['hashtags']) > 0:
-            tweet.contains_hashtag = True
-            for hashtag in tweet_data['entities']['hashtags']:
-                hashtag_obj, created = Hashtag.objects.get_or_create(text=hashtag.text)
-                tweet.hashtags.add(hashtag_obj)
 
-        if len(tweet_data['entities']['urls']) > 0:
-            tweet.contains_url = True
-            for url in tweet_data['entities']['urls']:
-                pattern = 'http[s]*://(.*?)/'
-                m = re.search(pattern, url.expanded_url)
-                domain = m.group(1)
-                url_obj, created = Url.objects.get_or_create(full_url=url.expanded_url, domain=domain, short_url=url.url)
-                tweet.urls.add(url_obj)
-
-        if tweet_data['entities'].get('media') is not None and len(tweet_data['entities']['media']) > 0:
-            tweet.contains_media = True
-            for me in tweet_data['entities']['media']:
-                media_obj, created = Media.objects.get_or_create(type=me.type, media_url=me.media_url)
-                tweet.media.add(media_obj)
-
-        if len(tweet_data['entities']['user_mentions']) > 0:
-            tweet.contains_mention = True
-            for mention in tweet_data['entities']['user_mentions']:
-                mention_obj, created = Person.objects.get_or_create(original_id=mention.id, username=mention.screen_name, full_name=mention.name)
-                tweet.mentions.add(media_obj)
 
         tweet.sender, created = Person.objects.get_or_create(dataset=dataset_obj,
                         original_id=tweet_data['user']['id'],
@@ -93,5 +68,33 @@ class Command(BaseCommand):
         else:
             tweet.type, created = MessageType.objects.get_or_create(name="tweet")
 
+        tweet.save()
+
+        if len(tweet_data['entities']['hashtags']) > 0:
+            tweet.contains_hashtag = True
+            for hashtag in tweet_data['entities']['hashtags']:
+                hashtag_obj, created = Hashtag.objects.get_or_create(text=hashtag['text'])
+                tweet.hashtags.add(hashtag_obj)
+
+        if len(tweet_data['entities']['urls']) > 0:
+            tweet.contains_url = True
+            for url in tweet_data['entities']['urls']:
+                pattern = 'http[s]*://(.*?)/'
+                m = re.search(pattern, url['expanded_url'])
+                domain = m.group(1)
+                url_obj, created = Url.objects.get_or_create(full_url=url['expanded_url'], domain=domain, short_url=url['url'])
+                tweet.urls.add(url_obj)
+
+        if tweet_data['entities'].get('media') is not None and len(tweet_data['entities']['media']) > 0:
+            tweet.contains_media = True
+            for me in tweet_data['entities']['media']:
+                media_obj, created = Media.objects.get_or_create(type=me['type'], media_url=me['media_url'])
+                tweet.media.add(media_obj)
+
+        if len(tweet_data['entities']['user_mentions']) > 0:
+            tweet.contains_mention = True
+            for mention in tweet_data['entities']['user_mentions']:
+                mention_obj, created = Person.objects.get_or_create(original_id=mention['id'], username=mention['screen_name'], full_name=mention['name'])
+                tweet.mentions.add(mention_obj)
         tweet.save()
         #print json.dumps(tweet_data)
