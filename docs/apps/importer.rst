@@ -26,3 +26,9 @@ Twitter Integration
 .. automodule:: msgvis.apps.importer.twitter
     :members:
 
+Models
+------
+
+.. automodule:: msgvis.apps.importer.models
+    :members:
+
