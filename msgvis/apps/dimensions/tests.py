@@ -46,8 +46,9 @@ class DimensionDistributionTest(TransactionTestCase):
 
         dset = corpus_models.Dataset.objects.get(pk=1)
         result = sentiment.get_distribution(dataset=dset)
-        self.assertIsInstance(result, dict)
+        self.assertNotEquals(result, None)
         self.assertTrue(len(result) > 0)
+        self.assertIsInstance(result[0], dict)
 
 
 def generate_message_distribution(field_name, distribution):
