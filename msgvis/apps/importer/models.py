@@ -21,8 +21,8 @@ def create_an_instance_from_json(json_str, dataset_obj):
 
     tweet.language, created = Language.objects.get_or_create(code=tweet_data['lang'])
     tweet.original_id = tweet_data['id']
-    if tweet_data.get('time_zone') is not None:
-        tweet.timezone, created = Timezone.objects.get_or_create(name=tweet_data['time_zone'])
+    if tweet_data['user'].get('time_zone'):
+        tweet.timezone, created = Timezone.objects.get_or_create(name=tweet_data['user']['time_zone'])
 
     tweet.sender, created = Person.objects.get_or_create(dataset=dataset_obj,
                                                          original_id=tweet_data['user']['id'],
