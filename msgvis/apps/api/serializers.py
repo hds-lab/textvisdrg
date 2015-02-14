@@ -14,12 +14,11 @@ This module defines serializers for the main API data objects:
 from rest_framework import serializers
 
 from msgvis.apps.corpus.models import Message, Person
-from msgvis.apps.questions.models import Question, Article
-from msgvis.apps.dimensions.models import Dimension
+from msgvis.apps.questions.models import Question, Article, Dimension
+from msgvis.apps.dimensions import registry as dimensions
 
 
 class PersonSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Person
         fields = ('id', 'dataset', 'original_id', 'username', 'full_name',)
@@ -86,7 +85,7 @@ class QuestionSerializer(serializers.ModelSerializer):
             "year": "2001",
             "venue": "International Journal of Names"
           },
-          "dimensions": [4, 5]
+          "dimensions": ['time', 'author_name']
         }
 
     The ``source`` object describes a research article reference where the
@@ -96,17 +95,17 @@ class QuestionSerializer(serializers.ModelSerializer):
     is associated with.
     """
 
-    source = ArticleSerializer()
+    source = ArticleSerializer(read_only=True)
+    dimensions = serializers.SlugRelatedField(many=True, read_only=True, slug_field='key')
 
     class Meta:
         model = Question
         fields = ('id', 'source', 'dimensions', 'text',)
+        read_only_fields = fields
 
-
-class DimensionSerializer(serializers.ModelSerializer):
+class DimensionSerializer(serializers.Serializer):
     """
-    JSON representation of :class:`.Dimension`
-    objects for the API.
+    JSON representation of Dimensions for the API.
 
     Dimension objects describe the variables that users can select to
     visualize the dataset. An example is below:
@@ -114,17 +113,27 @@ class DimensionSerializer(serializers.ModelSerializer):
     ::
 
         {
-          "id": 5,
-          "name": "time",
-          "description": "the time the message was sent",
-          "scope": "open",
-          "type": "quantitative",
+          "key": "time",
+          "name": "Time",
+          "description": "The time the message was sent",
         }
     """
 
-    class Meta:
-        model = Dimension
-        fields = ('id', 'name', 'description', 'scope', 'type')
+    key = serializers.CharField(read_only=True)
+    name = serializers.CharField(read_only=True)
+    description = serializers.CharField(read_only=True)
+
+    def to_internal_value(self, data):
+        return dimensions.get_dimension(data['key'])
+
+
+# A simple string field that looks up dimensions on deserialization
+class DimensionKeySerializer(serializers.CharField):
+    def to_internal_value(self, data):
+        return dimensions.get_dimension(data)
+
+    def to_representation(self, instance):
+        return instance.key
 
 
 class FilterSerializer(serializers.Serializer):
@@ -135,12 +144,12 @@ class FilterSerializer(serializers.Serializer):
     ::
 
         [{
-          "dimension": 5,
+          "dimension": 'time',
           "min_time": "2010-02-25T00:23:53Z",
           "max_time": "2010-02-30T00:23:53Z"
         },
         {
-          "dimension": 2,
+          "dimension": 'words',
           "include": [
             "cat",
             "dog",
@@ -148,7 +157,7 @@ class FilterSerializer(serializers.Serializer):
           ]
         },
         {
-          "dimension": 6,
+          "dimension": 'reply_count',
           "max": 100
         }]
 
@@ -165,7 +174,7 @@ class FilterSerializer(serializers.Serializer):
        list. All other items are assumed to be excluded.
     """
 
-    dimension = serializers.PrimaryKeyRelatedField(queryset=Dimension.objects.all())
+    dimension = DimensionKeySerializer()
 
     min = serializers.FloatField(required=False)
     max = serializers.FloatField(required=False)

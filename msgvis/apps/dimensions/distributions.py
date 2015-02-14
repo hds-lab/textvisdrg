@@ -17,24 +17,22 @@ quantitative_dimension_bins = getattr(settings, 'QUANTITATIVE_DIMENSION_BINS', 5
 class CategoricalDistribution(object):
     """A distribution suitable for categorical variables."""
 
-    def __init__(self, field_name):
-        """field_name should be a field on the Message model."""
-        self.field_name = field_name
-
-    def _get_grouping_expression(self, messages):
+    def _get_grouping_expression(self, messages, field_name):
         """
         Returns a sql expression that will be used to group the messages.
         """
-        return self.field_name
+        return field_name
 
-    def group_by(self, messages):
+    def group_by(self, messages, field_name):
         """
         Count the number of messages for each value of the dimension.
         If the dimension has no values available, an empty array is returned.
+
+        `field_name` should be the field on the Message model we are grouping by.
         """
 
         # Calculate a grouping variable
-        grouping_expression = self._get_grouping_expression(messages)
+        grouping_expression = self._get_grouping_expression(messages, field_name)
 
         # Add it to our sql query (if it's just field_name, this is like an alias)
         messages = messages.extra(select={
@@ -46,6 +44,15 @@ class CategoricalDistribution(object):
 
         # Count the messages in each group
         return messages.annotate(count=models.Count('id'))
+
+
+class ForeignKeyDistribution(CategoricalDistribution):
+    """Calculate distributions over a foreign key field"""
+    def _get_grouping_expression(self, messages, field_name):
+        """
+        Returns a sql expression that will be used to group the messages.
+        """
+        return '%s_id' % field_name
 
 
 class QuantitativeDistribution(CategoricalDistribution):
@@ -60,21 +67,21 @@ class QuantitativeDistribution(CategoricalDistribution):
         """
         return max(1, math.floor(float(max_val - min_val) / minimum_bins))
 
-    def _get_range(self, messages):
+    def _get_range(self, messages, field_name):
         """
         Find a min and max for this field, as a tuple.
         If there isn't one, (None, None) is returned.
         """
 
-        dim_range = messages.aggregate(min=models.Min(self.field_name),
-                                       max=models.Max(self.field_name))
+        dim_range = messages.aggregate(min=models.Min(field_name),
+                                       max=models.Max(field_name))
 
         if dim_range is None:
             return None, None
 
         return dim_range['min'], dim_range['max']
 
-    def _get_grouping_expression(self, messages):
+    def _get_grouping_expression(self, messages, field_name):
         """
         Returns an expression that bins the field by dividing
         by bin_size, flooring, and multiplying again.
@@ -83,7 +90,7 @@ class QuantitativeDistribution(CategoricalDistribution):
         a heuristic desired number of bins.
         """
 
-        min_val, max_val = self._get_range(messages)
+        min_val, max_val = self._get_range(messages, field_name)
 
         if min_val is None:
             return []
@@ -92,7 +99,7 @@ class QuantitativeDistribution(CategoricalDistribution):
         best_bin_size = self._get_bin_size(min_val, max_val, quantitative_dimension_bins)
 
         return self.grouping_expression_template.format(
-            field_name=self.field_name,
+            field_name=field_name,
             bin_size=best_bin_size
         )
 

@@ -1,34 +1,22 @@
 from django.test import TestCase, TransactionTestCase
 
 from msgvis.apps.corpus import models as corpus_models
-from msgvis.apps.dimensions.models import Dimension
-from msgvis.apps.dimensions import distributions
+from msgvis.apps.dimensions import models, distributions, registry
 
 import random
 
 
-class DimensionModelTest(TestCase):
-    def setUp(self):
-        Dimension.objects.create(name='Time', slug='time',
-                                 description='Time Dimension',
-                                 scope=Dimension.SCOPE_OPEN_ENDED,
-                                 type=Dimension.TYPE_QUANTITATIVE,
-                                 field_name='time')
 
-        Dimension.objects.create(name='Sentiment', slug='sentiment',
-                                 description='Sentiment of message',
-                                 scope=Dimension.SCOPE_CLOSED_ENDED,
-                                 type=Dimension.TYPE_CATEGORICAL,
-                                 field_name='sentiment')
+class DimensionRegistryTest(TestCase):
+    def test_registry_contains_dimension(self):
+        """The registry should have some dimensions"""
+        time = registry.get_dimension('time')
+        self.assertIsNotNone(time)
+        self.assertIsInstance(time, models.TimeDimension)
 
-
-    def test_can_get_by_slug(self):
-        """A stupid model retrieval test"""
-        dtime = Dimension.objects.get(slug='time')
-        dsentiment = Dimension.objects.get(slug='sentiment')
-
-        self.assertNotEquals(dtime, None)
-        self.assertNotEquals(dsentiment, None)
+    def test_registry_size(self):
+        """The number of dimensions registered should be 20"""
+        self.assertEquals(len(registry.get_dimension_ids()), 20)
 
 
 class DimensionDistributionTest(TransactionTestCase):
@@ -38,11 +26,7 @@ class DimensionDistributionTest(TransactionTestCase):
     def test_can_get_distribution(self):
         """Just check that the Dimension.get_distribution method runs"""
 
-        sentiment = Dimension.objects.create(name='Sentiment', slug='sentiment',
-                                             description='Sentiment dimension',
-                                             scope=Dimension.SCOPE_CLOSED_ENDED,
-                                             type=Dimension.TYPE_CATEGORICAL,
-                                             field_name='sentiment')
+        sentiment = registry.get_dimension('sentiment')
 
         dset = corpus_models.Dataset.objects.get(pk=1)
         result = sentiment.get_distribution(dataset=dset)
@@ -92,8 +76,8 @@ class CategoricalDistributionTest(TransactionTestCase):
         """Confirms the messages in the dataset match the distribution for the given field."""
 
         # Calculate the categorical distribution over the field name
-        calc = distributions.CategoricalDistribution(field_name=field_name)
-        result = calc.group_by(dataset.message_set.all())
+        calc = distributions.CategoricalDistribution()
+        result = calc.group_by(dataset.message_set.all(), field_name=field_name)
 
         # Should match the length of the distribution
         self.assertEquals(len(result), len(distribution))
