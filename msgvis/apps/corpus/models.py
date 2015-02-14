@@ -1,5 +1,6 @@
 from django.db import models
 
+import operator
 
 class Dataset(models.Model):
     """A top-level dataset object containing messages."""
@@ -77,7 +78,7 @@ class Timezone(models.Model):
     The timezone of a message or user
     """
 
-    olson_code = models.CharField(max_length=40)
+    olson_code = models.CharField(max_length=40, null=True, blank=True, default=None)
     """The timezone code from pytz."""
 
     name = models.CharField(max_length=150)
@@ -207,3 +208,4 @@ class Message(models.Model):
 
     text = models.TextField()
     """The actual text of the message."""
+
