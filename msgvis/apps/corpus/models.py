@@ -1,7 +1,5 @@
 from django.db import models
-from django.db.models import Q
 
-import operator
 
 class Dataset(models.Model):
     """A top-level dataset object containing messages."""
@@ -216,40 +214,17 @@ class Message(models.Model):
     text = models.TextField()
     """The actual text of the message."""
 
-def get_dimension_key(dimension):
-    if dimension == "hashtag":
-        dimension += "__text"
-    elif dimension == "language":
-        dimension += "__code"
-    elif dimension == "url":
-        dimension += "__domain"
-    elif dimension == "topic":
-        dimension += "__name"
-    elif dimension == "sentiment":
-        dimension += "__name"
-    elif dimension == "timezone":
-        dimension += "__name"
-    return dimension
-
 def get_example_messages(settings):
-    filter_Qs = [Q()]
-    filter_predicates = []
+    """Get example messages with filter and focus settings"""
+
+    from msgvis.apps.dimensions.registry import get_dimension
+    dataset = Message.objects.all()
     if settings.get("filters"):
         for filter in settings["filters"]:
-            if filter.get('min'):
-                filter_predicates.append((filter["dimension"] + '__gte', filter.get('min')))
-            if filter.get('max'):
-                filter_predicates.append((filter["dimension"] + '__lte', filter.get('max')))
-            if filter.get('levels'):
-                filter_ors = []
-                for level in filter.get('levels'):
-                    filter_ors.append((get_dimension_key(filter["dimension"]), level))
-                filter_Qs.append(reduce(operator.or_, [Q(x) for x in filter_ors]))
+            dataset = get_dimension(filter["dimension"]).filter(dataset, filter)
 
     if settings.get("focus"):
-        for key in settings["focus"]:
-            filter_predicates.append((get_dimension_key(key), settings["focus"][key]))
+        for focus in settings["focus"]:
+            dataset = get_dimension(focus["dimension"]).filter(dataset, focus)
 
-    filter_Qs.extend([Q(x) for x in filter_predicates])
-    final_filters = reduce(operator.and_, filter_Qs)
-    return Message.objects.filter(final_filters)[:10]
+    return dataset[:10]
