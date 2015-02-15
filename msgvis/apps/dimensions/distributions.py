@@ -8,53 +8,54 @@ import math
 from django.db import models
 from django.conf import settings
 
+from msgvis.apps.corpus.models import Message
+
 # Note: Do not import models.Dimension in this file
 
 QUANTITATIVE_DIMENSION_BINS = getattr(settings, 'QUANTITATIVE_DIMENSION_BINS', 50)
 
 
-class CategoricalDistribution(object):
-    """A distribution suitable for categorical variables."""
-
-    def _get_grouping_expression(self, messages, field_name):
-        """
-        Returns a sql expression that will be used to group the messages.
-        """
-        return field_name
-
+class BaseDistribution(object):
     def group_by(self, dataset, field_name):
         """
         Count the number of messages for each value of the dimension.
         If the dimension has no values available, an empty array is returned.
 
         ``field_name`` should be the field on the Message model we are grouping by.
+
+        The result will be a queryset or list, containing either
+        Model objects (if the field is a ForeignKey or ManyToMany field)
+        augmented by a 'count' attribute,
+        or dictionaries with value and count keys if the field type is simple.
         """
+        raise NotImplementedError("Silly, you can't use a BaseDistribution")
 
-        messages = dataset.message_set.all()
+    def _get_base_set(self, dataset):
+        return dataset.message_set.all()
 
-        # Calculate a grouping variable
-        grouping_expression = self._get_grouping_expression(messages, field_name)
 
-        # Add it to our sql query (if it's just field_name, this is like an alias)
-        messages = messages.extra(select={
-            'value': grouping_expression
-        })
+class CategoricalDistribution(BaseDistribution):
+    """A distribution suitable for simple categorical variables."""
 
-        # Group by it
-        messages = messages.values('value')
+    def group_by(self, dataset, field_name):
+        items = self._get_base_set(dataset)
+
+        # Group by the field
+        items = items.values(field_name)
 
         # Count the messages in each group
-        return messages.annotate(count=models.Count('id'))
+        grouped = items.annotate(count=models.Count('id'))
+
+        # Now we have to normalize the output though
+        # so that it uses a 'value' key.
+        return [{
+                    'value': g[field_name],
+                    'count': g['count'],
+                } for g in grouped]
 
 
-class ForeignKeyDistribution(CategoricalDistribution):
+class ForeignKeyDistribution(BaseDistribution):
     """Calculate distributions over a foreign key field"""
-
-    def _get_grouping_expression(self, messages, field_name):
-        """
-        Returns a sql expression that will be used to group the messages.
-        """
-        return '%s_id' % field_name
 
     def group_by(self, dataset, field_name):
         """
@@ -65,8 +66,6 @@ class ForeignKeyDistribution(CategoricalDistribution):
         """
 
         # Get the related field
-        from msgvis.apps.corpus.models import Message
-
         field_descriptor = getattr(Message, field_name)
         related_model = field_descriptor.field.rel.to
 
@@ -80,63 +79,121 @@ class ForeignKeyDistribution(CategoricalDistribution):
         return query.annotate(count=models.Count('%s__id' % message_name))
 
 
-class QuantitativeDistribution(CategoricalDistribution):
+class BinnedResultSet(list):
+    """A class for storing binned results with metadata."""
+
+    def __init__(self, items, bin_size, min_val, max_val):
+        super(BinnedResultSet, self).__init__(items)
+        self.bin_size = bin_size
+        self.min_val = min_val
+        self.max_val = max_val
+
+
+class QuantitativeDistribution(BaseDistribution):
     """A generic integer quantitative dimension distribution"""
 
     desired_bins = 20
     minimum_bin_size = 1
-    grouping_expression_template = '{bin_size} * FLOOR(`{field_name}` / {bin_size})'
+    grouping_expressions = {
+        'mysql': '{bin_size} * FLOOR(`{field_name}` / {bin_size})',
+        'sqlite': '{bin_size} * CAST(`{field_name}` / {bin_size} AS INTEGER)',
+    }
 
     def __init__(self, desired_bins=QUANTITATIVE_DIMENSION_BINS):
         super(QuantitativeDistribution, self).__init__()
         self.desired_bins = desired_bins
 
-    def _get_bin_size(self, min_val, max_val):
-        """
-        Return a nice bin size given the min and max and the minimum bin count desired.
-        The bin size returned will be at least ``minimum_bin_size``.
-        """
-        return max(self.minimum_bin_size,
-                   math.floor(float(max_val - min_val) / self.desired_bins))
-
-    def _get_range(self, messages, field_name):
+    def _get_range(self, items, field_name):
         """
         Find a min and max for this field, as a tuple.
         If there isn't one, (None, None) is returned.
         """
 
-        dim_range = messages.aggregate(min=models.Min(field_name),
-                                       max=models.Max(field_name))
+        dim_range = items.aggregate(min=models.Min(field_name),
+                                    max=models.Max(field_name))
 
         if dim_range is None:
             return None, None
 
         return dim_range['min'], dim_range['max']
 
-    def _get_grouping_expression(self, messages, field_name):
+    def _get_bin_size(self, min_val, max_val):
         """
-        Returns an expression that bins the field by dividing
+        Return a nice bin size with the min and max as a tuple.
+        The bin size returned will be at least ``minimum_bin_size``.
+        """
+
+        bin_size = max(self.minimum_bin_size,
+                       math.floor(float(max_val - min_val) / self.desired_bins))
+
+        return bin_size
+
+    def _render_grouping_expression(self, field_name, bin_size):
+        from django.db import connection
+
+        return self.grouping_expressions[connection.vendor].format(
+            field_name=field_name,
+            bin_size=bin_size
+        )
+
+    def _get_grouping_expression(self, bin_size, field_name):
+        """
+        Get an expression that bins the field by dividing
         by bin_size, flooring, and multiplying again.
 
         The bin size is calculated from the range of the dimension and
         a heuristic desired number of bins.
         """
 
-        min_val, max_val = self._get_range(messages, field_name)
+        # Determine a bin size for this field
+        if bin_size > self.minimum_bin_size:
+            grouping = self._render_grouping_expression(field_name, bin_size)
+        else:
+            # No need for binning
+            grouping = field_name
 
+        return grouping
+
+    def _annotate(self, items):
+        return items.annotate(count=models.Count('id'))
+
+    def group_by(self, dataset, field_name):
+        items = self._get_base_set(dataset)
+
+        # Get the min and max
+        min_val, max_val = self._get_range(items, field_name)
         if min_val is None:
             return []
 
-        # Determine a bin size for this field
-        best_bin_size = self._get_bin_size(min_val, max_val)
+        # Get a good bin size
+        bin_size = self._get_bin_size(min_val, max_val)
 
-        if best_bin_size > self.minimum_bin_size:
-            return self.grouping_expression_template.format(
-                field_name=field_name,
-                bin_size=best_bin_size
-            )
-        else:
-            return super(QuantitativeDistribution, self)._get_grouping_expression(messages, field_name)
+        # Calculate a grouping variable
+        grouping_expression = self._get_grouping_expression(bin_size, field_name)
+
+        # Add it to our sql query (if it's just field_name, this is like an alias)
+        items = items.extra(select={
+            'value': grouping_expression
+        })
+
+        # Group by it
+        items = items.values('value')
+
+        # Count the messages in each group
+        result = self._annotate(items)
+
+        return BinnedResultSet(result, bin_size, min_val, max_val)
+
+
+class PersonQuantitativeDistribution(QuantitativeDistribution):
+    """A distribution of a quantitative variable of a related Person"""
+    person_field = 'sender'
+
+    def _get_base_set(self, dataset):
+        return dataset.person_set.all()
+
+    def _annotate(self, items):
+        return items.annotate(count=models.Count('message'))
 
 
 class TimeDistribution(QuantitativeDistribution):

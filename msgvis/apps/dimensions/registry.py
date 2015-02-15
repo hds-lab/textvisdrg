@@ -156,7 +156,7 @@ register(models.CategoricalDimension(
     key='author_name',
     name='Author name',
     description='The name of the message author',
-    field_name='sender__name',
+    field_name='sender__username',
 ))
 
 register(models.QuantitativeDimension(

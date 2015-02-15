@@ -2,6 +2,7 @@ from django.db import models
 from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.dimensions import distributions
 
+
 class BaseDimension(object):
     """
     The abstract dimension class.
@@ -50,6 +51,7 @@ class CategoricalDimension(BaseDimension):
 class ForeignKeyDimension(CategoricalDimension):
     """A categorical dimension where the values are in a related table."""
     distribution = distributions.ForeignKeyDistribution()
+
 
 class TextDimension(CategoricalDimension):
     """A dimension based on the words in a text field."""
