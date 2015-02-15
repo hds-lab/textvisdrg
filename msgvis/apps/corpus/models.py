@@ -183,6 +183,12 @@ class Message(models.Model):
     topics = models.ManyToManyField(Topic, null=True, blank=True, default=None)
     """The set of :class:`Topic` associated with the message."""
 
+    replied_to_count = models.PositiveIntegerField(blank=True, default=0)
+    """The number of replies this message received."""
+
+    shared_count = models.PositiveIntegerField(blank=True, default=0)
+    """The number of times this message was shared or retweeted."""
+
     contains_hashtag = models.BooleanField(blank=True, default=False)
     """True if the message has a :class:`Hashtag`."""
 
