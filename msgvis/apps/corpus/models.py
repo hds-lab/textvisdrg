@@ -77,7 +77,7 @@ class Timezone(models.Model):
     The timezone of a message or user
     """
 
-    olson_code = models.CharField(max_length=40)
+    olson_code = models.CharField(max_length=40, null=True, blank=True, default=None)
     """The timezone code from pytz."""
 
     name = models.CharField(max_length=150)
@@ -213,3 +213,18 @@ class Message(models.Model):
 
     text = models.TextField()
     """The actual text of the message."""
+
+def get_example_messages(settings):
+    """Get example messages with filter and focus settings"""
+
+    from msgvis.apps.dimensions.registry import get_dimension
+    dataset = Message.objects.all()
+    if settings.get("filters"):
+        for filter in settings["filters"]:
+            dataset = get_dimension(filter["dimension"]).filter(dataset, filter)
+
+    if settings.get("focus"):
+        for focus in settings["focus"]:
+            dataset = get_dimension(focus["dimension"]).filter(dataset, focus)
+
+    return dataset[:10]
