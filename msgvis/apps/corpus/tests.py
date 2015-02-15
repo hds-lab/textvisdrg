@@ -42,7 +42,7 @@ class GetExampleMessageTest(TestCase):
         self.assertEquals(msgs.count(), 2)
 
         settings = {
-            "dimensions": ["time", "hashtag"],
+            "dimensions": ["time", "hashtags"],
             "filters": [
                 {
                   "dimension": "time",
@@ -61,7 +61,7 @@ class GetExampleMessageTest(TestCase):
         self.assertEquals(msgs.count(), 2)
 
         settings = {
-            "dimensions": ["time", "hashtag"],
+            "dimensions": ["time", "hashtags"],
             "filters": [
                 {
                   "dimension": "time",
@@ -79,7 +79,7 @@ class GetExampleMessageTest(TestCase):
         msgs = get_example_messages(settings=settings)
         self.assertEquals(msgs.count(), 0)
         settings = {
-            "dimensions": ["time", "hashtag"],
+            "dimensions": ["time", "hashtags"],
             "filters": [
                 {
                   "dimension": "time",
