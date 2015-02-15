@@ -33,7 +33,7 @@ class BaseDimension(object):
 
         field_name, db_field = field_attr.field.get_attname_column()
 
-        return self.distribution.group_by(dataset.message_set.all(), self.field_name)
+        return self.distribution.group_by(dataset, self.field_name)
 
 
 class QuantitativeDimension(BaseDimension):

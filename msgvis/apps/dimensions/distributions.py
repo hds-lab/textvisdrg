@@ -10,8 +10,7 @@ from django.conf import settings
 
 # Note: Do not import models.Dimension in this file
 
-
-quantitative_dimension_bins = getattr(settings, 'QUANTITATIVE_DIMENSION_BINS', 50)
+QUANTITATIVE_DIMENSION_BINS = getattr(settings, 'QUANTITATIVE_DIMENSION_BINS', 50)
 
 
 class CategoricalDistribution(object):
@@ -23,13 +22,15 @@ class CategoricalDistribution(object):
         """
         return field_name
 
-    def group_by(self, messages, field_name):
+    def group_by(self, dataset, field_name):
         """
         Count the number of messages for each value of the dimension.
         If the dimension has no values available, an empty array is returned.
 
-        `field_name` should be the field on the Message model we are grouping by.
+        ``field_name`` should be the field on the Message model we are grouping by.
         """
+
+        messages = dataset.message_set.all()
 
         # Calculate a grouping variable
         grouping_expression = self._get_grouping_expression(messages, field_name)
@@ -48,24 +49,55 @@ class CategoricalDistribution(object):
 
 class ForeignKeyDistribution(CategoricalDistribution):
     """Calculate distributions over a foreign key field"""
+
     def _get_grouping_expression(self, messages, field_name):
         """
         Returns a sql expression that will be used to group the messages.
         """
         return '%s_id' % field_name
 
+    def group_by(self, dataset, field_name):
+        """
+        Count the number of messages for each value of the dimension.
+        If the dimension has no values available, an empty array is returned.
+
+        ``field_name`` should be the field on the Message model we are grouping by.
+        """
+
+        # Get the related field
+        from msgvis.apps.corpus.models import Message
+
+        field_descriptor = getattr(Message, field_name)
+        related_model = field_descriptor.field.rel.to
+
+        message_name = field_descriptor.field.related_query_name()
+
+        query = related_model.objects.filter(**{
+            '%s__dataset' % message_name: dataset
+        })
+
+        # Count the messages in each group
+        return query.annotate(count=models.Count('%s__id' % message_name))
+
 
 class QuantitativeDistribution(CategoricalDistribution):
     """A generic integer quantitative dimension distribution"""
 
+    desired_bins = 20
+    minimum_bin_size = 1
     grouping_expression_template = '{bin_size} * FLOOR(`{field_name}` / {bin_size})'
 
-    def _get_bin_size(self, min_val, max_val, minimum_bins):
+    def __init__(self, desired_bins=QUANTITATIVE_DIMENSION_BINS):
+        super(QuantitativeDistribution, self).__init__()
+        self.desired_bins = desired_bins
+
+    def _get_bin_size(self, min_val, max_val):
         """
         Return a nice bin size given the min and max and the minimum bin count desired.
-        The bin size returned will be at least 1.
+        The bin size returned will be at least ``minimum_bin_size``.
         """
-        return max(1, math.floor(float(max_val - min_val) / minimum_bins))
+        return max(self.minimum_bin_size,
+                   math.floor(float(max_val - min_val) / self.desired_bins))
 
     def _get_range(self, messages, field_name):
         """
@@ -96,12 +128,15 @@ class QuantitativeDistribution(CategoricalDistribution):
             return []
 
         # Determine a bin size for this field
-        best_bin_size = self._get_bin_size(min_val, max_val, quantitative_dimension_bins)
+        best_bin_size = self._get_bin_size(min_val, max_val)
 
-        return self.grouping_expression_template.format(
-            field_name=field_name,
-            bin_size=best_bin_size
-        )
+        if best_bin_size > self.minimum_bin_size:
+            return self.grouping_expression_template.format(
+                field_name=field_name,
+                bin_size=best_bin_size
+            )
+        else:
+            return super(QuantitativeDistribution, self)._get_grouping_expression(messages, field_name)
 
 
 class TimeDistribution(QuantitativeDistribution):
@@ -136,7 +171,7 @@ class TimeDistribution(QuantitativeDistribution):
         31536e6  # 1-year
     ]
 
-    def _get_bin_size(self, min_time, max_time, minimum_bins):
+    def _get_bin_size(self, min_time, max_time):
         """
         Determines a bin size for the time interval
         that supplies at least as many bins as minimum_bins,
@@ -144,7 +179,7 @@ class TimeDistribution(QuantitativeDistribution):
         """
 
         extent = max_time - min_time
-        bin_size = extent / minimum_bins
+        bin_size = extent / self.desired_bins
 
         bin_size_seconds = bin_size.total_seconds()
 
