@@ -41,6 +41,7 @@ class BaseDimension(object):
         return dataset
 
     def filter(self, dataset, filter):
+        """Filtering dataset with one filter"""
         return self.exact_filter(dataset, filter)
 
 
