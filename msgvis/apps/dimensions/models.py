@@ -34,53 +34,53 @@ class BaseDimension(object):
 
         return self.distribution.group_by(dataset, self.field_name)
 
-    def exact_filter(self, dataset, filter):
+    def exact_filter(self, queryset, filter):
         """Filtering for exact value"""
         if filter.get('value'):
-            dataset = dataset.filter(Q((self.field_name, filter['value'])))
-        return dataset
+            queryset = queryset.filter(Q((self.field_name, filter['value'])))
+        return queryset
 
-    def filter(self, dataset, filter):
+    def filter(self, queryset, filter):
         """Filtering dataset with one filter"""
-        return self.exact_filter(dataset, filter)
+        return self.exact_filter(queryset, filter)
 
 
 class QuantitativeDimension(BaseDimension):
     """A generic quantitative dimension"""
     distribution = distributions.QuantitativeDistribution()
 
-    def filter(self, dataset, filter):
-        dataset = self.exact_filter(dataset, filter)
+    def filter(self, queryset, filter):
+        queryset = self.exact_filter(queryset, filter)
         if filter.get('min'):
-            dataset = dataset.filter(Q((self.field_name + "__gte", filter['min'])))
+            queryset = queryset.filter(Q((self.field_name + "__gte", filter['min'])))
         if filter.get('max'):
-            dataset = dataset.filter(Q((self.field_name + "__lte", filter['max'])))
-        return dataset
+            queryset = queryset.filter(Q((self.field_name + "__lte", filter['max'])))
+        return queryset
 
 class TimeDimension(QuantitativeDimension):
     """A dimension for time variables"""
     distribution = distributions.TimeDistribution()
 
-    def filter(self, dataset, filter):
-        dataset = self.exact_filter(dataset, filter)
+    def filter(self, queryset, filter):
+        queryset = self.exact_filter(queryset, filter)
         if filter.get('min_time'):
-            dataset = dataset.filter(Q((self.field_name + "__gte", filter['min_time'])))
+            queryset = queryset.filter(Q((self.field_name + "__gte", filter['min_time'])))
         if filter.get('max_time'):
-            dataset = dataset.filter(Q((self.field_name + "__lte", filter['max_time'])))
-        return dataset
+            queryset = queryset.filter(Q((self.field_name + "__lte", filter['max_time'])))
+        return queryset
 
 class CategoricalDimension(BaseDimension):
     """A generic categorical dimension"""
     distribution = distributions.CategoricalDistribution()
 
-    def filter(self, dataset, filter):
-        dataset = self.exact_filter(dataset, filter)
+    def filter(self, queryset, filter):
+        queryset = self.exact_filter(queryset, filter)
         if filter.get('levels'):
             filter_ors = []
             for level in filter.get('levels'):
                 filter_ors.append((self.field_name, level))
-            dataset = dataset.filter(reduce(operator.or_, [Q(x) for x in filter_ors]))
-        return dataset
+            queryset = queryset.filter(reduce(operator.or_, [Q(x) for x in filter_ors]))
+        return queryset
 
 
 class ForeignKeyDimension(CategoricalDimension):
