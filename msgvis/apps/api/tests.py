@@ -2,8 +2,8 @@ from django.test import TestCase
 from django.utils.timezone import now, timedelta
 
 from msgvis.apps.corpus import models as corpus_models
+from msgvis.apps.dimensions import registry as dimensions
 from msgvis.apps.questions import models as questions_models
-from msgvis.apps.dimensions import models as dimensions_models
 import serializers
 
 
@@ -149,70 +149,91 @@ class QuestionSerializerTest(TestCase):
         "year": "2001",
         "venue": "International Journal of Names"
       },
-      "dimensions": [4, 5]
+      "dimensions": ['time', 'author_name']
     }
     """
 
-    def test_question_serialization(self):
+    def setUp(self):
         article = questions_models.Article.objects.create(year=2001,
                                                           authors="Author, Author",
                                                           link="http://foo.com",
                                                           title="An article title",
                                                           venue="VENUE 2001", )
 
-        d1 = dimensions_models.Dimension.objects.create(name="something", description="longer something")
-        d2 = dimensions_models.Dimension.objects.create(name="else", description="something else")
+        d1 = questions_models.Dimension.objects.create(key="something")
+        d2 = questions_models.Dimension.objects.create(key="else")
 
-        question = questions_models.Question.objects.create(source=article,
-                                                            text="What is your favorite color?", )
-        question.dimensions = [d1, d2]
+        self.question = questions_models.Question.objects.create(source=article,
+                                                                 text="What is your favorite color?", )
+        self.question.dimensions = [d1, d2]
 
-        article_result = serializers.ArticleSerializer(article).data
+        article_result = serializers.ArticleSerializer(self.question.source).data
 
-        desired_result = {
-            "id": question.pk,
-            "text": question.text,
+        self.serialized_representation = {
+            "id": self.question.pk,
+            "text": self.question.text,
             "source": article_result,
-            "dimensions": [d1.pk, d2.pk]
+            "dimensions": [d.key for d in self.question.dimensions.all()]
         }
 
-        serializer = serializers.QuestionSerializer(question)
-        result = serializer.data
+        # There should be NO deserialized result since questions are read-only
+        self.deserialized_representation = {}
 
-        self.assertDictEqual(result, desired_result)
+    def test_question_serialization(self):
+        """Questions serialize correctly"""
+        result = serializers.QuestionSerializer(self.question).data
+        self.assertDictEqual(result, self.serialized_representation)
+
+    def test_question_deserialization(self):
+        """Questions deserialize correctly"""
+        serializer = serializers.QuestionSerializer(data=self.serialized_representation)
+        self.assertTrue(serializer.is_valid())
+        self.assertDictEqual(serializer.validated_data, self.deserialized_representation)
 
 
 class DimensionSerializerTest(TestCase):
     """
     {
-      "id": 5,
-      "name": "time",
-      "description": "the time the message was sent",
-      "scope": "open",
-      "type": "quantitative",
+      "key": "time",
+      "name": "Time",
+      "description": "the time the message was sent"
     }
     """
 
-    def test_dimension_serialization(self):
-        dimension = dimensions_models.Dimension.objects.create(name="something", description="longer something")
+    def setUp(self):
+        self.dimension = dimensions.get_dimension('time')
 
-        desired_result = {
-            'id': dimension.pk,
-            'name': dimension.name,
-            'description': dimension.description,
-            'scope': dimension.scope,
-            'type': dimension.type,
+        self.serialized_representation = {
+            'key': self.dimension.key,
+            'name': self.dimension.name,
+            'description': self.dimension.description,
         }
 
-        serializer = serializers.DimensionSerializer(dimension)
-        result = serializer.data
+        # Should lookup exactly the same dimension
+        self.deserialized_representation = self.dimension
 
-        self.assertDictEqual(result, desired_result)
+
+    def test_dimension_serialization(self):
+        serializer = serializers.DimensionSerializer(self.dimension)
+        result = serializer.data
+        self.assertDictEqual(result, self.serialized_representation)
+
+    def test_dimension_deserialization(self):
+        serializer = serializers.DimensionSerializer(data=self.serialized_representation)
+        self.assertTrue(serializer.is_valid())
+        self.assertEquals(serializer.validated_data, self.deserialized_representation)
 
 
 class QuantitativeFilterSerializerTest(TestCase):
+    """
+    {
+      "dimension": 'reply_count',
+      "max": 100
+    }
+    """
+
     def setUp(self):
-        self.dimension = dimensions_models.Dimension.objects.create(name="something", description="longer something")
+        self.dimension = dimensions.get_dimension('replies')
 
         self.internal_filter = {
             'dimension': self.dimension,
@@ -221,7 +242,7 @@ class QuantitativeFilterSerializerTest(TestCase):
         }
 
         self.external_filter = {
-            'dimension': self.dimension.pk,
+            'dimension': self.dimension.key,
             'min': 5,
             'max': 10,
         }
@@ -253,8 +274,16 @@ class QuantitativeFilterSerializerTest(TestCase):
 
 
 class TimeFilterSerializerTest(TestCase):
+    """
+    {
+      "dimension": 'time',
+      "min_time": "2010-02-25T00:23:53Z",
+      "max_time": "2010-02-30T00:23:53Z"
+    }
+    """
+
     def setUp(self):
-        self.dimension = dimensions_models.Dimension.objects.create(name="something", description="longer something")
+        self.dimension = dimensions.get_dimension('time')
 
         self.internal_filter = {
             'dimension': self.dimension,
@@ -263,7 +292,7 @@ class TimeFilterSerializerTest(TestCase):
         }
 
         self.external_filter = {
-            'dimension': self.dimension.pk,
+            'dimension': self.dimension.key,
             'min_time': api_time_format(self.internal_filter['min_time']),
             'max_time': api_time_format(self.internal_filter['max_time']),
         }
@@ -281,8 +310,19 @@ class TimeFilterSerializerTest(TestCase):
 
 
 class CategoricalFilterSerializerTest(TestCase):
+    """
+    {
+      "dimension": 'words',
+      "include": [
+        "cat",
+        "dog",
+        "alligator"
+      ]
+    }
+    """
+
     def setUp(self):
-        self.dimension = dimensions_models.Dimension.objects.create(name="something", description="longer something")
+        self.dimension = self.dimension = dimensions.get_dimension('sentiment')
 
         self.internal_filter = {
             'dimension': self.dimension,
@@ -290,7 +330,7 @@ class CategoricalFilterSerializerTest(TestCase):
         }
 
         self.external_filter = {
-            'dimension': self.dimension.pk,
+            'dimension': self.dimension.key,
             'include': self.internal_filter['include']
         }
 

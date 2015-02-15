@@ -3,64 +3,56 @@ from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.dimensions import distributions
 
 
-class Dimension(models.Model):
+class BaseDimension(object):
     """
-    A dimension of the message data.
-    The dimension model describes metadata about the dimension.
+    The abstract dimension class.
+
+    Attributes:
+        key (str): a string id for the dimension (e.g. 'time')
+        name (str): a nicely-formatted name for the dimension (e.g. 'Number of Tweets')
+        description (str): a longer explanation for the dimension (e.g. "The total number of tweets produced by this author.")
+        field_name (str): the name of the field in the database for this dimension (defaults to the key)
     """
 
-    slug = models.SlugField()
-    """A short uniquely identifying key for the dimension"""
+    distribution = None
 
-    name = models.CharField(max_length=100)
-    """Human-readable name for the dimension"""
-
-    description = models.TextField()
-    """A longer description of the dimension"""
-
-    SCOPE_OPEN_ENDED = 'O'
-    SCOPE_CLOSED_ENDED = 'C'
-    SCOPE_CHOICES = (
-        (SCOPE_OPEN_ENDED, 'Open-ended'),
-        (SCOPE_CLOSED_ENDED, 'Closed-ended'),
-    )
-
-    scope = models.CharField(max_length=1, choices=SCOPE_CHOICES)
-    """The scope of the dimension, e.g. open/closed"""
-
-    TYPE_QUANTITATIVE = 'Q'
-    TYPE_CATEGORICAL = 'C'
-    TYPE_CHOICES = (
-        (TYPE_QUANTITATIVE, 'Quantitative'),
-        (TYPE_CATEGORICAL, 'Categorical'),
-    )
-
-    type = models.CharField(max_length=1, choices=TYPE_CHOICES)
-    """The type of the dimension, e.g. quantitative/categorical"""
-
-    field_name = models.CharField(max_length=50)
-    """The name of the underlying Message field that stores this dimension"""
-
-    def __unicode__(self):
-        return self.slug
+    def __init__(self, key, name, description, field_name=None):
+        self.key = key
+        self.name = name
+        self.description = description
+        self.field_name = field_name if field_name is not None else key
 
     def get_distribution(self, dataset):
         """Get the distribution of the dimension within the dataset."""
 
-        field_attr = getattr(corpus_models.Message, self.field_name, None)
-        if field_attr is None:
-            raise AttributeError("Field %s is not on the Message model" % self.field_name)
+        if self.distribution is None:
+            raise AttributeError("Dimension %s does not know how to calculate a distribution" % self.key)
 
-        field_name, db_field = field_attr.field.get_attname_column()
+        field_object, model, direct, m2m = corpus_models.Message._meta.get_field_by_name(self.field_name)
 
-        dist = None
-        if self.type == self.TYPE_CATEGORICAL:
-            dist = distributions.CategoricalDistribution(db_field)
-        else:
-            raise NotImplementedError("Distributions not yet implemented for the %s dimension." % self.name)
+        return self.distribution.group_by(dataset, self.field_name)
 
-        result = dist.group_by(dataset.message_set.all())
 
-        # We might want to look up related models somehow, e.g. for Sentiment
+class QuantitativeDimension(BaseDimension):
+    """A generic quantitative dimension"""
+    distribution = distributions.QuantitativeDistribution()
 
-        return result
+
+class TimeDimension(QuantitativeDimension):
+    """A dimension for time variables"""
+    distribution = distributions.TimeDistribution()
+
+
+class CategoricalDimension(BaseDimension):
+    """A generic categorical dimension"""
+    distribution = distributions.CategoricalDistribution()
+
+
+class ForeignKeyDimension(CategoricalDimension):
+    """A categorical dimension where the values are in a related table."""
+    distribution = distributions.ForeignKeyDistribution()
+
+
+class TextDimension(CategoricalDimension):
+    """A dimension based on the words in a text field."""
+    distribution = None
