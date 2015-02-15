@@ -1,9 +1,20 @@
+"""
+Import this module to get access to dimension instances.
+
+.. code-block:: python
+
+    from msgvis.apps.dimensions import registry
+    time = registry.get_dimension('time') # returns a TimeDimension
+    time.get_distribution(a_dataset)
+
+"""
 from msgvis.apps.dimensions import models
 
 _dimension_registry = {}
 
 
 def register(dimension):
+    """Register a dimension"""
     key = dimension.key
     if key in _dimension_registry:
         raise KeyError("The dimension %s is already registered." % key)
@@ -12,14 +23,17 @@ def register(dimension):
 
 
 def get_dimension(dimension_key):
+    """Get a specific dimension by key"""
     return _dimension_registry[dimension_key]
 
 
 def get_dimensions():
+    """Get a list of all the registered dimensions."""
     return _dimension_registry.values()
 
 
 def get_dimension_ids():
+    """Get a list of all the dimension keys."""
     return _dimension_registry.keys()
 
 # BEGIN TIME DIMENSIONS
