@@ -48,7 +48,7 @@ register(models.ForeignKeyDimension(
     key='timezone',
     name='Timezone',
     description="The message sender's local timezone",
-    field_name='timezone',
+    field_name='timezone__name',
 ))
 # END TIME DIMENSIONS
 
@@ -57,7 +57,7 @@ register(models.ForeignKeyDimension(
     key='topics',
     name='Topic',
     description='Topics found in the message.',
-    field_name='topics',
+    field_name='topics__name',
 ))
 
 register(models.TextDimension(
@@ -71,7 +71,7 @@ register(models.ForeignKeyDimension(
     key='hashtags',
     name='Hashtags',
     description='Hashtags in the message',
-    field_name='hashtags',
+    field_name='hashtags__text',
 ))
 
 register(models.CategoricalDimension(
@@ -85,7 +85,7 @@ register(models.ForeignKeyDimension(
     key='urls',
     name='Urls',
     description='Urls in the message',
-    field_name='urls',
+    field_name='urls__domain',
 ))
 
 register(models.CategoricalDimension(
@@ -116,14 +116,14 @@ register(models.ForeignKeyDimension(
     key='language',
     name='Language',
     description='The language of the message',
-    field_name='language',
+    field_name='language__code',
 ))
 
 register(models.ForeignKeyDimension(
     key='sentiment',
     name='Sentiment',
     description='The sentiment of the message',
-    field_name='sentiment',
+    field_name='sentiment__name',
 ))
 # END META DIMENSIONS
 
@@ -132,7 +132,7 @@ register(models.ForeignKeyDimension(
     key='type',
     name='Message type',
     description='The type of message',
-    field_name='type',
+    field_name='type__name',
 ))
 
 register(models.QuantitativeDimension(
