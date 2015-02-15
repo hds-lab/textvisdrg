@@ -6,7 +6,6 @@ from msgvis.apps.dimensions import models, distributions, registry
 import random
 
 
-
 class DimensionRegistryTest(TestCase):
     def test_registry_contains_dimension(self):
         """The registry should have some dimensions"""
@@ -15,8 +14,13 @@ class DimensionRegistryTest(TestCase):
         self.assertIsInstance(time, models.TimeDimension)
 
     def test_registry_size(self):
-        """The number of dimensions registered should be 20"""
-        self.assertEquals(len(registry.get_dimension_ids()), 20)
+        """The number of dimensions registered should be 24"""
+        self.assertEquals(len(registry.get_dimension_ids()), 24)
+
+    def test_registry_rejects_unknown_keys(self):
+        """Trying to get a dimension for a nonexistent key raises an exeption"""
+        with self.assertRaises(KeyError):
+            registry.get_dimension('made_up_dimension_key')
 
 
 class DimensionDistributionTest(TransactionTestCase):
@@ -26,20 +30,23 @@ class DimensionDistributionTest(TransactionTestCase):
     def test_can_get_distribution(self):
         """Just check that the Dimension.get_distribution method runs"""
 
-        mtype = registry.get_dimension('type')
+        contains_mention = registry.get_dimension('contains_mention')
 
         dset = corpus_models.Dataset.objects.get(pk=1)
-        result = mtype.get_distribution(dataset=dset)
+        result = contains_mention.get_distribution(dset)
 
         # We got something back
         self.assertNotEquals(result, None)
         self.assertTrue(len(result) > 0)
 
         # It is the right type
-        self.assertIsInstance(result[0], corpus_models.MessageType)
+        self.assertIsInstance(result[0], dict)
+
+        # The value is right
+        self.assertIsInstance(result[0]['value'], bool)
 
         # It counted something
-        self.assertTrue(result[0].count > 0)
+        self.assertTrue(result[0]['count'] > 0)
 
 
 class DistributionTestCase(TransactionTestCase):
@@ -63,14 +70,14 @@ class DistributionTestCase(TransactionTestCase):
         dataset = corpus_models.Dataset.objects.create(
             name="Test %s distribution" % field_name,
             description="Created by generate_message_distribution",
-            )
+        )
 
         num = 0
         for value, count in distribution.iteritems():
             for i in range(count):
                 create_params = {
                     'text': "Message %d: %s = '%s'" % (num, field_name, value),
-                    }
+                }
 
                 if not many:
                     # If it's a flat field, we just send the value at this point
@@ -110,6 +117,7 @@ class DistributionTestCase(TransactionTestCase):
 
             # check the count is correct
             self.assertEquals(count, desired_distribution[value])
+
 
 class CategoricalDistributionsTest(DistributionTestCase):
     fixtures = ['sentiments']
@@ -181,8 +189,8 @@ class CategoricalDistributionsTest(DistributionTestCase):
         result = calculator.group_by(dataset, field_name='contains_url')
         self.assertDistributionsEqual(result, bool_distribution)
 
-class QuantitativeDistributionsTest(DistributionTestCase):
 
+class QuantitativeDistributionsTest(DistributionTestCase):
     def test_count_distribution(self):
         """
         Checks that the distribution of a count field,

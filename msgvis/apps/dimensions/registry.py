@@ -12,10 +12,12 @@ def register(dimension):
 
 
 def get_dimension(dimension_key):
-    return _dimension_registry.get(dimension_key)
+    return _dimension_registry[dimension_key]
+
 
 def get_dimensions():
     return _dimension_registry.values()
+
 
 def get_dimension_ids():
     return _dimension_registry.keys()
@@ -58,11 +60,25 @@ register(models.ForeignKeyDimension(
     field_name='hashtags',
 ))
 
+register(models.CategoricalDimension(
+    key='contains_hashtag',
+    name='Contains a hashtag',
+    description='Contains any hashtag',
+    field_name='contains_hashtag',
+))
+
 register(models.ForeignKeyDimension(
     key='urls',
     name='Urls',
     description='Urls in the message',
     field_name='urls',
+))
+
+register(models.CategoricalDimension(
+    key='contains_url',
+    name='Contains a url',
+    description='Contains a url',
+    field_name='contains_url',
 ))
 
 register(models.ForeignKeyDimension(
@@ -71,6 +87,14 @@ register(models.ForeignKeyDimension(
     description='Photos in the message',
     field_name='media',
 ))
+
+register(models.CategoricalDimension(
+    key='contains_media',
+    name='Contains media',
+    description='Contains a photo',
+    field_name='contains_media',
+))
+
 # END CONTENT DIMENSIONS
 
 # BEGIN META DIMENSIONS
@@ -117,6 +141,14 @@ register(models.ForeignKeyDimension(
     description='Usernames mentioned in the message',
     field_name='mentions',
 ))
+
+register(models.CategoricalDimension(
+    key='contains_mention',
+    name='Contains a mention',
+    description='Mentions any username',
+    field_name='contains_mention',
+))
+
 # END INTERACTIONS DIMENSIONS
 
 # BEGIN AUTHOR DIMENSIONS

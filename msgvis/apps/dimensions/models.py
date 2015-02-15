@@ -27,11 +27,7 @@ class BaseDimension(object):
         if self.distribution is None:
             raise AttributeError("Dimension %s does not know how to calculate a distribution" % self.key)
 
-        field_attr = getattr(corpus_models.Message, self.field_name, None)
-        if field_attr is None:
-            raise AttributeError("Field %s is not on the Message model" % self.field_name)
-
-        field_name, db_field = field_attr.field.get_attname_column()
+        field_object, model, direct, m2m = corpus_models.Message._meta.get_field_by_name(self.field_name)
 
         return self.distribution.group_by(dataset, self.field_name)
 
