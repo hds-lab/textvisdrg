@@ -56,6 +56,26 @@ class DistributionTestCaseMixins(object):
 
         return dataset
 
+    def recover_related_field_distribution(self, id_distribution, model_class, field_name):
+        """
+        Given a dict of author id to message count,
+        produces a dict of author field values to message counts.
+
+        If there are multiple authors with the same field value,
+        their message counts will be added.
+        """
+        field_distribution = {}
+        for pid, pcount in id_distribution.iteritems():
+            obj = model_class.objects.get(id=pid)
+
+            field_val = getattr(obj, field_name)
+            if field_val not in field_distribution:
+                field_distribution[field_val] = 0
+
+            field_distribution[field_val] += pcount
+
+        return field_distribution
+
 
     def assertDistributionsEqual(self, result, desired_distribution):
         """
@@ -94,7 +114,7 @@ class DistributionTestCaseMixins(object):
 
 
 class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
-    def test_related_model_distribution(self):
+    def test_related_categorical_distribution(self):
         """
         Checks that the distribution of a categorical related model field,
         in this case Sentiment, can be calculated correctly.
@@ -109,18 +129,20 @@ class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
 
         sentiment_ids = corpus_models.Sentiment.objects.values_list('id', flat=True).distinct()
         sentiment_distribution = self.get_distribution(sentiment_ids)
+        sentiment_value_distribution = self.recover_related_field_distribution(sentiment_distribution,
+                                                                               corpus_models.Sentiment, 'value')
 
         dataset = self.generate_messages_for_distribution(
             field_name='sentiment_id',
             distribution=sentiment_distribution,
         )
 
-        calculator = distributions.ForeignKeyDistribution()
+        calculator = distributions.CategoricalDistribution()
 
         # Calculate the categorical distribution over the field name
-        result = calculator.group_by(dataset, field_name='sentiment')
+        result = calculator.group_by(dataset, field_name='sentiment__value')
 
-        self.assertDistributionsEqual(result, sentiment_distribution)
+        self.assertDistributionsEqual(result, sentiment_value_distribution)
 
     def test_many_related_model_distribution(self):
         """
@@ -136,6 +158,8 @@ class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
 
         hashtag_ids = corpus_models.Hashtag.objects.values_list('id', flat=True).distinct()
         hashtag_distribution = self.get_distribution(hashtag_ids)
+        hashtag_text_distribution = self.recover_related_field_distribution(hashtag_distribution,
+                                                                            corpus_models.Hashtag, 'text')
 
         dataset = self.generate_messages_for_distribution(
             field_name='hashtags',
@@ -143,11 +167,11 @@ class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
             many=True,
         )
 
-        calculator = distributions.ForeignKeyDistribution()
+        calculator = distributions.CategoricalDistribution()
 
         # Calculate the categorical distribution over the field name
-        result = calculator.group_by(dataset, field_name='hashtags')
-        self.assertDistributionsEqual(result, hashtag_distribution)
+        result = calculator.group_by(dataset, field_name='hashtags__text')
+        self.assertDistributionsEqual(result, hashtag_text_distribution)
 
     def test_boolean_distribution(self):
         """
@@ -394,7 +418,8 @@ class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
             delta=tz.timedelta(minutes=4),
             desired_bins=9,
             expected_bin_size=15,
-            )
+        )
+
 
 class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
     def generate_authors(self, field_name, values):
@@ -422,31 +447,12 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
         )
         return author_distribution
 
-    def recover_author_field_distribution(self, author_distribution, author_field_name):
-        """
-        Given a dict of author id to message count,
-        produces a dict of author field values to message counts.
-
-        If there are multiple authors with the same field value,
-        their message counts will be added.
-        """
-        field_distribution = {}
-        for pid, pcount in author_distribution.iteritems():
-            author = corpus_models.Person.objects.get(id=pid)
-
-            field_val = getattr(author, author_field_name)
-            if field_val not in field_distribution:
-                field_distribution[field_val] = 0
-
-            field_distribution[field_val] += pcount
-
-        return field_distribution
-
     def test_author_name_distribution(self):
         """Count messages by author name"""
         dataset = self.generate_authors('username', ['username_%d' % d for d in xrange(5)])
         author_distribution = self.distibute_messages_to_authors(dataset)
-        author_name_distribution = self.recover_author_field_distribution(author_distribution, 'username')
+        author_name_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
+                                                                           'username')
 
         calculator = distributions.CategoricalDistribution()
 
@@ -458,7 +464,8 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
         """Can count messages for different author message_counts"""
         dataset = self.generate_authors('message_count', [5, 10, 15, 20, 25])
         author_distribution = self.distibute_messages_to_authors(dataset)
-        author_count_distribution = self.recover_author_field_distribution(author_distribution, 'message_count')
+        author_count_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
+                                                                            'message_count')
 
         calculator = distributions.PersonQuantitativeDistribution()
 
@@ -470,7 +477,8 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
         """Multiple authors with the same message_count."""
         dataset = self.generate_authors('message_count', [5, 10, 15, 20, 25, 5, 10, 15])
         author_distribution = self.distibute_messages_to_authors(dataset)
-        author_count_distribution = self.recover_author_field_distribution(author_distribution, 'message_count')
+        author_count_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
+                                                                            'message_count')
 
         calculator = distributions.PersonQuantitativeDistribution()
 

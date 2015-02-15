@@ -59,33 +59,6 @@ class CategoricalDistribution(BaseDistribution):
                 } for g in grouped]
 
 
-class ForeignKeyDistribution(BaseDistribution):
-    """Calculate distributions over a foreign key field"""
-
-    def group_by(self, dataset, field_name=None):
-        """
-        Count the number of messages for each value of the dimension.
-        If the dimension has no values available, an empty array is returned.
-
-        ``field_name`` should be the field on the Message model we are grouping by.
-        """
-        if field_name is None:
-            field_name = self.field_name
-
-        # Get the related field
-        field_descriptor = getattr(Message, field_name)
-        related_model = field_descriptor.field.rel.to
-
-        message_name = field_descriptor.field.related_query_name()
-
-        query = related_model.objects.filter(**{
-            '%s__dataset' % message_name: dataset
-        })
-
-        # Count the messages in each group
-        return query.annotate(count=models.Count('%s__id' % message_name))
-
-
 class BinnedResultSet(list):
     """A class for storing binned results with metadata."""
 

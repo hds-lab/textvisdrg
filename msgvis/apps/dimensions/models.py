@@ -44,9 +44,20 @@ class BaseDimension(object):
         """Filtering dataset with one filter"""
         return self.exact_filter(queryset, filter)
 
+    def get_grouping_expression(self, queryset):
+        """
+        Given a set of messages (possibly filtered),
+        returns a string that could be used with QuerySet.values() to
+        group the messages by this dimension.
+        """
+
 
 class QuantitativeDimension(BaseDimension):
-    """A generic quantitative dimension"""
+    """
+    A generic quantitative dimension.
+    This works for fields on Message or on related fields,
+    e.g. field_name=sender__message_count
+    """
     distribution = distributions.QuantitativeDistribution()
 
     def filter(self, queryset, filter):
@@ -58,7 +69,7 @@ class QuantitativeDimension(BaseDimension):
         return queryset
 
 class TimeDimension(QuantitativeDimension):
-    """A dimension for time variables"""
+    """A dimension for time fields on Message"""
     distribution = distributions.TimeDistribution()
 
     def filter(self, queryset, filter):
@@ -83,9 +94,9 @@ class CategoricalDimension(BaseDimension):
         return queryset
 
 
-class ForeignKeyDimension(CategoricalDimension):
+class RelatedCategoricalDimension(CategoricalDimension):
     """A categorical dimension where the values are in a related table."""
-    distribution = distributions.ForeignKeyDistribution()
+    distribution = distributions.CategoricalDistribution()
 
 
 class TextDimension(CategoricalDimension):
