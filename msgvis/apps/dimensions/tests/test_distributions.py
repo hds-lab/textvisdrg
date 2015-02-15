@@ -5,6 +5,10 @@ from django.test import TestCase
 from msgvis.apps.dimensions import distributions
 from msgvis.apps.corpus import models as corpus_models
 
+from django.conf import settings
+from django.utils import timezone as tz
+from django.utils import dateparse
+
 
 class DistributionTestCaseMixins(object):
     """Some utilities for working with distributions"""
@@ -218,7 +222,7 @@ class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
         result = calculator.group_by(dataset, field_name='shared_count')
         self.assertDistributionsEqual(result, shared_count_distribution)
 
-    def test_count_wide_distribution(self):
+    def test_wide_count_distribution(self):
         """
         If the range of the counts is very large,
         they should come out binned.
@@ -243,7 +247,7 @@ class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
         self.assertDistributionsEqual(result, binned_distribution)
 
 
-    def test_count_narrow_distribution(self):
+    def test_narrow_count_distribution(self):
         """
         If the range is very small but we ask for a lot of bins,
         we should get a bin size of 1.
@@ -262,6 +266,135 @@ class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
         self.assertEquals(result.max_val, 3)
         self.assertDistributionsEqual(result, shared_count_distribution)
 
+
+class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
+    def setUp(self):
+        # Get an arbitrary time to work with
+        self.base_time = tz.datetime(2012, 5, 2, 20, 10, 2, 42)
+
+        if settings.USE_TZ:
+            self.base_time = self.base_time.replace(tzinfo=tz.utc)
+
+    def generate_times(self, start_time, offset_type, offsets):
+        """
+        Generate a list of datetimes starting with start.
+        The offset type is a property for timedelta.
+        The offsets is an array of numbers.
+        """
+
+        yield start_time
+        for offset in offsets:
+            start_time += tz.timedelta(**{offset_type: offset})
+            yield start_time
+
+    def fix_datetimes(self, results):
+        """
+        Given a list of value/count dictionaries, makes
+        sure that all the values are datetimes, not strings.
+        """
+        for row in results:
+            value = row['value']
+            count = row['count']
+
+            if isinstance(value, basestring):
+
+                value = dateparse.parse_datetime(value)
+                if settings.USE_TZ:
+                    value = value.replace(tzinfo=tz.utc)
+                row['value'] = value
+
+
+    def test_narrow_time_distribution(self):
+        """
+        Checks that the distribution of a time field can be calculated correctly.
+        """
+
+        times = self.generate_times(self.base_time, 'minutes', [2, 5, 10, 12, 1])
+        time_distribution = self.get_distribution(times)
+
+        dataset = self.generate_messages_for_distribution(
+            field_name='time',
+            distribution=time_distribution,
+        )
+
+        calculator = distributions.TimeDistribution(desired_bins=2000)
+        result = calculator.group_by(dataset, field_name='time')
+
+        self.fix_datetimes(result)
+
+        self.assertDistributionsEqual(result, time_distribution)
+
+    def test_wide_time_distribution(self):
+        """
+        If the range of the counts is very large,
+        they should come out binned.
+        """
+
+        # base_time plus 4 days later
+        times = list(self.generate_times(self.base_time, 'days', [4]))
+        time_distribution = self.get_distribution(times)
+
+        dataset = self.generate_messages_for_distribution(
+            field_name='time',
+            distribution=time_distribution,
+        )
+
+        # Remove the time parts
+        day1 = times[0].replace(hour=0, minute=0, second=0, microsecond=0)
+        day2 = times[1].replace(hour=0, minute=0, second=0, microsecond=0)
+
+        binned_distribution = {
+            day1: time_distribution[times[0]],
+            day2: time_distribution[times[1]]
+        }
+
+        calculator = distributions.TimeDistribution(desired_bins=4)
+        result = calculator.group_by(dataset, field_name='time')
+
+        self.fix_datetimes(result)
+
+        self.assertEquals(result.bin_size, 24 * 60 * 60)  # 24 hour bins
+        self.assertEquals(result.min_val, times[0])
+        self.assertEquals(result.max_val, times[1])
+        self.assertDistributionsEqual(result, binned_distribution)
+
+    def run_time_bin_test(self, delta, desired_bins, expected_bin_size):
+        """Run a generic time bin test."""
+        t0 = self.base_time
+        t1 = t0 + delta
+        calculator = distributions.TimeDistribution(desired_bins=desired_bins)
+        self.assertEquals(calculator._get_bin_size(t0, t1), expected_bin_size)
+
+    def test_time_bin_min_size(self):
+        """Returns minimum bin size of 1 second."""
+        self.run_time_bin_test(
+            delta=tz.timedelta(seconds=4),
+            desired_bins=10,
+            expected_bin_size=1)
+
+    def test_time_bin_even_split(self):
+        """Split evenly when the desired bins is perfect"""
+        self.run_time_bin_test(
+            delta=tz.timedelta(minutes=4),
+            desired_bins=8,
+            expected_bin_size=30,
+        )
+
+    def test_time_bin_at_least_desired(self):
+        """Continues to deliver at least the desired bins"""
+        self.run_time_bin_test(
+            delta=tz.timedelta(minutes=4),
+            desired_bins=7,
+            expected_bin_size=30,
+        )
+
+    def test_time_bin_bumps_up(self):
+        """If you ask for more bins, increases granularity"""
+        self.run_time_bin_test(
+            delta=tz.timedelta(minutes=4),
+            desired_bins=9,
+            expected_bin_size=15,
+            )
 
 class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
     def generate_authors(self, field_name, values):

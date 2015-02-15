@@ -16,7 +16,9 @@ QUANTITATIVE_DIMENSION_BINS = getattr(settings, 'QUANTITATIVE_DIMENSION_BINS', 5
 
 
 class BaseDistribution(object):
-    def group_by(self, dataset, field_name):
+    field_name = None
+
+    def group_by(self, dataset, field_name=None):
         """
         Count the number of messages for each value of the dimension.
         If the dimension has no values available, an empty array is returned.
@@ -37,7 +39,10 @@ class BaseDistribution(object):
 class CategoricalDistribution(BaseDistribution):
     """A distribution suitable for simple categorical variables."""
 
-    def group_by(self, dataset, field_name):
+    def group_by(self, dataset, field_name=None):
+        if field_name is None:
+            field_name = self.field_name
+
         items = self._get_base_set(dataset)
 
         # Group by the field
@@ -57,13 +62,15 @@ class CategoricalDistribution(BaseDistribution):
 class ForeignKeyDistribution(BaseDistribution):
     """Calculate distributions over a foreign key field"""
 
-    def group_by(self, dataset, field_name):
+    def group_by(self, dataset, field_name=None):
         """
         Count the number of messages for each value of the dimension.
         If the dimension has no values available, an empty array is returned.
 
         ``field_name`` should be the field on the Message model we are grouping by.
         """
+        if field_name is None:
+            field_name = self.field_name
 
         # Get the related field
         field_descriptor = getattr(Message, field_name)
@@ -136,9 +143,9 @@ class QuantitativeDistribution(BaseDistribution):
             bin_size=bin_size
         )
 
-    def _get_grouping_expression(self, bin_size, field_name):
+    def _add_grouping_value(self, items, bin_size, field_name, select_name='value'):
         """
-        Get an expression that bins the field by dividing
+        Calculate a value that bins the field by dividing
         by bin_size, flooring, and multiplying again.
 
         The bin size is calculated from the range of the dimension and
@@ -152,12 +159,27 @@ class QuantitativeDistribution(BaseDistribution):
             # No need for binning
             grouping = field_name
 
-        return grouping
+        # Add it to our sql query (if it's just field_name, this is like an alias)
+
+        # We can's just use items.extra() because of a bug in Django < 1.8.
+        # Sqlite uses %s to convert to unix timestamps.
+        # Django's QuerySet.extra() thinks that any %s needs to have a
+        # param so if we don't provide one, it errors.
+        # If we do provide one, the Sqlite engine complains because it knows better.
+        items = items._clone()
+        items.query.extra.update({
+            select_name: (grouping, ())
+        })
+
+        return items
 
     def _annotate(self, items):
         return items.annotate(count=models.Count('id'))
 
-    def group_by(self, dataset, field_name):
+    def group_by(self, dataset, field_name=None):
+        if field_name is None:
+            field_name = self.field_name
+
         items = self._get_base_set(dataset)
 
         # Get the min and max
@@ -169,12 +191,7 @@ class QuantitativeDistribution(BaseDistribution):
         bin_size = self._get_bin_size(min_val, max_val)
 
         # Calculate a grouping variable
-        grouping_expression = self._get_grouping_expression(bin_size, field_name)
-
-        # Add it to our sql query (if it's just field_name, this is like an alias)
-        items = items.extra(select={
-            'value': grouping_expression
-        })
+        items = self._add_grouping_value(items, bin_size, field_name)
 
         # Group by it
         items = items.values('value')
@@ -201,12 +218,17 @@ class TimeDistribution(QuantitativeDistribution):
     Calculates distribution for time dimensions with
     human-friendly binning using heuristics from d3.
     """
+    field_name = 'time'
 
     # Convert to unix timestamp. Divide by bin size. Floor. Multiply by bin size. Convert to datetime.
-    grouping_expression_template = 'FROM_UNIXTIME({bin_size} * FLOOR(UNIX_TIMESTAMP(`{field_name}`) / {bin_size}))'
+    grouping_expressions = {
+        'mysql': r"FROM_UNIXTIME({bin_size} * FLOOR(UNIX_TIMESTAMP(`{field_name}`) / {bin_size}))",
+        'sqlite': r"DATETIME({bin_size} * CAST(STRFTIME('%%s', `{field_name}`) / {bin_size} AS INTEGER), 'unixepoch')"
+    }
 
     # A range of human-friendly time bin sizes
     # https://github.com/mbostock/d3/blob/master/src/time/scale.js
+    # NOTE: these are in milliseconds! (JS uses millis)
     d3_time_scaleSteps = [
         1e3,  # 1-second
         5e3,  # 5-second
@@ -240,14 +262,16 @@ class TimeDistribution(QuantitativeDistribution):
 
         bin_size_seconds = bin_size.total_seconds()
 
+        bin_size_millis = 1000 * bin_size_seconds
+
         # Find the first human-friendly bin size that isn't bigger than bin_size_seconds
-        best_bin_size = self.d3_time_scaleSteps[0]
+        best_bin_millis = self.d3_time_scaleSteps[0]
         for step in self.d3_time_scaleSteps:
-            if step < bin_size_seconds:
-                best_bin_size = step
+            if step <= bin_size_millis:
+                best_bin_millis = step
             else:
                 break
 
-        return best_bin_size
+        return best_bin_millis / 1000
 
 
