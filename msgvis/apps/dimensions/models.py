@@ -55,4 +55,4 @@ class ForeignKeyDimension(CategoricalDimension):
 
 class TextDimension(CategoricalDimension):
     """A dimension based on the words in a text field."""
-    distribution = distributions.CategoricalDistribution()
+    distribution = None
