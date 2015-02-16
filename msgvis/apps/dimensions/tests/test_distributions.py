@@ -1,4 +1,4 @@
-"""Test the distributions"""
+"""Test the dimensions that are registered"""
 
 from django.test import TestCase
 
@@ -243,8 +243,9 @@ class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
             distribution=shared_count_distribution,
         )
 
-        calculator = distributions.QuantitativeDistribution()
-        result = calculator.group_by(dataset, field_name='shared_count')
+        dimension = registry.get_dimension('shares')
+        result = dimension.get_distribution(dataset.message_set.all())
+
         self.assertDistributionsEqual(result, shared_count_distribution)
 
     def test_wide_count_distribution(self):
@@ -264,8 +265,9 @@ class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
             100: shared_count_distribution[100] + shared_count_distribution[101],
         }
 
-        calculator = distributions.QuantitativeDistribution(desired_bins=5)
-        result = calculator.group_by(dataset, field_name='shared_count')
+        dimension = registry.get_dimension('shares')
+        result = dimension.get_distribution(dataset.message_set.all(), bins=5)
+
         self.assertEquals(result.bin_size, 20)
         self.assertEquals(result.min_val, 1)
         self.assertEquals(result.max_val, 101)
@@ -284,8 +286,9 @@ class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
             distribution=shared_count_distribution,
         )
 
-        calculator = distributions.QuantitativeDistribution(desired_bins=50)
-        result = calculator.group_by(dataset, field_name='shared_count')
+        dimension = registry.get_dimension('shares')
+        result = dimension.get_distribution(dataset.message_set.all(), bins=50)
+
         self.assertEquals(result.bin_size, 1)
         self.assertEquals(result.min_val, 1)
         self.assertEquals(result.max_val, 3)
