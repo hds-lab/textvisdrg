@@ -138,10 +138,10 @@ class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
             distribution=sentiment_distribution,
         )
 
-        calculator = distributions.CategoricalDistribution()
+        dimension = registry.get_dimension('sentiment')
 
         # Calculate the categorical distribution over the field name
-        result = calculator.group_by(dataset, field_name='sentiment__value')
+        result = dimension.get_distribution(dataset.message_set.all())
 
         self.assertDistributionsEqual(result, sentiment_value_distribution)
 
@@ -188,8 +188,8 @@ class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
             distribution=bool_distribution,
         )
 
-        calculator = distributions.CategoricalDistribution()
-        result = calculator.group_by(dataset, field_name='contains_url')
+        dimension = registry.get_dimension('contains_url')
+        result = dimension.get_distribution(dataset.message_set.all())
         self.assertDistributionsEqual(result, bool_distribution)
 
     def test_boolean_distribution_with_zeros(self):
@@ -207,8 +207,8 @@ class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
             distribution=bool_distribution,
         )
 
-        calculator = distributions.CategoricalDistribution()
-        result = calculator.group_by(dataset, field_name='contains_url')
+        dimension = registry.get_dimension('contains_url')
+        result = dimension.get_distribution(dataset.message_set.all())
         self.assertDistributionsEqual(result, bool_distribution)
 
     def test_empty_boolean_distribution(self):
@@ -224,8 +224,8 @@ class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
             distribution=bool_distribution,
         )
 
-        calculator = distributions.CategoricalDistribution()
-        result = calculator.group_by(dataset, field_name='contains_url')
+        dimension = registry.get_dimension('contains_url')
+        result = dimension.get_distribution(dataset.message_set.all())
         self.assertDistributionsEqual(result, bool_distribution)
 
 
