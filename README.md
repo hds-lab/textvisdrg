@@ -1,6 +1,6 @@
 # Text Visualization DRG Project
 
-[![Documentation Status](https://readthedocs.org/projects/textvisdrg/badge/?version=latest)](https://readthedocs.org/projects/textvisdrg/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/textvisdrg/badge/?version=latest)](http://textvisdrg.readthedocs.org/en/latest/)
 [![Build Status](https://travis-ci.org/hds-lab/textvisdrg.svg?branch=master)](https://travis-ci.org/hds-lab/textvisdrg)
 [![Coverage Status](https://coveralls.io/repos/hds-lab/textvisdrg/badge.svg)](https://coveralls.io/r/hds-lab/textvisdrg)
 
