@@ -59,7 +59,7 @@ def get_sample_questions(dimension_list):
 
     questions = Question.objects.all()
     for dimension in dimension_list:
-        questions = questions.filter(dimensions__key__contains=dimension)
+        questions = questions.filter(dimensions__key=dimension)
 
     if questions.count() == 0:
         questions = Question.objects.all()
