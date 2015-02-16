@@ -28,7 +28,7 @@ class Article(models.Model):
 class Question(models.Model):
     """
     A research question from an :class:`Article`.
-    May be associated with a number of :class:`.Dimension` objects.
+    May be associated with a number of :class:`.DimensionKey` objects.
     """
 
     source = models.ForeignKey(Article, null=True, default=None)
