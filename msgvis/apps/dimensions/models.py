@@ -24,6 +24,13 @@ def db_vendor():
     return connection.vendor
 
 
+def find_messages(queryset):
+    """If the given queryset is actually a :class:`.Dataset` model, get its messages queryset."""
+    if isinstance(queryset, corpus_models.Dataset):
+        queryset = queryset.message_set.all()
+    return queryset
+
+
 class MappedValuesQuerySet(query.ValuesQuerySet):
     """
     A special ValuesQuerySet that can re-map the dictionary keys
@@ -87,7 +94,7 @@ class CategoricalDimension(object):
         self.description = description
         self.field_name = field_name if field_name is not None else key
 
-    def exact_filter(self, queryset, filter):
+    def _exact_filter(self, queryset, filter):
         """Filtering for exact value"""
         if filter.get('value'):
             queryset = queryset.filter(Q((self.field_name, filter['value'])))
@@ -95,7 +102,15 @@ class CategoricalDimension(object):
 
     def filter(self, queryset, filter):
         """Apply a filter to a queryset and return the new queryset."""
-        queryset = self.exact_filter(queryset, filter)
+
+        # Type checking
+        queryset = find_messages(queryset)
+
+        # Make sure this filter is for us
+        if not filter['dimension'] == self.key:
+            raise ValueError("'%s' dimension cannot handle filter on '%s'" % (self.key, filter['dimension']))
+
+        queryset = self._exact_filter(queryset, filter)
         if filter.get('levels'):
             filter_ors = []
             for level in filter.get('levels'):
@@ -121,6 +136,9 @@ class CategoricalDimension(object):
         if grouping_key is None:
             grouping_key = self.key
 
+        # Type checking
+        queryset = find_messages(queryset)
+
         # Get the expression that groups this dimension for this queryset
         grouping_expression = self.get_grouping_expression(queryset)
 
@@ -138,6 +156,9 @@ class CategoricalDimension(object):
 
     def get_distribution(self, queryset, value_key='value', **kwargs):
         """Get the distribution of the dimension within the dataset."""
+
+        # Type checking
+        queryset = find_messages(queryset)
 
         # Use 'values' to group the queryset
         queryset = self.group_by(queryset, value_key)
@@ -176,14 +197,21 @@ class QuantitativeDimension(CategoricalDimension):
         self._cached_range = None
 
     def filter(self, queryset, filter):
-        queryset = self.exact_filter(queryset, filter)
+        # Type checking
+        queryset = find_messages(queryset)
+
+        # Make sure this filter is for us
+        if not filter['dimension'] == self.key:
+            raise ValueError("'%s' dimension cannot handle filter on '%s'" % (self.key, filter['dimension']))
+
+        queryset = self._exact_filter(queryset, filter)
         if filter.get('min'):
             queryset = queryset.filter(Q((self.field_name + "__gte", filter['min'])))
         if filter.get('max'):
             queryset = queryset.filter(Q((self.field_name + "__lte", filter['max'])))
         return queryset
 
-    def get_range(self, messages):
+    def get_range(self, queryset):
         """
         Find a min and max for this dimension, as a tuple.
         If there isn't one, (None, None) is returned.
@@ -192,13 +220,16 @@ class QuantitativeDimension(CategoricalDimension):
         use a cached value.
         """
 
-        if self._cached_range_queryset_id == id(messages):
+        if self._cached_range_queryset_id == id(queryset):
             return self._cached_range
 
-        dim_range = messages.aggregate(min=models.Min(self.field_name),
+        # Type checking
+        _queryset = find_messages(queryset)
+
+        dim_range = _queryset.aggregate(min=models.Min(self.field_name),
                                        max=models.Max(self.field_name))
 
-        self._cached_range_queryset_id = id(messages)
+        self._cached_range_queryset_id = id(queryset)
         self._cached_range = dim_range
 
         if dim_range is None:
@@ -279,6 +310,10 @@ class QuantitativeDimension(CategoricalDimension):
             print distribution[0]
             # { 'value': 'hello', 'count': 5 }
         """
+
+        # Type checking
+        queryset = find_messages(queryset)
+
         expression = self.get_grouping_expression(queryset, bins=bins, bin_size=bin_size)
 
         if expression == self.field_name:
@@ -295,7 +330,7 @@ class QuantitativeDimension(CategoricalDimension):
             # Then use values to group by the grouping key.
             return queryset.values(grouping_key)
 
-    def get_distribution(self, dataset, value_key='value', bins=None, **kwargs):
+    def get_distribution(self, queryset, value_key='value', bins=None, **kwargs):
         """
         On the given :class:`.Dataset`, calculate a binned distribution.
         A desired number of bins may be provided.
@@ -304,11 +339,8 @@ class QuantitativeDimension(CategoricalDimension):
         if bins is None:
             bins = self.default_bins
 
-        # Get the min and max
-        if isinstance(dataset, corpus_models.Dataset):
-            queryset = dataset.message_set.all()
-        else:
-            queryset = dataset
+        # type checking
+        queryset = find_messages(queryset)
 
         min_val, max_val = self.get_range(queryset)
         if min_val is None:
@@ -415,7 +447,15 @@ class TimeDimension(QuantitativeDimension):
     """A dimension for time fields on Message"""
 
     def filter(self, queryset, filter):
-        queryset = self.exact_filter(queryset, filter)
+
+        # Type checking
+        queryset = find_messages(queryset)
+
+        # Make sure this filter is for us
+        if not filter['dimension'] == self.key:
+            raise ValueError("'%s' dimension cannot handle filter on '%s'" % (self.key, filter['dimension']))
+
+        queryset = self._exact_filter(queryset, filter)
         if filter.get('min_time'):
             queryset = queryset.filter(Q((self.field_name + "__gte", filter['min_time'])))
         if filter.get('max_time'):
@@ -478,9 +518,15 @@ class TimeDimension(QuantitativeDimension):
 
 
 class RelatedCategoricalDimension(CategoricalDimension):
-    """A categorical dimension where the values are in a related table, e.g. sender name."""
+    """
+    A categorical dimension where the values are in a related table, e.g. sender name.
+
+    Clearly this doesn't really do anything special right now.
+    """
 
 
 class TextDimension(CategoricalDimension):
-    """A dimension based on the words in a text field."""
-    distribution = None
+    """
+    A dimension based on the words in a text field.
+    """
+
