@@ -471,10 +471,8 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
         author_count_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
                                                                             'message_count')
 
-        calculator = distributions.PersonQuantitativeDistribution()
-
-        # Calculate the categorical distribution over the field name
-        result = calculator.group_by(dataset, field_name='message_count')
+        dimension = registry.get_dimension('sender_message_count')
+        result = dimension.get_distribution(dataset)
         self.assertDistributionsEqual(result, author_count_distribution)
 
     def test_author_count_distribution_with_duplicates(self):
@@ -484,8 +482,49 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
         author_count_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
                                                                             'message_count')
 
-        calculator = distributions.PersonQuantitativeDistribution()
+        dimension = registry.get_dimension('sender_message_count')
+        result = dimension.get_distribution(dataset)
+        self.assertDistributionsEqual(result, author_count_distribution)
 
-        # Calculate the categorical distribution over the field name
-        result = calculator.group_by(dataset, field_name='message_count')
+
+    def test_wide_author_count_distribution(self):
+        """
+        If the range of the counts is very large,
+        they should come out binned.
+        """
+        dataset = self.generate_authors('message_count', [5, 10, 2005])
+        author_distribution = self.distibute_messages_to_authors(dataset)
+        author_count_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
+                                                                            'message_count')
+        binned_distribution = {
+            0: author_count_distribution[5] + author_count_distribution[10],
+            2000: author_count_distribution[2005]
+        }
+
+        dimension = registry.get_dimension('sender_message_count')
+        result = dimension.get_distribution(dataset, bins=2)
+
+        self.assertEquals(result.bin_size, 1000)
+        self.assertEquals(result.min_val, 5)
+        self.assertEquals(result.max_val, 2005)
+        self.assertDistributionsEqual(result, binned_distribution)
+
+
+    def test_narrow_author_count_distribution(self):
+        """
+        If the range is very small but we ask for a lot of bins,
+        we should get a bin size of 1.
+        """
+
+        dataset = self.generate_authors('message_count', [5, 6, 7])
+        author_distribution = self.distibute_messages_to_authors(dataset)
+        author_count_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
+                                                                            'message_count')
+
+        dimension = registry.get_dimension('sender_message_count')
+        result = dimension.get_distribution(dataset.message_set.all(), bins=50)
+
+        self.assertEquals(result.bin_size, 1)
+        self.assertEquals(result.min_val, 5)
+        self.assertEquals(result.max_val, 7)
         self.assertDistributionsEqual(result, author_count_distribution)

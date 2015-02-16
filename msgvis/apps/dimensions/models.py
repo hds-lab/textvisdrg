@@ -1,34 +1,28 @@
+import operator
+import math
+
 from django.db import models
 from django.db.models import query
-
 from django.db.models import Q
-import operator
+from django.conf import settings
+
 from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.dimensions import distributions
 
-from django.conf import settings
-import math
-import collections
 
 QUANTITATIVE_DIMENSION_BINS = getattr(settings, 'QUANTITATIVE_DIMENSION_BINS', 50)
 
 
-class BinnedValuesQuerySet(query.ValuesQuerySet):
-    """
-    A class for storing binned values queryset results with
-    bin_size, min_val, and max_val metadata as fields.
-    """
+def add_metadata(queryset, **kwargs):
+    for key, value in kwargs.iteritems():
+        setattr(queryset, key, value)
+    return queryset
 
-    def __init__(self, *args, **kwargs):
-        super(BinnedValuesQuerySet, self).__init__(*args, **kwargs)
-        self.bin_size = kwargs.get('bin_size', None)
-        self.min_val = kwargs.get('min_val', None)
-        self.max_val = kwargs.get('max_val', None)
 
-    @classmethod
-    def create_from(cls, queryset, bin_size=None, min_val=None, max_val=None):
-        """Create a MappedValueQuerySet with a field name mapping dictionary."""
-        return queryset._clone(cls, bin_size=bin_size, min_val=min_val, max_val=max_val)
+def db_vendor():
+    from django.db import connection
+
+    return connection.vendor
 
 
 class MappedValuesQuerySet(query.ValuesQuerySet):
@@ -49,7 +43,7 @@ class MappedValuesQuerySet(query.ValuesQuerySet):
 
     def __init__(self, *args, **kwargs):
         super(MappedValuesQuerySet, self).__init__(*args, **kwargs)
-        self.field_map = {}
+        self.field_map = kwargs.get('field_map', {})
 
     @classmethod
     def create_from(cls, values_query_set, field_map):
@@ -57,7 +51,9 @@ class MappedValuesQuerySet(query.ValuesQuerySet):
         return values_query_set._clone(cls, field_map=field_map)
 
     def _clone(self, klass=None, setup=False, **kwargs):
-        return super(MappedValuesQuerySet, self)._clone(klass, setup, field_map=self.field_map, **kwargs)
+        c = super(MappedValuesQuerySet, self)._clone(klass, setup, **kwargs)
+        c.field_map = self.field_map
+        return c
 
     def iterator(self):
         # Purge any extra columns that haven't been explicitly asked for
@@ -189,7 +185,7 @@ class QuantitativeDimension(CategoricalDimension):
             queryset = queryset.filter(Q((self.field_name + "__lte", filter['max'])))
         return queryset
 
-    def get_range(self, queryset):
+    def get_range(self, messages):
         """
         Find a min and max for this dimension, as a tuple.
         If there isn't one, (None, None) is returned.
@@ -198,13 +194,13 @@ class QuantitativeDimension(CategoricalDimension):
         use a cached value.
         """
 
-        if self._cached_range_queryset_id == id(queryset):
+        if self._cached_range_queryset_id == id(messages):
             return self._cached_range
 
-        dim_range = queryset.aggregate(min=models.Min(self.field_name),
+        dim_range = messages.aggregate(min=models.Min(self.field_name),
                                        max=models.Max(self.field_name))
 
-        self._cached_range_queryset_id = id(queryset)
+        self._cached_range_queryset_id = id(messages)
         self._cached_range = dim_range
 
         if dim_range is None:
@@ -224,11 +220,9 @@ class QuantitativeDimension(CategoricalDimension):
 
         return bin_size
 
-    def _render_grouping_expression(self, field_name, bin_size):
-        from django.db import connection
-
-        return self.grouping_expressions[connection.vendor].format(
-            field_name=field_name,
+    def _render_grouping_expression(self, bin_size):
+        return self.grouping_expressions[db_vendor()].format(
+            field_name=self.field_name,
             bin_size=bin_size
         )
 
@@ -250,34 +244,74 @@ class QuantitativeDimension(CategoricalDimension):
 
         # Determine a bin size for this field
         if bin_size > self.min_bin_size:
-            return self._render_grouping_expression(self.field_name, bin_size)
+            return self._render_grouping_expression(bin_size)
         else:
             # No need for binning
-            return super(QuantitativeDimension, self).get_grouping_expression(queryset)
+            return self.field_name
 
-    def _add_grouping_value(self, queryset, grouping_expression, value_key):
-        # We can's just use items.extra() because of a bug in Django < 1.8.
-        # Sqlite uses %s to convert to unix timestamps.
-        # Django's QuerySet.extra() thinks that any %s needs to have a
-        # param so if we don't provide one, it errors.
-        # If we do provide one, the Sqlite engine complains because it knows better.
+    def _attach_grouping_expression(self, queryset, grouping_expression, grouping_key):
+        """
+        Make sure the queryset selects the grouping expression, aliased to grouping_key.
+        """
+        # This is a workaround for QuerySet.extra(select={})
+        # because it doesn't work if the value you are selecting
+        # contains a %s -- even though Sqlite uses %s as a time format
+        # string.
 
-        # Copy the queryset to avoid problems
+        # Copy the queryset first to avoid problems
         queryset = queryset._clone()
         queryset.query.extra.update({
-            value_key: (grouping_expression, ())
+            grouping_key: (grouping_expression, ())
         })
-
         return queryset
 
-    def _count_messages(self, queryset):
-        return queryset.annotate(count=models.Count('id'))
+    def group_by(self, queryset, grouping_key=None, bins=None, bin_size=None):
+        """
+        Return a ValuesQuerySet that has been grouped by this dimension.
+        The group value will be available as grouping_key in the dictionaries.
 
-    def get_distribution(self, queryset, value_key='value', bins=None, **kwargs):
+        The grouping key defaults to the dimension key.
+
+        If num_bins or bin_size is not provided, an estimate will be used.
+
+        .. code-block:: python
+
+            messages = dim.group_by(messages, 'value', 100)
+            distribution = messages.annotate(count=Count('id'))
+            print distribution[0]
+            # { 'value': 'hello', 'count': 5 }
+        """
+        expression = self.get_grouping_expression(queryset, bins=bins, bin_size=bin_size)
+
+        if expression == self.field_name:
+
+            # We still have to map back to the requested grouping_key
+            return MappedValuesQuerySet.create_from(queryset.values(expression), {
+                expression: grouping_key
+            })
+
+        else:
+            # Sometimes this step gets complicated
+            queryset = self._attach_grouping_expression(queryset, expression, grouping_key)
+
+            # Then use values to group by the grouping key.
+            return queryset.values(grouping_key)
+
+    def get_distribution(self, dataset, value_key='value', bins=None, **kwargs):
+        """
+        On the given :class:`.Dataset`, calculate a binned distribution.
+        A desired number of bins may be provided.
+        The results will be keyed by value_key.
+        """
         if bins is None:
             bins = self.default_bins
 
         # Get the min and max
+        if isinstance(dataset, corpus_models.Dataset):
+            queryset = dataset.message_set.all()
+        else:
+            queryset = dataset
+
         min_val, max_val = self.get_range(queryset)
         if min_val is None:
             return []
@@ -285,20 +319,98 @@ class QuantitativeDimension(CategoricalDimension):
         # Get a good bin size
         bin_size = self._get_bin_size(min_val, max_val, bins)
 
-        # Calculate a grouping value
-        grouping_expression = self.get_grouping_expression(queryset, bin_size=bin_size)
-        queryset = self._add_grouping_value(queryset, grouping_expression, value_key)
-
-        # Group by it
-        queryset = queryset.values(value_key)
+        # Group by that bin size
+        queryset = self.group_by(queryset, value_key, bin_size=bin_size)
 
         # Count the messages in each group
-        queryset = self._count_messages(queryset)
+        queryset = queryset.annotate(count=models.Count('id'))
 
-        return BinnedValuesQuerySet.create_from(queryset,
-                                                bin_size=bin_size,
-                                                min_val=min_val,
-                                                max_val=max_val)
+        # Store the bin info on the queryset
+        return add_metadata(queryset,
+                            bins=bins,
+                            bin_size=bin_size,
+                            min_val=min_val,
+                            max_val=max_val)
+
+
+class RelatedQuantitativeDimension(QuantitativeDimension):
+    """A quantitative dimension on a related model, e.g. sender message count."""
+
+    # Expressions for grouping when we have to join tables
+    grouping_expressions_joined = {
+        'mysql': '{bin_size} * FLOOR(`{to_table}`.`{target_field_name}` / {bin_size})',
+        'sqlite': '{bin_size} * CAST(`{to_table}`.`{target_field_name}` / {bin_size} AS INTEGER)',
+    }
+
+    def __init__(self, key, name=None, description=None, field_name=None, default_bins=QUANTITATIVE_DIMENSION_BINS,
+                 min_bin_size=1):
+        super(RelatedQuantitativeDimension, self).__init__(key, name, description, field_name, default_bins,
+                                                           min_bin_size)
+
+        # e.g. (sender, username)
+        self.local_field_name, self.target_field_name = self.field_name.split('__')
+
+    @property
+    def _path_info(self):
+        if not hasattr(self, '_path_info_cache'):
+            model = corpus_models.Message
+
+            # Get the django.db.models.related.PathInfo for this relation
+            path_infos = model._meta.get_field(self.local_field_name).get_path_info()
+            assert len(path_infos) == 1, "I cannot handle long path_infos!"
+
+            setattr(self, '_path_info_cache', path_infos[0])
+
+        return self._path_info_cache
+
+    def _get_join_condition(self):
+        """
+        Return a join condition like "`table1`.`field` = `table2`.`field`"
+
+        """
+        pi = self._path_info
+        assert len(pi.target_fields) == 1, "Complex multi-field joins not supported"
+        target_field = pi.target_fields[0]
+
+        return "`{from_table}`.`{from_field}` = `{to_table}`.`{to_field}`".format(
+            from_table=pi.from_opts.db_table,
+            from_field=pi.join_field.column,
+            to_table=pi.to_opts.db_table,
+            to_field=target_field.column,
+        )
+
+    def _add_manual_join(self, queryset):
+        """Add a join to the queryset"""
+        to_table = self._path_info.to_opts.db_table
+        return queryset.extra(
+            tables=[to_table],
+            where=[self._get_join_condition()]
+        )
+
+    def _render_grouping_expression(self, bin_size):
+        """Render the grouping expression, with support for manually joined tables"""
+
+        if bin_size == self.min_bin_size:
+            # Fall back because we're not even grouping anyway
+            return super(RelatedQuantitativeDimension, self)._render_grouping_expression(bin_size)
+        else:
+            to_table = self._path_info.to_opts.db_table
+            return self.grouping_expressions_joined[db_vendor()].format(
+                to_table=to_table,
+                target_field_name=self.target_field_name,
+                bin_size=bin_size
+            )
+
+    def _attach_grouping_expression(self, queryset, grouping_expression, grouping_key):
+        queryset = super(RelatedQuantitativeDimension, self)._attach_grouping_expression(
+            queryset,
+            grouping_expression,
+            grouping_key)
+
+        # We also need to specify the join manually :( :( :(
+        queryset = self._add_manual_join(queryset)
+
+        return queryset
 
 
 class TimeDimension(QuantitativeDimension):

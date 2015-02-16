@@ -173,42 +173,42 @@ register(models.RelatedCategoricalDimension(
     field_name='sender__username',
 ))
 
-register(models.QuantitativeDimension(
+register(models.RelatedQuantitativeDimension(
     key='sender_message_count',
     name='Num. Messages',
     description="The author's total number of messages",
     field_name='sender__message_count',
 ))
 
-register(models.QuantitativeDimension(
+register(models.RelatedQuantitativeDimension(
     key='sender_reply_count',
     name='Num. Replies',
     description="The total replies the author has received",
     field_name='sender__replied_to_count',
 ))
 
-register(models.QuantitativeDimension(
+register(models.RelatedQuantitativeDimension(
     key='sender_mention_count',
     name='Num. Mentions',
     description="The total times the author has been mentioned",
     field_name='sender__mentioned_count',
 ))
 
-register(models.QuantitativeDimension(
+register(models.RelatedQuantitativeDimension(
     key='sender_share_count',
     name='Num. Shares',
     description="The total shares or retweets the author has received",
     field_name='sender__shared_count',
 ))
 
-register(models.QuantitativeDimension(
+register(models.RelatedQuantitativeDimension(
     key='sender_friend_count',
     name='Num. Friends',
     description="The number of people the author has connected to",
     field_name='sender__friend_count',
 ))
 
-register(models.QuantitativeDimension(
+register(models.RelatedQuantitativeDimension(
     key='sender_follower_count',
     name='Num. Followers',
     description="The number of people who have ocnnected to the author",
