@@ -1,8 +1,52 @@
 from django.db import models
+from django.db.models import query
 from django.db.models import Q
 import operator
 from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.dimensions import distributions
+
+
+class MappedValuesQuerySet(query.ValuesQuerySet):
+    """
+    A special ValuesQuerySet that can re-map the dictionary keys
+    while they are bing iterated over.
+
+    .. code-block:: python
+
+        valuesQuerySet = queryset.values('some__ugly__field__expression')
+        mapped = MappedQuerySet.create_from(valuesQuerySet, {
+            'some__ugly__field__expression': 'nice_expression'
+        })
+        mapped[0]
+        # { 'nice_expression': 5 }
+
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(MappedValuesQuerySet, self).__init__(*args, **kwargs)
+        self.field_map = {}
+
+    @classmethod
+    def create_from(cls, values_query_set, field_map):
+        """Create a MappedValueQuerySet with a field name mapping dictionary."""
+        return values_query_set._clone(cls, field_map=field_map)
+
+    def _clone(self, klass=None, setup=False, **kwargs):
+        return super(MappedValuesQuerySet, self)._clone(klass, setup, field_map=self.field_map, **kwargs)
+
+    def iterator(self):
+        # Purge any extra columns that haven't been explicitly asked for
+        extra_names = list(self.query.extra_select)
+        field_names = self.field_names
+        aggregate_names = list(self.query.aggregate_select)
+
+        names = extra_names + field_names + aggregate_names
+
+        # Remap the fields, but fall back on regular name
+        names = [self.field_map.get(name, name) for name in names]
+
+        for row in self.query.get_compiler(self.db).results_iter():
+            yield dict(zip(names, row))
 
 
 class CategoricalDimension(object):
@@ -19,7 +63,7 @@ class CategoricalDimension(object):
 
     distribution = distributions.CategoricalDistribution()
 
-    def __init__(self, key, name, description, field_name=None):
+    def __init__(self, key, name=None, description=None, field_name=None):
         self.key = key
         self.name = name
         self.description = description
@@ -62,14 +106,17 @@ class CategoricalDimension(object):
         # Get the expression that groups this dimension for this queryset
         grouping_expression = self.get_grouping_expression(queryset)
 
-        if grouping_key != grouping_expression:
-            # We need to add this expression as a calculated field
-            # because otherwise Django just uses the expression itself as the
-            # grouping variable name.
-            queryset = queryset.extra(select={grouping_key: grouping_expression})
+        # Group the data
+        queryset = queryset.values(grouping_expression)
 
-        # Then group by the grouping field
-        return queryset.values(grouping_key)
+        if grouping_key != grouping_expression:
+            # We need to transform the output to match the requested grouping key
+            # queryset = queryset.extra(select={grouping_key: grouping_expression})
+            queryset = MappedValuesQuerySet.create_from(queryset, {
+                grouping_expression: grouping_key
+            })
+
+        return queryset
 
     def get_distribution(self, queryset):
         """Get the distribution of the dimension within the dataset."""
@@ -124,6 +171,17 @@ class TimeDimension(QuantitativeDimension):
 
 class RelatedCategoricalDimension(CategoricalDimension):
     """A categorical dimension where the values are in a related table."""
+
+    def get_distribution(self, queryset):
+        """Get the distribution of the dimension within the dataset."""
+        if self.distribution is None:
+            raise AttributeError("Dimension %s does not know how to calculate a distribution" % self.key)
+
+        # Use 'values' to group the queryset
+        queryset = self.group_by(queryset, 'value')
+
+        # Count the messages in each group
+        return queryset.annotate(count=models.Count('id'))
 
 
 class TextDimension(CategoricalDimension):

@@ -2,6 +2,7 @@
 
 from django.test import TestCase
 
+from msgvis.apps.dimensions import registry
 from msgvis.apps.dimensions import distributions
 from msgvis.apps.corpus import models as corpus_models
 
@@ -167,10 +168,10 @@ class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
             many=True,
         )
 
-        calculator = distributions.CategoricalDistribution()
+        dimension = registry.get_dimension('hashtags')
 
         # Calculate the categorical distribution over the field name
-        result = calculator.group_by(dataset, field_name='hashtags__text')
+        result = dimension.get_distribution(dataset.message_set.all())
         self.assertDistributionsEqual(result, hashtag_text_distribution)
 
     def test_boolean_distribution(self):
