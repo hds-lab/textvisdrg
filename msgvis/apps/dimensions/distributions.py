@@ -35,30 +35,6 @@ class BaseDistribution(object):
     def _get_base_set(self, dataset):
         return dataset.message_set.all()
 
-
-class CategoricalDistribution(BaseDistribution):
-    """A distribution suitable for simple categorical variables."""
-
-    def group_by(self, dataset, field_name=None):
-        if field_name is None:
-            field_name = self.field_name
-
-        items = self._get_base_set(dataset)
-
-        # Group by the field
-        items = items.values(field_name)
-
-        # Count the messages in each group
-        grouped = items.annotate(count=models.Count('id'))
-
-        # Now we have to normalize the output though
-        # so that it uses a 'value' key.
-        return [{
-                    'value': g[field_name],
-                    'count': g['count'],
-                } for g in grouped]
-
-
 class BinnedResultSet(list):
     """A class for storing binned results with metadata."""
 

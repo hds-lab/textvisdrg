@@ -61,8 +61,6 @@ class CategoricalDimension(object):
                           Related to the Message model: if you want sender name, use sender__name.
     """
 
-    distribution = distributions.CategoricalDistribution()
-
     def __init__(self, key, name=None, description=None, field_name=None):
         self.key = key
         self.name = name
@@ -120,8 +118,6 @@ class CategoricalDimension(object):
 
     def get_distribution(self, queryset):
         """Get the distribution of the dimension within the dataset."""
-        if self.distribution is None:
-            raise AttributeError("Dimension %s does not know how to calculate a distribution" % self.key)
 
         # Use 'values' to group the queryset
         queryset = self.group_by(queryset, 'value')
@@ -170,18 +166,7 @@ class TimeDimension(QuantitativeDimension):
 
 
 class RelatedCategoricalDimension(CategoricalDimension):
-    """A categorical dimension where the values are in a related table."""
-
-    def get_distribution(self, queryset):
-        """Get the distribution of the dimension within the dataset."""
-        if self.distribution is None:
-            raise AttributeError("Dimension %s does not know how to calculate a distribution" % self.key)
-
-        # Use 'values' to group the queryset
-        queryset = self.group_by(queryset, 'value')
-
-        # Count the messages in each group
-        return queryset.annotate(count=models.Count('id'))
+    """A categorical dimension where the values are in a related table, e.g. sender name."""
 
 
 class TextDimension(CategoricalDimension):

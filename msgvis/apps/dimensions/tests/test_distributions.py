@@ -114,7 +114,7 @@ class DistributionTestCaseMixins(object):
         self.assertEquals(len(result), len(desired_distribution) - len(zeros))
 
 
-class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
+class CategoricalDimensionsRegistryTest(DistributionTestCaseMixins, TestCase):
     def test_related_categorical_distribution(self):
         """
         Checks that the distribution of a categorical related model field,
