@@ -1,7 +1,9 @@
 from django.db import models
 
-from msgvis.apps.dimensions import registry as dimensions
+from msgvis.apps.dimensions import registry
+
 from django.db.models import Q
+
 
 class Article(models.Model):
     """
@@ -23,20 +25,6 @@ class Article(models.Model):
     venue = models.CharField(max_length=250, default=None, blank=True)
     """The venue where the article was published."""
 
-
-class Dimension(models.Model):
-    """
-    Dimension names for research questions.
-    """
-
-    key = models.CharField(max_length=20, unique=True)
-    """The id of the dimension"""
-
-    def get_dimension(self):
-        """Get the actual dimension object that can do stuff."""
-        return dimensions.get_dimension(self.key)
-
-
 class Question(models.Model):
     """
     A research question from an :class:`Article`.
@@ -49,8 +37,15 @@ class Question(models.Model):
     text = models.TextField()
     """The text of the question."""
 
-    dimensions = models.ManyToManyField(Dimension)
+    dimensions = models.ManyToManyField("dimensions.DimensionKey")
     """A set of dimensions related to the question."""
+
+    @staticmethod
+    def get_dimension_key_model(key):
+        return registry.get_dimension(key).get_key_model()
+
+    def add_dimension(self, key):
+        self.dimensions.add(self.get_dimension_key_model(key))
 
 def get_sample_questions(dimension_list):
     """

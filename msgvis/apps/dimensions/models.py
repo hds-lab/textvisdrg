@@ -101,6 +101,11 @@ class CategoricalDimension(object):
             queryset = queryset.filter(Q((self.field_name, filter['value'])))
         return queryset
 
+    def get_key_model(self):
+        dimension_key_model, created = DimensionKey.objects.get_or_create(key=self.key)
+        return dimension_key_model
+
+
     def filter(self, queryset, filter):
         """Apply a filter to a queryset and return the new queryset."""
 
@@ -530,4 +535,12 @@ class TextDimension(CategoricalDimension):
     """
     A dimension based on the words in a text field.
     """
+
+class DimensionKey(models.Model):
+    """
+    Dimension names for research questions.
+    """
+
+    key = models.CharField(max_length=20, unique=True)
+    """The id of the dimension"""
 
