@@ -81,11 +81,12 @@ class CategoricalDimension(object):
     A basic categorical dimension class.
 
     Attributes:
-        key (str): A string id for the dimension (e.g. 'time')
-        name (str): A nicely-formatted name for the dimension (e.g. 'Number of Tweets')
-        description (str): A longer explanation for the dimension (e.g. "The total number of tweets produced by this author.")
-        field_name (str): The name of the field in the database for this dimension (defaults to the key)
-                          Related to the Message model: if you want sender name, use sender__name.
+
+        - key (str): A string id for the dimension (e.g. 'time')
+        - name (str): A nicely-formatted name for the dimension (e.g. 'Number of Tweets')
+        - description (str): A longer explanation for the dimension (e.g. "The total number of tweets produced by this author.")
+        - field_name (str): The name of the field in the database for this dimension (defaults to the key)
+                            Related to the Message model: if you want sender name, use sender__name.
     """
 
     def __init__(self, key, name=None, description=None, field_name=None):
@@ -230,12 +231,12 @@ class QuantitativeDimension(CategoricalDimension):
                                        max=models.Max(self.field_name))
 
         self._cached_range_queryset_id = id(queryset)
-        self._cached_range = dim_range
-
         if dim_range is None:
-            return None, None
+            self._cached_range = None, None
+        else:
+            self._cached_range = dim_range['min'], dim_range['max']
 
-        return dim_range['min'], dim_range['max']
+        return self._cached_range
 
     def _get_bin_size(self, min_val, max_val, desired_bins):
         """

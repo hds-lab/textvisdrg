@@ -20,12 +20,16 @@ The view classes below define the API endpoints.
 +-----------------------------------------------------------------+-----------------+-------------------------------------------------+
 """
 
+from rest_framework import status
 from rest_framework.views import APIView, Response
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.reverse import reverse
-
 from rest_framework.compat import get_resolver_match, OrderedDict
 
+from msgvis.apps.api import serializers
+import logging
+
+logger = logging.getLogger(__name__)
 
 class DataTableView(APIView):
     """
@@ -190,8 +194,8 @@ class DimensionDistributionView(APIView):
     ::
 
         {
-          "id": 7,
-          "query": "cat"
+          "dataset": 2,
+          "dimension": 'time'
         }
 
     **Example Response:**
@@ -199,31 +203,47 @@ class DimensionDistributionView(APIView):
     ::
 
         {
-          "id": 7,
-          "query": "cat",
-          "domain": [
+          "dataset": 2,
+          "dimension": 'time',
+          "distribution": [
             {
               "count": 5000,
-              "value": "cat"
+              "value": "some_time"
             },
             {
               "count": 1000,
-              "value": "catch"
+              "value": "some_time"
             },
             {
               "count": 500,
-              "value": "cathedral"
+              "value": "some_time"
             },
             {
               "count": 50,
-              "value": "cataleptic"
+              "value": "some_time"
             }
           ]
         }
     """
 
     def post(self, request, format=None):
-        return Response()
+        input = serializers.DimensionDistributionSerializer(data=request.data)
+        if input.is_valid():
+            data = input.validated_data
+
+            dimension = data['dimension']
+            dataset = data['dataset']
+
+            response_data = {
+                'dimension': dimension,
+                'dataset': dataset,
+                'distribution': dimension.get_distribution(dataset),
+            }
+
+            output = serializers.DimensionDistributionSerializer(response_data)
+            return Response(output.data, status=status.HTTP_200_OK)
+
+        return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class FilterSummaryView(APIView):
