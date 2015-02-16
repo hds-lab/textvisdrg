@@ -30,3 +30,6 @@ docutils
 
 # angular
 django-angular
+
+# TextBlob
+textblob
