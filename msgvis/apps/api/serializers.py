@@ -13,14 +13,14 @@ This module defines serializers for the main API data objects:
 
 from rest_framework import serializers
 
-from msgvis.apps.corpus.models import Message, Person
-from msgvis.apps.questions.models import Question, Article, Dimension
-from msgvis.apps.dimensions import registry as dimensions
+import msgvis.apps.corpus.models as corpus_models
+import msgvis.apps.questions.models as questions_models
+from msgvis.apps.dimensions import registry
 
 
 class PersonSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Person
+        model = corpus_models.Person
         fields = ('id', 'dataset', 'original_id', 'username', 'full_name',)
 
 
@@ -54,13 +54,13 @@ class MessageSerializer(serializers.ModelSerializer):
     sender = PersonSerializer()
 
     class Meta:
-        model = Message
+        model = corpus_models.Message
         fields = ('id', 'dataset', 'text', 'sender', 'time')
 
 
 class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Article
+        model = questions_models.Article
         fields = ('id', 'authors', 'link', 'title', 'year', 'venue',)
 
 
@@ -99,7 +99,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     dimensions = serializers.SlugRelatedField(many=True, read_only=True, slug_field='key')
 
     class Meta:
-        model = Question
+        model = questions_models.Question
         fields = ('id', 'source', 'dimensions', 'text',)
         read_only_fields = fields
 
@@ -124,13 +124,13 @@ class DimensionSerializer(serializers.Serializer):
     description = serializers.CharField(read_only=True)
 
     def to_internal_value(self, data):
-        return dimensions.get_dimension(data['key'])
+        return registry.get_dimension(data['key'])
 
 
 # A simple string field that looks up dimensions on deserialization
 class DimensionKeySerializer(serializers.CharField):
     def to_internal_value(self, data):
-        return dimensions.get_dimension(data)
+        return registry.get_dimension(data)
 
     def to_representation(self, instance):
         return instance.key
@@ -150,7 +150,7 @@ class FilterSerializer(serializers.Serializer):
         },
         {
           "dimension": 'words',
-          "include": [
+          "levels": [
             "cat",
             "dog",
             "alligator"
@@ -182,4 +182,40 @@ class FilterSerializer(serializers.Serializer):
     min_time = serializers.DateTimeField(required=False)
     max_time = serializers.DateTimeField(required=False)
 
-    include = serializers.ListSerializer(child=serializers.CharField(), required=False)
+    levels = serializers.ListSerializer(child=serializers.CharField(), required=False)
+
+
+class DimensionDistributionSerializer(serializers.Serializer):
+    """
+    Dimension distribution requests.
+    Post these without the distribution key.
+
+    ::
+
+        {
+          "dataset": 2,
+          "dimension": 'time',
+          "distribution": [
+            {
+              "count": 5000,
+              "value": "some_time"
+            },
+            {
+              "count": 1000,
+              "value": "some_time"
+            },
+            {
+              "count": 500,
+              "value": "some_time"
+            },
+            {
+              "count": 50,
+              "value": "some_time"
+            }
+          ]
+        }
+    """
+
+    dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
+    dimension = DimensionKeySerializer()
+    distribution = serializers.ListField(child=serializers.DictField(), required=False, read_only=True)

@@ -44,7 +44,7 @@ register(models.TimeDimension(
     field_name='time',
 ))
 
-register(models.ForeignKeyDimension(
+register(models.RelatedCategoricalDimension(
     key='timezone',
     name='Timezone',
     description="The message sender's local timezone",
@@ -53,7 +53,7 @@ register(models.ForeignKeyDimension(
 # END TIME DIMENSIONS
 
 # BEGIN CONTENT DIMENSIONS
-register(models.ForeignKeyDimension(
+register(models.RelatedCategoricalDimension(
     key='topics',
     name='Topic',
     description='Topics found in the message.',
@@ -67,7 +67,7 @@ register(models.TextDimension(
     field_name='text',
 ))
 
-register(models.ForeignKeyDimension(
+register(models.RelatedCategoricalDimension(
     key='hashtags',
     name='Hashtags',
     description='Hashtags in the message',
@@ -81,7 +81,7 @@ register(models.CategoricalDimension(
     field_name='contains_hashtag',
 ))
 
-register(models.ForeignKeyDimension(
+register(models.RelatedCategoricalDimension(
     key='urls',
     name='Urls',
     description='Urls in the message',
@@ -95,7 +95,7 @@ register(models.CategoricalDimension(
     field_name='contains_url',
 ))
 
-register(models.ForeignKeyDimension(
+register(models.RelatedCategoricalDimension(
     key='media',
     name='Media',
     description='Photos in the message',
@@ -112,23 +112,23 @@ register(models.CategoricalDimension(
 # END CONTENT DIMENSIONS
 
 # BEGIN META DIMENSIONS
-register(models.ForeignKeyDimension(
+register(models.RelatedCategoricalDimension(
     key='language',
     name='Language',
     description='The language of the message',
     field_name='language__code',
 ))
 
-register(models.ForeignKeyDimension(
+register(models.RelatedCategoricalDimension(
     key='sentiment',
     name='Sentiment',
     description='The sentiment of the message',
-    field_name='sentiment__name',
+    field_name='sentiment__value',
 ))
 # END META DIMENSIONS
 
 # BEGIN INTERACTIONS DIMENSIONS
-register(models.ForeignKeyDimension(
+register(models.RelatedCategoricalDimension(
     key='type',
     name='Message type',
     description='The type of message',
@@ -149,7 +149,7 @@ register(models.QuantitativeDimension(
     field_name='shared_count',
 ))
 
-register(models.ForeignKeyDimension(
+register(models.RelatedCategoricalDimension(
     key='mentions',
     name='Mentions',
     description='Usernames mentioned in the message',
@@ -165,53 +165,53 @@ register(models.CategoricalDimension(
 
 # END INTERACTIONS DIMENSIONS
 
-# BEGIN AUTHOR DIMENSIONS
-register(models.CategoricalDimension(
-    key='author_name',
+# BEGIN SENDER DIMENSIONS
+register(models.RelatedCategoricalDimension(
+    key='sender_name',
     name='Author name',
     description='The name of the message author',
     field_name='sender__username',
 ))
 
-register(models.QuantitativeDimension(
-    key='author_message_count',
+register(models.RelatedQuantitativeDimension(
+    key='sender_message_count',
     name='Num. Messages',
     description="The author's total number of messages",
     field_name='sender__message_count',
 ))
 
-register(models.QuantitativeDimension(
-    key='author_reply_count',
+register(models.RelatedQuantitativeDimension(
+    key='sender_reply_count',
     name='Num. Replies',
     description="The total replies the author has received",
     field_name='sender__replied_to_count',
 ))
 
-register(models.QuantitativeDimension(
-    key='author_mention_count',
+register(models.RelatedQuantitativeDimension(
+    key='sender_mention_count',
     name='Num. Mentions',
     description="The total times the author has been mentioned",
     field_name='sender__mentioned_count',
 ))
 
-register(models.QuantitativeDimension(
-    key='author_share_count',
+register(models.RelatedQuantitativeDimension(
+    key='sender_share_count',
     name='Num. Shares',
     description="The total shares or retweets the author has received",
     field_name='sender__shared_count',
 ))
 
-register(models.QuantitativeDimension(
-    key='author_friend_count',
+register(models.RelatedQuantitativeDimension(
+    key='sender_friend_count',
     name='Num. Friends',
     description="The number of people the author has connected to",
     field_name='sender__friend_count',
 ))
 
-register(models.QuantitativeDimension(
-    key='author_follower_count',
+register(models.RelatedQuantitativeDimension(
+    key='sender_follower_count',
     name='Num. Followers',
     description="The number of people who have ocnnected to the author",
     field_name='sender__follower_count',
 ))
-# END AUTHOR DIMENSIONS
+# END SENDER DIMENSIONS

@@ -4,7 +4,7 @@ from django.utils.timezone import now, timedelta
 from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.dimensions import registry as dimensions
 from msgvis.apps.questions import models as questions_models
-import serializers
+from msgvis.apps.api import serializers
 
 
 def api_time_format(dt):
@@ -224,6 +224,51 @@ class DimensionSerializerTest(TestCase):
         self.assertEquals(serializer.validated_data, self.deserialized_representation)
 
 
+class DimensionDistributionSerializerTest(TestCase):
+    """
+    {
+      "dataset": 2,
+      "dimension": "time",
+      "distribution": [...]
+    }
+    """
+
+    def setUp(self):
+        self.dimension = dimensions.get_dimension('time')
+        self.dataset = corpus_models.Dataset.objects.create(name="test dataset", description='description')
+
+        self.serialized_representation = {
+            'dataset': self.dataset.id,
+            'dimension': self.dimension.key,
+        }
+
+        # Should lookup exactly the same dimension
+        self.deserialized_representation = {
+            'dataset': self.dataset,
+            'dimension': self.dimension,
+        }
+
+
+    def test_dimension_distribution_serialization(self):
+        distribution = [
+            dict(value=2, count=5),
+            dict(value=56, count=23),
+            dict(value='asdf', count=53),
+        ]
+
+        self.deserialized_representation['distribution'] = distribution
+        self.serialized_representation['distribution'] = distribution
+
+        serializer = serializers.DimensionDistributionSerializer(self.deserialized_representation)
+        result = serializer.data
+        self.assertDictEqual(result, self.serialized_representation)
+
+    def test_dimension_distribution_deserialization(self):
+        serializer = serializers.DimensionDistributionSerializer(data=self.serialized_representation)
+        self.assertTrue(serializer.is_valid())
+        self.assertEquals(serializer.validated_data, self.deserialized_representation)
+
+
 class QuantitativeFilterSerializerTest(TestCase):
     """
     {
@@ -326,12 +371,12 @@ class CategoricalFilterSerializerTest(TestCase):
 
         self.internal_filter = {
             'dimension': self.dimension,
-            'include': ['a', 'b', 'c'],
+            'levels': ['a', 'b', 'c'],
         }
 
         self.external_filter = {
             'dimension': self.dimension.key,
-            'include': self.internal_filter['include']
+            'levels': self.internal_filter['levels']
         }
 
     def test_categorical_filter_serialization(self):

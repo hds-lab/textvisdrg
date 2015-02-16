@@ -1,8 +1,8 @@
-"""Test the distributions"""
+"""Test that the registered dimensions can get their distributions"""
 
 from django.test import TestCase
 
-from msgvis.apps.dimensions import distributions
+from msgvis.apps.dimensions import registry
 from msgvis.apps.corpus import models as corpus_models
 
 from django.conf import settings
@@ -56,6 +56,26 @@ class DistributionTestCaseMixins(object):
 
         return dataset
 
+    def recover_related_field_distribution(self, id_distribution, model_class, field_name):
+        """
+        Given a dict of author id to message count,
+        produces a dict of author field values to message counts.
+
+        If there are multiple authors with the same field value,
+        their message counts will be added.
+        """
+        field_distribution = {}
+        for pid, pcount in id_distribution.iteritems():
+            obj = model_class.objects.get(id=pid)
+
+            field_val = getattr(obj, field_name)
+            if field_val not in field_distribution:
+                field_distribution[field_val] = 0
+
+            field_distribution[field_val] += pcount
+
+        return field_distribution
+
 
     def assertDistributionsEqual(self, result, desired_distribution):
         """
@@ -93,8 +113,8 @@ class DistributionTestCaseMixins(object):
         self.assertEquals(len(result), len(desired_distribution) - len(zeros))
 
 
-class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
-    def test_related_model_distribution(self):
+class CategoricalDimensionsRegistryTest(DistributionTestCaseMixins, TestCase):
+    def test_related_categorical_distribution(self):
         """
         Checks that the distribution of a categorical related model field,
         in this case Sentiment, can be calculated correctly.
@@ -109,18 +129,20 @@ class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
 
         sentiment_ids = corpus_models.Sentiment.objects.values_list('id', flat=True).distinct()
         sentiment_distribution = self.get_distribution(sentiment_ids)
+        sentiment_value_distribution = self.recover_related_field_distribution(sentiment_distribution,
+                                                                               corpus_models.Sentiment, 'value')
 
         dataset = self.generate_messages_for_distribution(
             field_name='sentiment_id',
             distribution=sentiment_distribution,
         )
 
-        calculator = distributions.ForeignKeyDistribution()
+        dimension = registry.get_dimension('sentiment')
 
         # Calculate the categorical distribution over the field name
-        result = calculator.group_by(dataset, field_name='sentiment')
+        result = dimension.get_distribution(dataset.message_set.all())
 
-        self.assertDistributionsEqual(result, sentiment_distribution)
+        self.assertDistributionsEqual(result, sentiment_value_distribution)
 
     def test_many_related_model_distribution(self):
         """
@@ -136,6 +158,8 @@ class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
 
         hashtag_ids = corpus_models.Hashtag.objects.values_list('id', flat=True).distinct()
         hashtag_distribution = self.get_distribution(hashtag_ids)
+        hashtag_text_distribution = self.recover_related_field_distribution(hashtag_distribution,
+                                                                            corpus_models.Hashtag, 'text')
 
         dataset = self.generate_messages_for_distribution(
             field_name='hashtags',
@@ -143,11 +167,11 @@ class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
             many=True,
         )
 
-        calculator = distributions.ForeignKeyDistribution()
+        dimension = registry.get_dimension('hashtags')
 
         # Calculate the categorical distribution over the field name
-        result = calculator.group_by(dataset, field_name='hashtags')
-        self.assertDistributionsEqual(result, hashtag_distribution)
+        result = dimension.get_distribution(dataset.message_set.all())
+        self.assertDistributionsEqual(result, hashtag_text_distribution)
 
     def test_boolean_distribution(self):
         """
@@ -163,8 +187,8 @@ class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
             distribution=bool_distribution,
         )
 
-        calculator = distributions.CategoricalDistribution()
-        result = calculator.group_by(dataset, field_name='contains_url')
+        dimension = registry.get_dimension('contains_url')
+        result = dimension.get_distribution(dataset.message_set.all())
         self.assertDistributionsEqual(result, bool_distribution)
 
     def test_boolean_distribution_with_zeros(self):
@@ -182,8 +206,8 @@ class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
             distribution=bool_distribution,
         )
 
-        calculator = distributions.CategoricalDistribution()
-        result = calculator.group_by(dataset, field_name='contains_url')
+        dimension = registry.get_dimension('contains_url')
+        result = dimension.get_distribution(dataset.message_set.all())
         self.assertDistributionsEqual(result, bool_distribution)
 
     def test_empty_boolean_distribution(self):
@@ -199,8 +223,8 @@ class CategoricalDistributionsTest(DistributionTestCaseMixins, TestCase):
             distribution=bool_distribution,
         )
 
-        calculator = distributions.CategoricalDistribution()
-        result = calculator.group_by(dataset, field_name='contains_url')
+        dimension = registry.get_dimension('contains_url')
+        result = dimension.get_distribution(dataset.message_set.all())
         self.assertDistributionsEqual(result, bool_distribution)
 
 
@@ -218,8 +242,9 @@ class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
             distribution=shared_count_distribution,
         )
 
-        calculator = distributions.QuantitativeDistribution()
-        result = calculator.group_by(dataset, field_name='shared_count')
+        dimension = registry.get_dimension('shares')
+        result = dimension.get_distribution(dataset.message_set.all())
+
         self.assertDistributionsEqual(result, shared_count_distribution)
 
     def test_wide_count_distribution(self):
@@ -239,8 +264,9 @@ class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
             100: shared_count_distribution[100] + shared_count_distribution[101],
         }
 
-        calculator = distributions.QuantitativeDistribution(desired_bins=5)
-        result = calculator.group_by(dataset, field_name='shared_count')
+        dimension = registry.get_dimension('shares')
+        result = dimension.get_distribution(dataset.message_set.all(), bins=5)
+
         self.assertEquals(result.bin_size, 20)
         self.assertEquals(result.min_val, 1)
         self.assertEquals(result.max_val, 101)
@@ -259,8 +285,9 @@ class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
             distribution=shared_count_distribution,
         )
 
-        calculator = distributions.QuantitativeDistribution(desired_bins=50)
-        result = calculator.group_by(dataset, field_name='shared_count')
+        dimension = registry.get_dimension('shares')
+        result = dimension.get_distribution(dataset.message_set.all(), bins=50)
+
         self.assertEquals(result.bin_size, 1)
         self.assertEquals(result.min_val, 1)
         self.assertEquals(result.max_val, 3)
@@ -317,8 +344,8 @@ class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
             distribution=time_distribution,
         )
 
-        calculator = distributions.TimeDistribution(desired_bins=2000)
-        result = calculator.group_by(dataset, field_name='time')
+        dimension = registry.get_dimension('time')
+        result = dimension.get_distribution(dataset, bins=2000)
 
         self.fix_datetimes(result)
 
@@ -348,8 +375,8 @@ class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
             day2: time_distribution[times[1]]
         }
 
-        calculator = distributions.TimeDistribution(desired_bins=4)
-        result = calculator.group_by(dataset, field_name='time')
+        dimension = registry.get_dimension('time')
+        result = dimension.get_distribution(dataset, bins=4)
 
         self.fix_datetimes(result)
 
@@ -362,8 +389,8 @@ class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
         """Run a generic time bin test."""
         t0 = self.base_time
         t1 = t0 + delta
-        calculator = distributions.TimeDistribution(desired_bins=desired_bins)
-        self.assertEquals(calculator._get_bin_size(t0, t1), expected_bin_size)
+        dimension = registry.get_dimension('time')
+        self.assertEquals(dimension._get_bin_size(t0, t1, desired_bins), expected_bin_size)
 
     def test_time_bin_min_size(self):
         """Returns minimum bin size of 1 second."""
@@ -394,7 +421,8 @@ class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
             delta=tz.timedelta(minutes=4),
             desired_bins=9,
             expected_bin_size=15,
-            )
+        )
+
 
 class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
     def generate_authors(self, field_name, values):
@@ -422,58 +450,80 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
         )
         return author_distribution
 
-    def recover_author_field_distribution(self, author_distribution, author_field_name):
-        """
-        Given a dict of author id to message count,
-        produces a dict of author field values to message counts.
-
-        If there are multiple authors with the same field value,
-        their message counts will be added.
-        """
-        field_distribution = {}
-        for pid, pcount in author_distribution.iteritems():
-            author = corpus_models.Person.objects.get(id=pid)
-
-            field_val = getattr(author, author_field_name)
-            if field_val not in field_distribution:
-                field_distribution[field_val] = 0
-
-            field_distribution[field_val] += pcount
-
-        return field_distribution
-
     def test_author_name_distribution(self):
         """Count messages by author name"""
         dataset = self.generate_authors('username', ['username_%d' % d for d in xrange(5)])
         author_distribution = self.distibute_messages_to_authors(dataset)
-        author_name_distribution = self.recover_author_field_distribution(author_distribution, 'username')
+        author_name_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
+                                                                           'username')
 
-        calculator = distributions.CategoricalDistribution()
+        dimension = registry.get_dimension('sender_name')
 
         # Calculate the categorical distribution over the field name
-        result = calculator.group_by(dataset, field_name='sender__username')
+        result = dimension.get_distribution(dataset.message_set.all())
         self.assertDistributionsEqual(result, author_name_distribution)
 
     def test_author_count_distribution(self):
         """Can count messages for different author message_counts"""
         dataset = self.generate_authors('message_count', [5, 10, 15, 20, 25])
         author_distribution = self.distibute_messages_to_authors(dataset)
-        author_count_distribution = self.recover_author_field_distribution(author_distribution, 'message_count')
+        author_count_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
+                                                                            'message_count')
 
-        calculator = distributions.PersonQuantitativeDistribution()
-
-        # Calculate the categorical distribution over the field name
-        result = calculator.group_by(dataset, field_name='message_count')
+        dimension = registry.get_dimension('sender_message_count')
+        result = dimension.get_distribution(dataset)
         self.assertDistributionsEqual(result, author_count_distribution)
 
     def test_author_count_distribution_with_duplicates(self):
         """Multiple authors with the same message_count."""
         dataset = self.generate_authors('message_count', [5, 10, 15, 20, 25, 5, 10, 15])
         author_distribution = self.distibute_messages_to_authors(dataset)
-        author_count_distribution = self.recover_author_field_distribution(author_distribution, 'message_count')
+        author_count_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
+                                                                            'message_count')
 
-        calculator = distributions.PersonQuantitativeDistribution()
+        dimension = registry.get_dimension('sender_message_count')
+        result = dimension.get_distribution(dataset)
+        self.assertDistributionsEqual(result, author_count_distribution)
 
-        # Calculate the categorical distribution over the field name
-        result = calculator.group_by(dataset, field_name='message_count')
+
+    def test_wide_author_count_distribution(self):
+        """
+        If the range of the counts is very large,
+        they should come out binned.
+        """
+        dataset = self.generate_authors('message_count', [5, 10, 2005])
+        author_distribution = self.distibute_messages_to_authors(dataset)
+        author_count_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
+                                                                            'message_count')
+        binned_distribution = {
+            0: author_count_distribution[5] + author_count_distribution[10],
+            2000: author_count_distribution[2005]
+        }
+
+        dimension = registry.get_dimension('sender_message_count')
+        result = dimension.get_distribution(dataset, bins=2)
+
+        self.assertEquals(result.bin_size, 1000)
+        self.assertEquals(result.min_val, 5)
+        self.assertEquals(result.max_val, 2005)
+        self.assertDistributionsEqual(result, binned_distribution)
+
+
+    def test_narrow_author_count_distribution(self):
+        """
+        If the range is very small but we ask for a lot of bins,
+        we should get a bin size of 1.
+        """
+
+        dataset = self.generate_authors('message_count', [5, 6, 7])
+        author_distribution = self.distibute_messages_to_authors(dataset)
+        author_count_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
+                                                                            'message_count')
+
+        dimension = registry.get_dimension('sender_message_count')
+        result = dimension.get_distribution(dataset.message_set.all(), bins=50)
+
+        self.assertEquals(result.bin_size, 1)
+        self.assertEquals(result.min_val, 5)
+        self.assertEquals(result.max_val, 7)
         self.assertDistributionsEqual(result, author_count_distribution)
