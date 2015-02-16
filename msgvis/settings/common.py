@@ -65,10 +65,12 @@ DATABASES = {
 }
 
 # enable utf8mb4 on mysql
-DATABASES['default']['OPTIONS'] = {
-    'charset': 'utf8mb4',
-    'init_command': 'SET storage_engine=INNODB',
-}
+if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
+    # enable utf8mb4 on mysql
+    DATABASES['default']['OPTIONS'] = {
+        'charset': 'utf8mb4',
+        'init_command': 'SET storage_engine=INNODB',
+    }
 
 ########## END DATABASE CONFIGURATION
 
@@ -286,6 +288,7 @@ INSTALLED_APPS += (
 # Only show the debug toolbar to users with the superuser flag.
 def custom_show_toolbar(request):
     return request.user.is_superuser
+
 
 DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,

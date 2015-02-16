@@ -1,3 +1,4 @@
+from inspect import trace
 import operator
 import math
 
@@ -124,7 +125,7 @@ class CategoricalDimension(object):
             queryset = queryset.filter(reduce(operator.or_, [Q(x) for x in filter_ors]))
         return queryset
 
-    def group_by(self, queryset, grouping_key=None):
+    def group_by(self, queryset, grouping_key=None, **kwargs):
         """
         Return a ValuesQuerySet that has been grouped by this dimension.
         The group value will be available as grouping_key in the dictionaries.
@@ -221,27 +222,19 @@ class QuantitativeDimension(CategoricalDimension):
         """
         Find a min and max for this dimension, as a tuple.
         If there isn't one, (None, None) is returned.
-
-        Calling this multiple times on the same queryset object will
-        use a cached value.
         """
 
-        if self._cached_range_queryset_id == id(queryset):
-            return self._cached_range
-
         # Type checking
-        _queryset = find_messages(queryset)
+        queryset = find_messages(queryset)
 
-        dim_range = _queryset.aggregate(min=models.Min(self.field_name),
+        dim_range = queryset.aggregate(min=models.Min(self.field_name),
                                        max=models.Max(self.field_name))
 
-        self._cached_range_queryset_id = id(queryset)
         if dim_range is None:
-            self._cached_range = None, None
+            return None, None
         else:
-            self._cached_range = dim_range['min'], dim_range['max']
+            return dim_range['min'], dim_range['max']
 
-        return self._cached_range
 
     def _get_bin_size(self, min_val, max_val, desired_bins):
         """
@@ -271,7 +264,11 @@ class QuantitativeDimension(CategoricalDimension):
             if bins is None:
                 bins = self.default_bins
 
-            min_val, max_val = self.get_range(queryset)
+            if 'min_val' not in kwargs or 'max_val' not in kwargs:
+                min_val, max_val = self.get_range(queryset)
+            else:
+                min_val, max_val = kwargs['min_val'], kwargs['max_val']
+
             if min_val is None:
                 return None
 
@@ -300,7 +297,7 @@ class QuantitativeDimension(CategoricalDimension):
         })
         return queryset
 
-    def group_by(self, queryset, grouping_key=None, bins=None, bin_size=None):
+    def group_by(self, queryset, grouping_key=None, bins=None, bin_size=None, **kwargs):
         """
         Return a ValuesQuerySet that has been grouped by this dimension.
         The group value will be available as grouping_key in the dictionaries.
@@ -320,7 +317,7 @@ class QuantitativeDimension(CategoricalDimension):
         # Type checking
         queryset = find_messages(queryset)
 
-        expression = self.get_grouping_expression(queryset, bins=bins, bin_size=bin_size)
+        expression = self.get_grouping_expression(queryset, bins=bins, bin_size=bin_size, **kwargs)
 
         if expression == self.field_name:
 
@@ -356,7 +353,7 @@ class QuantitativeDimension(CategoricalDimension):
         bin_size = self._get_bin_size(min_val, max_val, bins)
 
         # Group by that bin size
-        queryset = self.group_by(queryset, value_key, bin_size=bin_size)
+        queryset = self.group_by(queryset, value_key, bin_size=bin_size, min_val=min_val, max_val=max_val)
 
         # Count the messages in each group
         queryset = queryset.annotate(count=models.Count('id'))
