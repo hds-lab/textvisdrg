@@ -455,10 +455,10 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
         author_name_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
                                                                            'username')
 
-        calculator = distributions.CategoricalDistribution()
+        dimension = registry.get_dimension('sender_name')
 
         # Calculate the categorical distribution over the field name
-        result = calculator.group_by(dataset, field_name='sender__username')
+        result = dimension.get_distribution(dataset.message_set.all())
         self.assertDistributionsEqual(result, author_name_distribution)
 
     def test_author_count_distribution(self):

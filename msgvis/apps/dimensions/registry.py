@@ -165,53 +165,53 @@ register(models.CategoricalDimension(
 
 # END INTERACTIONS DIMENSIONS
 
-# BEGIN AUTHOR DIMENSIONS
+# BEGIN SENDER DIMENSIONS
 register(models.RelatedCategoricalDimension(
-    key='author_name',
+    key='sender_name',
     name='Author name',
     description='The name of the message author',
     field_name='sender__username',
 ))
 
 register(models.QuantitativeDimension(
-    key='author_message_count',
+    key='sender_message_count',
     name='Num. Messages',
     description="The author's total number of messages",
     field_name='sender__message_count',
 ))
 
 register(models.QuantitativeDimension(
-    key='author_reply_count',
+    key='sender_reply_count',
     name='Num. Replies',
     description="The total replies the author has received",
     field_name='sender__replied_to_count',
 ))
 
 register(models.QuantitativeDimension(
-    key='author_mention_count',
+    key='sender_mention_count',
     name='Num. Mentions',
     description="The total times the author has been mentioned",
     field_name='sender__mentioned_count',
 ))
 
 register(models.QuantitativeDimension(
-    key='author_share_count',
+    key='sender_share_count',
     name='Num. Shares',
     description="The total shares or retweets the author has received",
     field_name='sender__shared_count',
 ))
 
 register(models.QuantitativeDimension(
-    key='author_friend_count',
+    key='sender_friend_count',
     name='Num. Friends',
     description="The number of people the author has connected to",
     field_name='sender__friend_count',
 ))
 
 register(models.QuantitativeDimension(
-    key='author_follower_count',
+    key='sender_follower_count',
     name='Num. Followers',
     description="The number of people who have ocnnected to the author",
     field_name='sender__follower_count',
 ))
-# END AUTHOR DIMENSIONS
+# END SENDER DIMENSIONS
