@@ -160,8 +160,8 @@ class QuestionSerializerTest(TestCase):
                                                           title="An article title",
                                                           venue="VENUE 2001", )
 
-        d1 = questions_models.Dimension.objects.create(key="something")
-        d2 = questions_models.Dimension.objects.create(key="else")
+        d1 = questions_models.Question.get_dimension_key_model("hashtags")
+        d2 = questions_models.Question.get_dimension_key_model("time")
 
         self.question = questions_models.Question.objects.create(source=article,
                                                                  text="What is your favorite color?", )

@@ -1,5 +1,5 @@
 from django.test import TestCase
-from models import Article, Question, Dimension, get_sample_questions
+from models import Article, Question, get_sample_questions
 
 # Create your tests here.
 class GetSampleQuestionTest(TestCase):
@@ -7,18 +7,18 @@ class GetSampleQuestionTest(TestCase):
         article = Article.objects.create(year=2014, authors="Lalal, Lala", link="http://doi.org/xDrz", title="this is a mock paper", venue="A mock conference")
         question = Question(source=article, text="This is a question")
         question.save()
-        question.dimensions.add(Dimension.objects.get_or_create(key="hashtags")[0])
-        question.dimensions.add(Dimension.objects.get_or_create(key="time")[0])
+        question.add_dimension("hashtags")
+        question.add_dimension("time")
         question.save()
         question = Question(source=article, text="This is another question")
         question.save()
-        question.dimensions.add(Dimension.objects.get_or_create(key="urls")[0])
-        question.dimensions.add(Dimension.objects.get_or_create(key="language")[0])
+        question.add_dimension("urls")
+        question.add_dimension("language")
         question.save()
         question = Question(source=article, text="This is the 3rd question")
         question.save()
-        question.dimensions.add(Dimension.objects.get_or_create(key="sentiment")[0])
-        question.dimensions.add(Dimension.objects.get_or_create(key="language")[0])
+        question.add_dimension("sentiment")
+        question.add_dimension("language")
         question.save()
 
     def test_get_sample_question(self):
