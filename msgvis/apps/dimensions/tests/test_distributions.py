@@ -1,9 +1,8 @@
-"""Test the dimensions that are registered"""
+"""Test that the registered dimensions can get their distributions"""
 
 from django.test import TestCase
 
 from msgvis.apps.dimensions import registry
-from msgvis.apps.dimensions import distributions
 from msgvis.apps.corpus import models as corpus_models
 
 from django.conf import settings
@@ -345,8 +344,8 @@ class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
             distribution=time_distribution,
         )
 
-        calculator = distributions.TimeDistribution(desired_bins=2000)
-        result = calculator.group_by(dataset, field_name='time')
+        dimension = registry.get_dimension('time')
+        result = dimension.get_distribution(dataset, bins=2000)
 
         self.fix_datetimes(result)
 
@@ -376,8 +375,8 @@ class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
             day2: time_distribution[times[1]]
         }
 
-        calculator = distributions.TimeDistribution(desired_bins=4)
-        result = calculator.group_by(dataset, field_name='time')
+        dimension = registry.get_dimension('time')
+        result = dimension.get_distribution(dataset, bins=4)
 
         self.fix_datetimes(result)
 
@@ -390,8 +389,8 @@ class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
         """Run a generic time bin test."""
         t0 = self.base_time
         t1 = t0 + delta
-        calculator = distributions.TimeDistribution(desired_bins=desired_bins)
-        self.assertEquals(calculator._get_bin_size(t0, t1), expected_bin_size)
+        dimension = registry.get_dimension('time')
+        self.assertEquals(dimension._get_bin_size(t0, t1, desired_bins), expected_bin_size)
 
     def test_time_bin_min_size(self):
         """Returns minimum bin size of 1 second."""

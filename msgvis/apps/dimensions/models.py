@@ -7,7 +7,6 @@ from django.db.models import Q
 from django.conf import settings
 
 from msgvis.apps.corpus import models as corpus_models
-from msgvis.apps.dimensions import distributions
 
 
 QUANTITATIVE_DIMENSION_BINS = getattr(settings, 'QUANTITATIVE_DIMENSION_BINS', 50)
@@ -161,7 +160,6 @@ class QuantitativeDimension(CategoricalDimension):
     This works for fields on Message or on related fields,
     e.g. field_name=sender__message_count
     """
-    distribution = distributions.QuantitativeDistribution()
 
     grouping_expressions = {
         'mysql': '{bin_size} * FLOOR(`{field_name}` / {bin_size})',
@@ -361,7 +359,7 @@ class RelatedQuantitativeDimension(QuantitativeDimension):
 
             setattr(self, '_path_info_cache', path_infos[0])
 
-        return self._path_info_cache
+        return getattr(self, '_path_info_cache')
 
     def _get_join_condition(self):
         """
@@ -415,7 +413,6 @@ class RelatedQuantitativeDimension(QuantitativeDimension):
 
 class TimeDimension(QuantitativeDimension):
     """A dimension for time fields on Message"""
-    distribution = distributions.TimeDistribution()
 
     def filter(self, queryset, filter):
         queryset = self.exact_filter(queryset, filter)
@@ -424,6 +421,60 @@ class TimeDimension(QuantitativeDimension):
         if filter.get('max_time'):
             queryset = queryset.filter(Q((self.field_name + "__lte", filter['max_time'])))
         return queryset
+
+    # Convert to unix timestamp. Divide by bin size. Floor. Multiply by bin size. Convert to datetime.
+    grouping_expressions = {
+        'mysql': r"FROM_UNIXTIME({bin_size} * FLOOR(UNIX_TIMESTAMP(`{field_name}`) / {bin_size}))",
+        'sqlite': r"DATETIME({bin_size} * CAST(STRFTIME('%%s', `{field_name}`) / {bin_size} AS INTEGER), 'unixepoch')"
+    }
+
+    # A range of human-friendly time bin sizes
+    # https://github.com/mbostock/d3/blob/master/src/time/scale.js
+    # NOTE: these are in milliseconds! (JS uses millis)
+    d3_time_scaleSteps = [
+        1e3,  # 1-second
+        5e3,  # 5-second
+        15e3,  # 15-second
+        3e4,  # 30-second
+        6e4,  # 1-minute
+        3e5,  # 5-minute
+        9e5,  # 15-minute
+        18e5,  # 30-minute
+        36e5,  # 1-hour
+        108e5,  # 3-hour
+        216e5,  # 6-hour
+        432e5,  # 12-hour
+        864e5,  # 1-day
+        1728e5,  # 2-day
+        6048e5,  # 1-week
+        2592e6,  # 1-month
+        7776e6,  # 3-month
+        31536e6  # 1-year
+    ]
+
+    def _get_bin_size(self, min_val, max_val, desired_bins):
+        """
+        Determines a bin size for the time interval
+        that supplies at least as many bins as minimum_bins,
+        unless the time interval spans fewer than minimum_bins seconds.
+        """
+
+        extent = max_val - min_val
+        bin_size = extent / desired_bins
+
+        bin_size_seconds = bin_size.total_seconds()
+
+        bin_size_millis = 1000 * bin_size_seconds
+
+        # Find the first human-friendly bin size that isn't bigger than bin_size_seconds
+        best_bin_millis = self.d3_time_scaleSteps[0]
+        for step in self.d3_time_scaleSteps:
+            if step <= bin_size_millis:
+                best_bin_millis = step
+            else:
+                break
+
+        return best_bin_millis / 1000
 
 
 class RelatedCategoricalDimension(CategoricalDimension):

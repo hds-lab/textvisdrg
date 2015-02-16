@@ -1,3 +1,5 @@
+"""Some basic tests of the dimension class, independent of configuration."""
+
 from django.test import TestCase
 import mock
 
