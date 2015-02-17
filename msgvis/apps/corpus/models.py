@@ -84,19 +84,6 @@ class Timezone(models.Model):
     """Another name for the timezone, perhaps the country where it is located?"""
 
 
-class Sentiment(models.Model):
-    """A sentiment label"""
-
-    value = models.SmallIntegerField(unique=True)
-    """A numeric value of the sentiment label"""
-
-    name = models.CharField(max_length=25)
-    """The name of the sentiment label"""
-
-    def __unicode__(self):
-        return "%d:%s" % (self.value, self.name)
-
-
 class Topic(models.Model):
     """Topics in messages"""
 
@@ -172,8 +159,17 @@ class Message(models.Model):
     language = models.ForeignKey(Language, null=True, blank=True, default=None)
     """The :class:`Language` of the message."""
 
-    sentiment = models.ForeignKey(Sentiment, null=True, blank=True, default=None)
-    """The :class:`Sentiment` label for message."""
+    SENTIMENT_POSITIVE = 1
+    SENTIMENT_NEUTRAL  = 0
+    SENTIMENT_NEGATIVE = -1
+    SENTIMENT_CHOICES = (
+        (SENTIMENT_POSITIVE, "positive"),
+        (SENTIMENT_NEUTRAL,  "neutral"),
+        (SENTIMENT_NEGATIVE, "negative")
+    )
+
+    sentiment = models.SmallIntegerField(choices=SENTIMENT_CHOICES, null=True, blank=True, default=None)
+    """The sentiment label for message."""
 
     timezone = models.ForeignKey(Timezone, null=True, blank=True, default=None)
     """The :class:`Timezone` of the message."""
