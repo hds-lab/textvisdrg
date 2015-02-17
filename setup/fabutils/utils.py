@@ -177,9 +177,9 @@ def pip_install(requirements):
 
         for req in requirements:
             if use_sudo:
-                result = local('sudo pip install %s' % req)
+                result = local('sudo pip install --upgrade %s' % req)
             else:
-                result = local('pip install %s' % req)
+                result = local('pip install --upgrade %s' % req)
 
             if not result.succeeded:
                 print red("Failed to install %s" % req)
