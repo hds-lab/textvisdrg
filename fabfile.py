@@ -22,7 +22,7 @@ from fabutils.tasks import *
 # A dependencies management task
 dependencies = factories.dependencies_task(
     {
-        'dev': ('-r requirements/local.txt',),
+        'dev': ('-r requirements/dev.txt',),
         'prod': ('-r requirements/prod.txt',),
         'test': ('-r requirements/test.txt',),
     },

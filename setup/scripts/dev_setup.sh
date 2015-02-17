@@ -186,8 +186,6 @@ loggy "PYTHON VIRTUAL ENVIRONMENT SETUP"
 
 echo "Configuring Python virtualenv '$VENV_NAME'..."
 
-export PIP_DOWNLOAD_CACHE=${PIP_DOWNLOAD_CACHE:-$HOME/.pip_download_cache}
-
 if exists 'virtualenvwrapper.sh'; then
     
     echo "Using virtualenvwrapper..."
