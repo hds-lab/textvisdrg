@@ -7,6 +7,7 @@ from models import create_an_instance_from_json
 
 # Create your tests here.
 class ImportTest(TestCase):
+
     def test_import_tweets(self):
         """Dataset.created_at should get set automatically."""
         dset = Dataset.objects.create(name="Test Corpus", description="My Dataset")

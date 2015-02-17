@@ -6,6 +6,7 @@ import json
 from datetime import datetime
 from email.utils import parsedate
 from msgvis.apps.corpus.models import *
+from msgvis.apps.enhance.models import set_message_sentiment
 
 # Create your models here.
 def create_an_instance_from_json(json_str, dataset_obj):
@@ -77,5 +78,7 @@ def create_an_instance_from_json(json_str, dataset_obj):
                                                                           'full_name': mention['name']})
             tweet.mentions.add(mention_obj)
     tweet.save()
+
+    set_message_sentiment(tweet)
 
     return True
