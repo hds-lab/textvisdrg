@@ -18,29 +18,29 @@ class CategoricalDimensionsRegistryTest(DistributionTestCaseMixins, TestCase):
         in this case Sentiment, can be calculated correctly.
         """
 
-        # Create some sentiment labels
-        for val in range(-1, 1):
-            corpus_models.Sentiment.objects.create(
-                value=val,
-                name=str(val)
+        # Create some language labels
+        for val in [("en", "English", "jp", "Japanese", "fr", "French")]:
+            corpus_models.Language.objects.create(
+                code=val[0],
+                name=val[1]
             )
 
-        sentiment_ids = corpus_models.Sentiment.objects.values_list('id', flat=True).distinct()
-        sentiment_distribution = self.get_distribution(sentiment_ids)
-        sentiment_value_distribution = self.recover_related_field_distribution(sentiment_distribution,
-                                                                               corpus_models.Sentiment, 'value')
+        language_ids = corpus_models.Language.objects.values_list('id', flat=True).distinct()
+        language_distribution = self.get_distribution(language_ids)
+        language_code_distribution = self.recover_related_field_distribution(language_distribution,
+                                                                               corpus_models.Language, 'code')
 
         dataset = self.generate_messages_for_distribution(
-            field_name='sentiment_id',
-            distribution=sentiment_distribution,
+            field_name='language_id',
+            distribution=language_distribution,
         )
 
-        dimension = registry.get_dimension('sentiment')
+        dimension = registry.get_dimension('language')
 
         # Calculate the categorical distribution over the field name
         result = dimension.get_distribution(dataset.message_set.all())
 
-        self.assertDistributionsEqual(result, sentiment_value_distribution)
+        self.assertDistributionsEqual(result, language_code_distribution)
 
     def test_many_related_model_distribution(self):
         """

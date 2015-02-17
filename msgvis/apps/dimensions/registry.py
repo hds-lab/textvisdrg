@@ -36,6 +36,9 @@ def get_dimension_ids():
     """Get a list of all the dimension keys."""
     return _dimension_registry.keys()
 
+
+
+
 # BEGIN TIME DIMENSIONS
 register(models.TimeDimension(
     key='time',
