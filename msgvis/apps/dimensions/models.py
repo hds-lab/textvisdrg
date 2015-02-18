@@ -541,3 +541,6 @@ class DimensionKey(models.Model):
     key = models.CharField(max_length=20, unique=True)
     """The id of the dimension"""
 
+    def __unicode__(self):
+        return self.key
+
