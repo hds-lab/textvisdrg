@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    var module = angular.module('dimensions.controllers', [
+    var module = angular.module('SparkQs.controllers', [
 
     ]);
 
@@ -133,16 +133,12 @@
             },
         ];
 
-
-
-
-
-
     };
 
 
     DimensionController.$inject = requires;
-    module.controller('dimensions.controllers.dimensionController', DimensionController);
+    module.controller('SparkQs.controllers.dimensionController', DimensionController);
 
+    
 
 })();

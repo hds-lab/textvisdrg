@@ -10,8 +10,8 @@
     <script src="{% static 'bower/angular-route/angular-route.js' %}"></script>
     <script src="{% static 'djangular/js/django-angular.js' %}"></script>
     <script type="text/javascript" src="{% static 'bower/angular-resource/angular-resource.js' %}"></script>
-    <script type="text/javascript" src="{% static 'dimensions/dimensions.js' %}"></script>
-    <script type="text/javascript" src="{% static 'dimensions/controllers.js' %}"></script>
+    <script type="text/javascript" src="{% static 'SparkQs/SparkQs.js' %}"></script>
+    <script type="text/javascript" src="{% static 'SparkQs/controllers.js' %}"></script>
 {% endblock %}
 
 {% block header %}
@@ -19,8 +19,8 @@
     <h1>SparQs</h1>
 {% block content %}
 <div class="container row">
-    <div id="left" class="col-md-3" ng-app="dimensions">
-        <div id="dimensions" ng-controller="dimensions.controllers.dimensionController">
+    <div id="left" class="col-md-3" ng-app="SparkQs">
+        <div id="dimensions" ng-controller="SparkQs.controllers.dimensionController">
             <div ng-repeat="group in dimension_groups" class="row">
                 <div class="col-md-1"><span ng-bind="group.group_name"></span></div>
                 <div class="col-md-11">

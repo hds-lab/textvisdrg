@@ -6,8 +6,8 @@
 
     // Declare app level module which depends on other modules
     var app = angular
-        .module('dimensions', [
-            'dimensions.controllers',
+        .module('SparkQs', [
+            'SparkQs.controllers',
             'ngCookies'
         ]);
 
