@@ -1,15 +1,10 @@
 (function () {
     'use strict';
 
-    var module = angular.module('SparkQs.controllers', [
-    ]);
+    var module = angular.module('SparkQs.controllers', []);
 
 
     var DimensionController = function ($scope) {
-
-        $scope.$watch(function(){
-            console.log("digest called");
-        });
 
         $scope.dimension_groups = [
             {
