@@ -27,6 +27,7 @@ from rest_framework.reverse import reverse
 from rest_framework.compat import get_resolver_match, OrderedDict
 
 from msgvis.apps.api import serializers
+from msgvis.apps.corpus.models import get_example_messages
 import logging
 
 logger = logging.getLogger(__name__)
@@ -129,22 +130,43 @@ class ExampleMessagesView(APIView):
     ::
 
         {
-          "dimensions": [5, 8],
+          "dimensions": ["time", "hashtags"],
           "filters": [
             {
-              "dimension": 5,
-              "min": "2010-02-25T00:23:53Z",
-              "max": "2010-02-30T00:23:53Z"
+              "dimension": "time",
+              "min_time": "2015-02-02T01:19:08Z",
+              "max_time": "2015-02-02T01:19:09Z"
             }
           ],
-          "focus": {
-            "time": "2010-02-30T00:23:53Z"
-          }
+          "focus": [
+            {
+              "dimension": "time",
+              "value": "2015-02-02T01:19:09Z"
+            }
+          ]
         }
     """
 
     def post(self, request, format=None):
-        return Response()
+        input = serializers.ExampleMessageSerializer(data=request.data)
+        if input.is_valid():
+            data = input.validated_data
+
+            settings = data
+            example_messages = get_example_messages(settings=settings)
+
+            response_data = {
+                "messages": example_messages,
+            }
+            if settings.get("filters"):
+                response_data["filters"] = settings["filters"]
+            if settings.get("focus"):
+                response_data["focus"] = settings["focus"]
+
+            output = serializers.ExampleMessageSerializer(response_data)
+            return Response(output.data, status=status.HTTP_200_OK)
+
+        return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ResearchQuestionsView(APIView):
@@ -194,8 +216,8 @@ class DimensionDistributionView(APIView):
     ::
 
         {
-          "dataset": 2,
-          "dimension": 'time'
+          "dataset": 1,
+          "dimension": "time"
         }
 
     **Example Response:**
