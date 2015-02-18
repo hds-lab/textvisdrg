@@ -35,7 +35,14 @@
         <div id="viz">
 
         </div>
-        <div id="questions">
+        <div id="questions" ng-controller="SparkQs.controllers.sampleQuestionController">
+            <h2>From the literature...</h2>
+            <ul>
+                <li ng-repeat="question in sample_questions.questions">
+                    <span ng-bind="question.text"></span> <br />
+                    Dimensions: <span ng-repeat="dimension in question.dimensions"><span ng-bind="dimension"></span> </span>
+                </li>
+            </ul>
 
         </div>
     </div>

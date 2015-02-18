@@ -178,8 +178,24 @@
               ]
             });
 
-     };
+    };
     ExampleMessageController.$inject = ['$scope', '$http'];
     module.controller('SparkQs.controllers.exampleMessageController', ExampleMessageController);
 
+    var SampleQuestionController = function($scope, $http){
+
+        $scope.get_sample_questions = function(request){
+            $http.post('/api/questions/', request)
+                .success(function(data) {
+                     $scope.sample_questions = data;
+                });
+        }
+
+        $scope.get_sample_questions({
+            "dimensions": ["hashtags", "time"]
+        });
+
+    };
+    SampleQuestionController.$inject = ['$scope', '$http'];
+    module.controller('SparkQs.controllers.sampleQuestionController', SampleQuestionController);
 })();
