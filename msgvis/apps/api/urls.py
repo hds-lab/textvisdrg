@@ -8,7 +8,6 @@ api_root_urls = {
     'research-questions': url(r'^questions/$', views.ResearchQuestionsView.as_view(), name='research-questions'),
     'dimension-distributions': url(r'^dimension/$', views.DimensionDistributionView.as_view(),
                                    name='dimension-distribution'),
-    'filter-summaries': url(r'^filter/$', views.FilterSummaryView.as_view(), name='filter-summary'),
 }
 
 urlpatterns = api_root_urls.values() + [

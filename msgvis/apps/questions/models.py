@@ -25,6 +25,9 @@ class Article(models.Model):
     venue = models.CharField(max_length=250, default=None, blank=True)
     """The venue where the article was published."""
 
+    def __unicode__(self):
+        return self.title
+
 class Question(models.Model):
     """
     A research question from an :class:`Article`.
@@ -46,6 +49,9 @@ class Question(models.Model):
 
     def add_dimension(self, key):
         self.dimensions.add(self.get_dimension_key_model(key))
+
+    def __unicode__(self):
+        return self.text
 
 def get_sample_questions(dimension_list):
     """

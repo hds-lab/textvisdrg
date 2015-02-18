@@ -12,8 +12,6 @@ The view classes below define the API endpoints.
 +-----------------------------------------------------------------+-----------------+-------------------------------------------------+
 | :class:`Get Dimension Distribution <DimensionDistributionView>` | /api/dimension  | Get distribution of a dimension                 |
 +-----------------------------------------------------------------+-----------------+-------------------------------------------------+
-| :class:`Get Filter Summary <FilterSummaryView>`                 | /api/filter     | Get info about behavior of filter               |
-+-----------------------------------------------------------------+-----------------+-------------------------------------------------+
 | Message Context                                                 | /api/context    | Get context for a message                       |
 +-----------------------------------------------------------------+-----------------+-------------------------------------------------+
 | Snapshots                                                       | /api/snapshots  | Save a visualization snapshot                   |
@@ -27,6 +25,8 @@ from rest_framework.reverse import reverse
 from rest_framework.compat import get_resolver_match, OrderedDict
 
 from msgvis.apps.api import serializers
+from msgvis.apps.corpus.models import get_example_messages
+from msgvis.apps.questions.models import get_sample_questions
 import logging
 
 logger = logging.getLogger(__name__)
@@ -129,22 +129,43 @@ class ExampleMessagesView(APIView):
     ::
 
         {
-          "dimensions": [5, 8],
+          "dimensions": ["time", "hashtags"],
           "filters": [
             {
-              "dimension": 5,
-              "min": "2010-02-25T00:23:53Z",
-              "max": "2010-02-30T00:23:53Z"
+              "dimension": "time",
+              "min_time": "2015-02-02T01:19:08Z",
+              "max_time": "2015-02-02T01:19:09Z"
             }
           ],
-          "focus": {
-            "time": "2010-02-30T00:23:53Z"
-          }
+          "focus": [
+            {
+              "dimension": "time",
+              "value": "2015-02-02T01:19:09Z"
+            }
+          ]
         }
     """
 
     def post(self, request, format=None):
-        return Response()
+        input = serializers.ExampleMessageSerializer(data=request.data)
+        if input.is_valid():
+            data = input.validated_data
+
+            settings = data
+            example_messages = get_example_messages(settings=settings)
+
+            response_data = {
+                "messages": example_messages,
+            }
+            if settings.get("filters"):
+                response_data["filters"] = settings["filters"]
+            if settings.get("focus"):
+                response_data["focus"] = settings["focus"]
+
+            output = serializers.ExampleMessageSerializer(response_data)
+            return Response(output.data, status=status.HTTP_200_OK)
+
+        return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ResearchQuestionsView(APIView):
@@ -161,19 +182,27 @@ class ResearchQuestionsView(APIView):
     ::
 
         {
-          "dimensions": [5, 8],
-          "filters": [
-            {
-              "dimension": 5,
-              "min": "2010-02-25T00:23:53Z",
-              "max": "2010-02-30T00:23:53Z"
-            }
-          ]
+          "dimensions": ["hashtags", "time"]
         }
     """
 
     def post(self, request, format=None):
-        return Response()
+        input = serializers.SampleQuestionSerializer(data=request.data)
+        if input.is_valid():
+            data = input.validated_data
+
+            dimension_list = data["dimensions"]
+            questions = get_sample_questions(dimension_list=dimension_list)
+
+            response_data = {
+                "dimensions": dimension_list,
+                "questions": questions
+            }
+
+            output = serializers.SampleQuestionSerializer(response_data)
+            return Response(output.data, status=status.HTTP_200_OK)
+
+        return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DimensionDistributionView(APIView):
@@ -194,8 +223,8 @@ class DimensionDistributionView(APIView):
     ::
 
         {
-          "dataset": 2,
-          "dimension": 'time'
+          "dataset": 1,
+          "dimension": "time"
         }
 
     **Example Response:**
@@ -245,45 +274,6 @@ class DimensionDistributionView(APIView):
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
-class FilterSummaryView(APIView):
-    """
-    When a filter is being used, it is useful to know information about how
-    the filter behaves on the dataset.
-    The request should include a `filter object <#filters>`_.
-
-    The response will add a ``summary`` object that includes some statistics
-    about the filter.
-
-    **Request:** ``POST /api/filter``
-
-    **Example Request Body:**
-
-    ::
-
-        {
-          "dimension": 5,
-          "min": "2010-02-25T00:23:53Z",
-          "max": "2010-02-30T00:23:53Z"
-        }
-
-    **Example Response:**
-
-    ::
-
-        {
-          "dimension": 5,
-          "min": "2010-02-25T00:23:53Z",
-          "max": "2010-02-30T00:23:53Z",
-          "summary": {
-            "included": 502343
-          }
-        }
-
-    """
-
-    def post(self, request, format=None):
-        return Response()
 
 
 class APIRoot(APIView):

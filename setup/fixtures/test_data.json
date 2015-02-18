@@ -1,13 +1,50 @@
 [
 {
   "fields": {
+    "key": "hashtags"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 1
+},
+{
+  "fields": {
+    "key": "time"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 2
+},
+{
+  "fields": {
+    "title": "adfaf",
+    "authors": "adf",
+    "link": "afda",
+    "venue": "adfadf",
+    "year": 2000
+  },
+  "model": "questions.article",
+  "pk": 1
+},
+{
+  "fields": {
+    "source": 1,
+    "dimensions": [
+      1,
+      2
+    ],
+    "text": "XDDDDD"
+  },
+  "model": "questions.question",
+  "pk": 1
+},
+{
+  "fields": {
     "username": "admin",
     "first_name": "",
     "last_name": "",
     "is_active": true,
     "is_superuser": true,
     "is_staff": true,
-    "last_login": "2015-02-10T07:17:01Z",
+    "last_login": "2015-02-18T02:04:43Z",
     "groups": [],
     "user_permissions": [],
     "password": "pbkdf2_sha256$15000$AlPv7nVARPsp$tgERRvrc+KM3wzZ6PPTVu6xTlU+wxCUaGL1QqLh/eSo=",

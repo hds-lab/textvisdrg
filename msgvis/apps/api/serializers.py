@@ -57,6 +57,49 @@ class MessageSerializer(serializers.ModelSerializer):
         model = corpus_models.Message
         fields = ('id', 'dataset', 'text', 'sender', 'time')
 
+class ExampleMessageSerializer(serializers.Serializer):
+    """
+    Example message requests.
+
+    ::
+
+        {
+            "filters": [
+                {
+                    "dimension": "time",
+                    "min": "2010-02-25T00:23:53Z",
+                    "max": "2010-02-30T00:23:53Z"
+                }
+            ],
+            "focus": [
+                {
+                    "dimension": "time",
+                    "value: "2010-02-30T00:23:53Z"
+                }
+            ],
+            "messages": [
+                {
+                    "id": 52,
+                    "dataset": 2,
+                    "text": "Some sort of thing or other",
+                    "sender": {
+                        "id": 2,
+                        "dataset": 1
+                        "original_id": 2568434,
+                        "username": "my_name",
+                        "full_name": "My Name"
+                    },
+                    "time": "2010-02-25T00:23:53Z"
+                }
+            ]
+        }
+    """
+
+    filters = serializers.ListField(child=serializers.DictField(), required=False)
+    focus = serializers.ListField(child=serializers.DictField(), required=False)
+    messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
+
+
 
 class ArticleSerializer(serializers.ModelSerializer):
     class Meta:
@@ -102,6 +145,35 @@ class QuestionSerializer(serializers.ModelSerializer):
         model = questions_models.Question
         fields = ('id', 'source', 'dimensions', 'text',)
         read_only_fields = fields
+
+class SampleQuestionSerializer(serializers.Serializer):
+    """
+    Sample Research Question requests.
+
+    ::
+
+        {
+            "dimensions": ["time", "hashtags"]
+            "questions": [
+                {
+                  "id": 5,
+                  "text": "What is your name?",
+                  "source": {
+                    "id": 13,
+                    "authors": "Thingummy & Bob",
+                    "link": "http://ijn.com/3453295",
+                    "title": "Names and such",
+                    "year": "2001",
+                    "venue": "International Journal of Names"
+                  },
+                  "dimensions": ['time', 'author_name']
+                }
+            ]
+        }
+    """
+
+    dimensions = serializers.ListField(child=serializers.CharField(), required=False)
+    questions = serializers.ListField(child=QuestionSerializer(), required=False, read_only=True)
 
 class DimensionSerializer(serializers.Serializer):
     """
