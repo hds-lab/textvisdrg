@@ -277,45 +277,6 @@ class DimensionDistributionView(APIView):
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class FilterSummaryView(APIView):
-    """
-    When a filter is being used, it is useful to know information about how
-    the filter behaves on the dataset.
-    The request should include a `filter object <#filters>`_.
-
-    The response will add a ``summary`` object that includes some statistics
-    about the filter.
-
-    **Request:** ``POST /api/filter``
-
-    **Example Request Body:**
-
-    ::
-
-        {
-          "dimension": 5,
-          "min": "2010-02-25T00:23:53Z",
-          "max": "2010-02-30T00:23:53Z"
-        }
-
-    **Example Response:**
-
-    ::
-
-        {
-          "dimension": 5,
-          "min": "2010-02-25T00:23:53Z",
-          "max": "2010-02-30T00:23:53Z",
-          "summary": {
-            "included": 502343
-          }
-        }
-
-    """
-
-    def post(self, request, format=None):
-        return Response()
-
 
 class APIRoot(APIView):
     """
