@@ -25,3 +25,9 @@ Template Tags
 .. automodule:: msgvis.apps.base.templatetags.active
     :members:
 
+Models
+------
+
+.. automodule:: msgvis.apps.base.models
+    :members:
+

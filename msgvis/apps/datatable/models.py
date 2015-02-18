@@ -1,7 +1,17 @@
 from django.db import models
+
+from msgvis.apps.base.models import MappedValuesQuerySet
+from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.dimensions import registry
 
-# Create your models here.
+
+def find_messages(queryset):
+    """If the given queryset is actually a :class:`.Dataset` model, get its messages queryset."""
+    if isinstance(queryset, corpus_models.Dataset):
+        queryset = queryset.message_set.all()
+    return queryset
+
+
 class DataTable(object):
     """
     This class knows how to calculate appropriate visualization data
@@ -13,7 +23,12 @@ class DataTable(object):
         Construct a DataTable for one or two dimensions.
 
         Dimensions may be string dimension keys or
-        :class:`msgvis.apps.dimensions.models.BaseDimension` objects.
+        :class:`msgvis.apps.dimensions.models.CategoricalDimension` objects.
+
+        :type primary_dimension: registry.models.CategoricalDimension
+        :type secondary_dimension: registry.models.CategoricalDimension
+
+        :return:
         """
 
         # Look up the dimensions if needed
@@ -26,7 +41,7 @@ class DataTable(object):
         self.primary_dimension = primary_dimension
         self.secondary_dimension = secondary_dimension
 
-    def render(self, messages):
+    def render(self, queryset):
         """
         Given a set of messages (already filtered as necessary),
         calculate the data table.
@@ -35,3 +50,23 @@ class DataTable(object):
         dictionary contains a key for each dimension
         and a value key for the count.
         """
+
+        # Type checking
+        queryset = find_messages(queryset)
+
+        primary_group = self.primary_dimension.get_grouping_expression(queryset)
+        grouping_expressions = [primary_group]
+        if self.secondary_dimension:
+            secondary_group = self.secondary_dimension.get_grouping_expression(queryset)
+            grouping_expressions.append(secondary_group)
+
+        # Group the data
+        queryset = queryset.values(*grouping_expressions)
+
+        # Count the messages
+        queryset = queryset.annotate(value=models.Count('id'))
+
+        return MappedValuesQuerySet.create_from(queryset, {
+            primary_group: self.primary_dimension.key,
+        })
+

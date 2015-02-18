@@ -10,9 +10,6 @@ MySQL-python
 # Templates
 django_compressor
 
-# Mixins
-ipython
-
 # Admin
 django-debug-toolbar
 django-docs
