@@ -1,27 +1,21 @@
 (function () {
     'use strict';
 
-    var module = angular.module('SparkQs.controllers', [
+    var module = angular.module('SparkQs.controllers', []);
 
-    ]);
-
-    var requires = ['$scope'
-      ];
     var DimensionController = function ($scope) {
-
-        $scope.$watch(function(){
-            console.log("digest called");
-        });
 
         $scope.dimension_groups = [
             {
                 "group_name": "Time",
                 "dimensions": [
                     {
+                        "key": "time",
                         "name": "Time",
                         "type": "TimeDimension"
                     },
                     {
+                        "key": "timezone",
                         "name": "Timezone",
                         "type": "CategoricalDimension"
                     }
@@ -31,31 +25,38 @@
                 "group_name": "Contents",
                 "dimensions": [
                     {
+                        "key": "topics",
                         "name": "Topics",
                         "type": "CategoricalDimension"
                     },
                     {
+                        "key": "keywords",
                         "name": "Keywords",
                         "type": "CategoricalDimension"
                     },
                     {
+                        "key": "hashtags",
                         "name": "Hashtags",
                         "type": "CategoricalDimension"
                     },
                     {
-                        "name": "Contains Hashtags",
+                        "key": "contains_hashtag",
+                        "name": "Contains a hashtag",
                         "type": "CategoricalDimension"
                     },
                     {
-                        "name": "URLs",
+                        "key": "urls",
+                        "name": "Urls",
                         "type": "CategoricalDimension"
                     },
                     {
-                        "name": "Contains URLs",
+                        "key": "contains_url",
+                        "name": "Contains a url",
                         "type": "CategoricalDimension"
                     },
                     {
-                        "name": "Contains Media",
+                        "key": "contains_media",
+                        "name": "Contains a photo",
                         "type": "CategoricalDimension"
                     },
                 ]
@@ -64,10 +65,12 @@
                 "group_name": "Meta",
                 "dimensions": [
                     {
+                        "key": "language",
                         "name": "Language",
                         "type": "CategoricalDimension"
                     },
                     {
+                        "key": "sentiment",
                         "name": "Sentiment",
                         "type": "CategoricalDimension"
                     }
@@ -77,23 +80,28 @@
                 "group_name": "Interaction",
                 "dimensions": [
                     {
+                        "key": "type",
                         "name": "Message Type",
                         "type": "CategoricalDimension"
                     },
                     {
-                        "name": "Replies (Count)",
+                        "key": "replies",
+                        "name": "Num. Replies",
                         "type": "QuantitativeDimension"
                     },
                     {
-                        "name": "Retweets (Count)",
+                        "key": "shares",
+                        "name": "Num. Shares",
                         "type": "QuantitativeDimension"
                     },
                     {
-                        "name": "Mentions (Count)",
-                        "type": "QuantitativeDimension"
+                        "key": "mentions",
+                        "name": "Mentions",
+                        "type": "CategoricalDimension"
                     },
                     {
-                        "name": "Mentioned User Name",
+                        "key": "contains_mention",
+                        "name": "Contains a mention",
                         "type": "CategoricalDimension"
                     },
                 ]
@@ -102,31 +110,38 @@
                 "group_name": "Author",
                 "dimensions": [
                     {
-                        "name": "Name",
+                        "key": "sender_name",
+                        "name": "Author name",
                         "type": "CategoricalDimension"
                     },
                     {
-                        "name": "Authored Messages (Count)",
+                        "key": "sender_message_count",
+                        "name": "Num. Messages",
                         "type": "QuantitativeDimension"
                     },
                     {
-                        "name": "Replied to (Count)",
+                        "key": "sender_reply_count",
+                        "name": "Num. Replies",
                         "type": "QuantitativeDimension"
                     },
                     {
-                        "name": "Mentioned (Count)",
+                        "key": "sender_mention_count",
+                        "name": "Num. Mentions",
                         "type": "QuantitativeDimension"
                     },
                     {
-                        "name": "Retweeted (Count)",
+                        "key": "sender_share_count",
+                        "name": "Num. Shares",
                         "type": "QuantitativeDimension"
                     },
                     {
-                        "name": "Friends (Count)",
+                        "key": "sender_friend_count",
+                        "name": "Num. Friends",
                         "type": "QuantitativeDimension"
                     },
                     {
-                        "name": "Followers (Count)",
+                        "key": "sender_follower_count",
+                        "name": "Num. Followers",
                         "type": "QuantitativeDimension"
                     },
                 ]
@@ -136,7 +151,7 @@
     };
 
 
-    DimensionController.$inject = requires;
+    DimensionController.$inject = ['$scope'];
     module.controller('SparkQs.controllers.dimensionController', DimensionController);
 
     
