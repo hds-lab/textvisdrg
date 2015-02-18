@@ -149,11 +149,37 @@
         ];
 
     };
-
-
     DimensionController.$inject = ['$scope'];
     module.controller('SparkQs.controllers.dimensionController', DimensionController);
 
-    
+    var ExampleMessageController = function($scope, $http){
+
+        $scope.get_example_messages = function(request){
+            $http.post('/api/message/', request)
+                .success(function(data) {
+                     $scope.example_messages = data;
+                });
+        }
+
+        $scope.get_example_messages({
+              "dimensions": ["time", "hashtags"],
+              "filters": [
+                {
+                  "dimension": "time",
+                  "min_time": "2015-02-02T01:19:08Z",
+                  "max_time": "2015-02-02T01:19:09Z"
+                }
+              ],
+              "focus": [
+                {
+                  "dimension": "time",
+                  "value": "2015-02-02T01:19:09Z"
+                }
+              ]
+            });
+
+     };
+    ExampleMessageController.$inject = ['$scope', '$http'];
+    module.controller('SparkQs.controllers.exampleMessageController', ExampleMessageController);
 
 })();

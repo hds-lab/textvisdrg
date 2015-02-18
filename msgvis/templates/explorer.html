@@ -18,8 +18,8 @@
 {% endblock %}
     <h1>SparQs</h1>
 {% block content %}
-<div class="container row">
-    <div id="left" class="col-md-3" ng-app="SparkQs">
+<div class="container row" ng-app="SparkQs">
+    <div id="left" class="col-md-2">
         <div id="dimensions" ng-controller="SparkQs.controllers.dimensionController">
             <div ng-repeat="group in dimension_groups" class="row">
                 <div class="col-md-1"><span ng-bind="group.group_name"></span></div>
@@ -31,7 +31,7 @@
             </div>
         </div>
     </div>
-    <div id="middle" class="col-md-6">
+    <div id="middle" class="col-md-8">
         <div id="viz">
 
         </div>
@@ -39,9 +39,14 @@
 
         </div>
     </div>
-    <div id="right" class="col-md-3">
-        <div id="messages">
-
+    <div id="right" class="col-md-2">
+        <div id="messages" ng-controller="SparkQs.controllers.exampleMessageController">
+            <h2>Example Messages</h2>
+            <div ng-repeat="message in example_messages.messages">
+                <span ng-bind="message.text"></span> <br />
+                <span ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span> by <span ng-bind="message.sender.full_name"></span>
+                <hr />
+            </div>
         </div>
     </div>
 
