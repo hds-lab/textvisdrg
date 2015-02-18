@@ -145,6 +145,34 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = ('id', 'source', 'dimensions', 'text',)
         read_only_fields = fields
 
+class SampleQuestionSerializer(serializers.Serializer):
+    """
+    Sample Research Question requests.
+
+    ::
+        {
+            "dimensions": ["time", "hashtags"]
+            "questions": [
+                {
+                  "id": 5,
+                  "text": "What is your name?",
+                  "source": {
+                    "id": 13,
+                    "authors": "Thingummy & Bob",
+                    "link": "http://ijn.com/3453295",
+                    "title": "Names and such",
+                    "year": "2001",
+                    "venue": "International Journal of Names"
+                  },
+                  "dimensions": ['time', 'author_name']
+                }
+            ]
+        }
+    """
+
+    dimensions = serializers.ListField(child=serializers.CharField(), required=False)
+    questions = serializers.ListField(child=QuestionSerializer(), required=False, read_only=True)
+
 class DimensionSerializer(serializers.Serializer):
     """
     JSON representation of Dimensions for the API.

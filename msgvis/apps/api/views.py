@@ -28,6 +28,7 @@ from rest_framework.compat import get_resolver_match, OrderedDict
 
 from msgvis.apps.api import serializers
 from msgvis.apps.corpus.models import get_example_messages
+from msgvis.apps.questions.models import get_sample_questions
 import logging
 
 logger = logging.getLogger(__name__)
@@ -183,19 +184,27 @@ class ResearchQuestionsView(APIView):
     ::
 
         {
-          "dimensions": [5, 8],
-          "filters": [
-            {
-              "dimension": 5,
-              "min": "2010-02-25T00:23:53Z",
-              "max": "2010-02-30T00:23:53Z"
-            }
-          ]
+          "dimensions": ["hashtags", "time"]
         }
     """
 
     def post(self, request, format=None):
-        return Response()
+        input = serializers.SampleQuestionSerializer(data=request.data)
+        if input.is_valid():
+            data = input.validated_data
+
+            dimension_list = data["dimensions"]
+            questions = get_sample_questions(dimension_list=dimension_list)
+
+            response_data = {
+                "dimensions": dimension_list,
+                "questions": questions
+            }
+
+            output = serializers.SampleQuestionSerializer(response_data)
+            return Response(output.data, status=status.HTTP_200_OK)
+
+        return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class DimensionDistributionView(APIView):
