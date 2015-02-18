@@ -12,8 +12,6 @@ The view classes below define the API endpoints.
 +-----------------------------------------------------------------+-----------------+-------------------------------------------------+
 | :class:`Get Dimension Distribution <DimensionDistributionView>` | /api/dimension  | Get distribution of a dimension                 |
 +-----------------------------------------------------------------+-----------------+-------------------------------------------------+
-| :class:`Get Filter Summary <FilterSummaryView>`                 | /api/filter     | Get info about behavior of filter               |
-+-----------------------------------------------------------------+-----------------+-------------------------------------------------+
 | Message Context                                                 | /api/context    | Get context for a message                       |
 +-----------------------------------------------------------------+-----------------+-------------------------------------------------+
 | Snapshots                                                       | /api/snapshots  | Save a visualization snapshot                   |
