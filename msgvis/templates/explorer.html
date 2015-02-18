@@ -1,18 +1,52 @@
 {% extends '_layouts/base.html' %}
 {% load staticfiles %}
 
-{% block page_title %}Message Explorer{% endblock %}
+{% block page_title %}SparQs{% endblock %}
 
 {% block js %}
     {{ block.super }}
     <script type="text/javascript" src="{% static 'bower/angular/angular.js' %}"></script>
+    <script src="{% static 'bower/angular-cookies/angular-cookies.js' %}"></script>
+    <script src="{% static 'bower/angular-route/angular-route.js' %}"></script>
+    <script src="{% static 'djangular/js/django-angular.js' %}"></script>
     <script type="text/javascript" src="{% static 'bower/angular-resource/angular-resource.js' %}"></script>
+    <script type="text/javascript" src="{% static 'SparkQs/SparkQs.js' %}"></script>
+    <script type="text/javascript" src="{% static 'SparkQs/controllers.js' %}"></script>
 {% endblock %}
 
+{% block header %}
+{% endblock %}
+    <h1>SparQs</h1>
 {% block content %}
-<div class="container">
-    <h1>Message Explorer</h1>
+<div class="container row">
+    <div id="left" class="col-md-3" ng-app="SparkQs">
+        <div id="dimensions" ng-controller="SparkQs.controllers.dimensionController">
+            <div ng-repeat="group in dimension_groups" class="row">
+                <div class="col-md-1"><span ng-bind="group.group_name"></span></div>
+                <div class="col-md-11">
+                    <div ng-repeat="dimension in group.dimensions">
+                        <span ng-bind="dimension.name"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="middle" class="col-md-6">
+        <div id="viz">
 
-    <p>Data goes here...</p>
+        </div>
+        <div id="questions">
+
+        </div>
+    </div>
+    <div id="right" class="col-md-3">
+        <div id="messages">
+
+        </div>
+    </div>
+
+
+
+
 </div>
 {% endblock %}
