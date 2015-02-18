@@ -304,30 +304,6 @@
 },
 {
    "fields": {
-      "name": "Negative",
-      "value": -1
-   },
-   "model": "corpus.sentiment",
-   "pk": 1
-},
-{
-   "fields": {
-      "name": "Neutral",
-      "value": 0
-   },
-   "model": "corpus.sentiment",
-   "pk": 2
-},
-{
-   "fields": {
-      "name": "Positive",
-      "value": 1
-   },
-   "model": "corpus.sentiment",
-   "pk": 3
-},
-{
-   "fields": {
       "username": "alice",
       "friend_count": 1256,
       "mentioned_count": 3,

@@ -45,7 +45,6 @@ load_test_data = factories.load_test_data_task(test_data_path)
 model_fixtures = {
     'corpus.Language': 'msgvis/apps/corpus/fixtures/languages.json',
     'corpus.MessageType': 'msgvis/apps/corpus/fixtures/messagetypes.json',
-    'corpus.Sentiment': 'msgvis/apps/corpus/fixtures/sentiments.json',
     'corpus.Timezone': 'msgvis/apps/corpus/fixtures/timezones.json',
 }
 
