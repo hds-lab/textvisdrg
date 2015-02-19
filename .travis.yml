@@ -7,7 +7,7 @@ virtualenv:
 
 before_install:
   - "npm install -g bower"
-  - sudo apt-get install -qq python-numpy python-scipy
+  - "sudo apt-get install -qq python-numpy python-scipy"
 
 # command to install dependencies
 install:
