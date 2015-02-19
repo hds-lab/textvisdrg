@@ -41,10 +41,12 @@ class DataTable(object):
         self.primary_dimension = primary_dimension
         self.secondary_dimension = secondary_dimension
 
-    def render(self, queryset):
+    def render(self, queryset, desired_primary_bins=None, desired_secondary_bins=None):
         """
         Given a set of messages (already filtered as necessary),
         calculate the data table.
+
+        Optionally, a number of primary and secondary bins may be given.
 
         The result is a list of dictionaries. Each
         dictionary contains a key for each dimension
@@ -54,19 +56,31 @@ class DataTable(object):
         # Type checking
         queryset = find_messages(queryset)
 
-        primary_group = self.primary_dimension.get_grouping_expression(queryset)
-        grouping_expressions = [primary_group]
-        if self.secondary_dimension:
-            secondary_group = self.secondary_dimension.get_grouping_expression(queryset)
-            grouping_expressions.append(secondary_group)
+        if not self.secondary_dimension:
+            # If there is only one dimension, we should be able to fall back
+            # on that dimension's group_by() implementation.
+            queryset = self.primary_dimension.group_by(queryset,
+                                                       grouping_key=self.primary_dimension.key,
+                                                       bins=desired_primary_bins)
 
-        # Group the data
-        queryset = queryset.values(*grouping_expressions)
+            return queryset.annotate(value=models.Count('id'))
 
-        # Count the messages
-        queryset = queryset.annotate(value=models.Count('id'))
+        else:
+            # Now it gets nasty...
+            primary_group = self.primary_dimension.get_grouping_expression(queryset,
+                                                                           bins=desired_primary_bins)
 
-        return MappedValuesQuerySet.create_from(queryset, {
-            primary_group: self.primary_dimension.key,
-        })
+            secondary_group = self.secondary_dimension.get_grouping_expression(queryset,
+                                                                               bins=desired_secondary_bins)
+
+            # Group the data
+            queryset = queryset.values(primary_group, secondary_group)
+
+            # Count the messages
+            queryset = queryset.annotate(value=models.Count('id'))
+
+            return MappedValuesQuerySet.create_from(queryset, {
+                primary_group: self.primary_dimension.key,
+                secondary_group: self.secondary_dimension.key,
+            })
 
