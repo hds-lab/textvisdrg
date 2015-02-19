@@ -1,7 +1,8 @@
 from django.db import models
 from django.conf import settings
 from django.apps import apps as django_apps
-from fields import PositiveBigAutoForeignKey, PositiveBigIntegerField
+from fields import PositiveBigIntegerField
+from msgvis.apps.corpus.models import Message
 
 import textblob
 
@@ -351,11 +352,11 @@ class AbstractTopicVector(models.Model):
 
 
 class TweetWord(AbstractWordVector):
-    source = PositiveBigAutoForeignKey(settings.TWITTER_STREAM_TWEET_MODEL, related_name='words')
+    source = models.ForeignKey(Message, related_name='words')
 
 
 class TweetTopic(AbstractTopicVector):
-    source = PositiveBigAutoForeignKey(settings.TWITTER_STREAM_TWEET_MODEL)
+    source = models.ForeignKey(Message)
 
 
 def set_message_sentiment(message):
