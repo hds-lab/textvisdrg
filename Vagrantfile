@@ -38,4 +38,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         s.path = "setup/scripts/vagrant_provision.sh"
         s.args = "/home/vagrant/textvisdrg"
     end
+    
+    config.vm.provider "virtualbox" do |v|
+      v.memory = 2048
+    end
 end

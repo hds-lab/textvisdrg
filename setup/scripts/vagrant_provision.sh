@@ -76,6 +76,10 @@ EOF
 
 echo "    DATABASE_URL=mysql://$DBUSER:$DBPASS@$DBHOST:$DBPORT/$DBNAME"
 
+loggy "Install scipy & numpy..."
+apt-get install -y gfortran libopenblas-dev liblapack-dev
+apt-get install -y python-numpy python-scipy
+
 loggy "Running development setup script...\n-----------------------------------"
 
 VENV_NAME=$(basename $PROJECT_ROOT)
