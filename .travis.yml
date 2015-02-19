@@ -7,6 +7,7 @@ virtualenv:
 
 before_install:
   - "npm install -g bower"
+  - "sudo apt-get install -y gfortran libopenblas-dev liblapack-dev"
   - wget 'http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh' -O miniconda.sh
   - chmod +x miniconda.sh
   - ./miniconda.sh -b
@@ -19,9 +20,10 @@ before_install:
 # command to install dependencies
 install:
   - "pip install Fabric path.py"
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION pip atlas numpy scipy
   - "fab make_test_env"
   - "fab dependencies:test"
-  - conda install --yes python=$TRAVIS_PYTHON_VERSION pip atlas numpy scipy
+
 
 # command to run tests
 script:
