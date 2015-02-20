@@ -25,8 +25,8 @@ from rest_framework.reverse import reverse
 from rest_framework.compat import get_resolver_match, OrderedDict
 
 from msgvis.apps.api import serializers
-from msgvis.apps.corpus.models import get_example_messages
-from msgvis.apps.questions.models import get_sample_questions
+from msgvis.apps.corpus import models as corpus_models
+from msgvis.apps.questions import models as questions_models
 import logging
 
 logger = logging.getLogger(__name__)
@@ -152,7 +152,7 @@ class ExampleMessagesView(APIView):
             data = input.validated_data
 
             settings = data
-            example_messages = get_example_messages(settings=settings)
+            example_messages = corpus_models.Dataset.get_example_messages(settings=settings)
 
             response_data = {
                 "messages": example_messages,
@@ -192,7 +192,7 @@ class ResearchQuestionsView(APIView):
             data = input.validated_data
 
             dimension_list = data["dimensions"]
-            questions = get_sample_questions(dimension_list=dimension_list)
+            questions = questions_models.Question.get_sample_questions(dimension_list=dimension_list)
 
             response_data = {
                 "dimensions": dimension_list,
