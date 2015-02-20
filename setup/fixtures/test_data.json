@@ -15,11 +15,11 @@
 },
 {
   "fields": {
-    "title": "adfaf",
-    "authors": "adf",
-    "link": "afda",
-    "venue": "adfadf",
-    "year": 2000
+    "title": "Social Media and Global Development Rituals: a content analysis of blogs and tweets on the 2010 mdg Summit",
+    "authors": "Tobias Denskus Daniel E Esser",
+    "link": "http://nanro.org/~nanchen/social_science_papers/pdfs/Tobias%20Denskus_Daniel%20E%20Esser_2013_Social%20Media%20and%20Global%20Development%20Rituals.pdf",
+    "venue": "Third World Quarterly",
+    "year": 2013
   },
   "model": "questions.article",
   "pk": 1
@@ -31,7 +31,7 @@
       1,
       2
     ],
-    "text": "XDDDDD"
+    "text": "What is the relationship between blog content and 1\\tweets\\ at a 2\\United Nations global conference\\?"
   },
   "model": "questions.question",
   "pk": 1
@@ -44,7 +44,7 @@
     "is_active": true,
     "is_superuser": true,
     "is_staff": true,
-    "last_login": "2015-02-18T02:04:43Z",
+    "last_login": "2015-02-20T02:24:46Z",
     "groups": [],
     "user_permissions": [],
     "password": "pbkdf2_sha256$15000$AlPv7nVARPsp$tgERRvrc+KM3wzZ6PPTVu6xTlU+wxCUaGL1QqLh/eSo=",
