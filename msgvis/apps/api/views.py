@@ -192,7 +192,7 @@ class ResearchQuestionsView(APIView):
             data = input.validated_data
 
             dimension_list = data["dimensions"]
-            questions = questions_models.Question.get_sample_questions(dimension_list=dimension_list)
+            questions = questions_models.Question.get_sample_questions(*dimension_list)
 
             response_data = {
                 "dimensions": dimension_list,
