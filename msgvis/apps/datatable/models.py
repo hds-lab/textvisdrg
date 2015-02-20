@@ -73,14 +73,26 @@ class DataTable(object):
             secondary_group = self.secondary_dimension.get_grouping_expression(queryset,
                                                                                bins=desired_secondary_bins)
 
+            queryset = self.primary_dimension.select_grouping_expression(
+                queryset,
+                primary_group,
+                self.primary_dimension.key)
+
+            queryset = self.secondary_dimension.select_grouping_expression(
+                queryset,
+                secondary_group,
+                self.secondary_dimension.key)
+
             # Group the data
-            queryset = queryset.values(primary_group, secondary_group)
+            queryset = queryset.values(self.primary_dimension.key,
+                                       self.secondary_dimension.key)
 
             # Count the messages
             queryset = queryset.annotate(value=models.Count('id'))
 
-            return MappedValuesQuerySet.create_from(queryset, {
-                primary_group: self.primary_dimension.key,
-                secondary_group: self.secondary_dimension.key,
-            })
+            return queryset
+            # return MappedValuesQuerySet.create_from(queryset, {
+            #     primary_group: self.primary_dimension.key,
+            #     secondary_group: self.secondary_dimension.key,
+            # })
 

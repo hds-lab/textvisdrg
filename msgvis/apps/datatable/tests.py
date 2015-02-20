@@ -129,6 +129,47 @@ class TestQuantitativeDataTable(DistributionTestCaseMixins, TestCase):
         self.assertDistributionsEqual(result, binned_distribution, level_key='shares', measure_key='value')
 
 
+    def test_double_quantitative_narrow(self):
+        """Can it render two quantitative dimensions when binning is not needed."""
+        values = [(0, 1), (2, 3), (3, 2), (4, 5), (6, 7)]
+        quant_distribution = self.get_distribution(values)
+
+        dataset = self.generate_messages_for_multi_distribution(
+            ('shared_count', 'replied_to_count'),
+            quant_distribution)
+
+        d1 = registry.get_dimension('shares')
+        d2 = registry.get_dimension('replies')
+
+        datatable = models.DataTable(d1, d2)
+        result = datatable.render(dataset)
+
+        self.assertMultiDistributionsEqual(result, quant_distribution, ('shares', 'replies'), measure_key='value')
+
+    def test_double_quantitative_one_wide(self):
+        """Can it render two quant dimensions, when one requires binning?"""
+        values = [(0, 1), (2, 3), (6, 59999), (6, 60000)]
+        quant_distribution = self.get_distribution(values)
+
+        dataset = self.generate_messages_for_multi_distribution(
+            ('shared_count', 'replied_to_count'),
+            quant_distribution)
+
+        binned_distribution = {
+            (0, 0): quant_distribution[values[0]],
+            (2, 0): quant_distribution[values[1]],
+            (6, 60000): quant_distribution[values[2]] + quant_distribution[values[3]]
+        }
+
+        d1 = registry.get_dimension('shares')
+        d2 = registry.get_dimension('replies')
+
+        datatable = models.DataTable(d1, d2)
+        result = datatable.render(dataset, desired_secondary_bins=5)
+
+        self.assertMultiDistributionsEqual(result, binned_distribution, ('shares', 'replies'), measure_key='value')
+
+
 class TestRelatedCategoricalDataTable(DistributionTestCaseMixins, TestCase):
     """Tests for categorical dimensions only, on a related table."""
 

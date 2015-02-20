@@ -103,7 +103,7 @@ class CategoricalDimension(object):
         queryset = find_messages(queryset)
 
         # Get the expression that groups this dimension for this queryset
-        grouping_expression = self.get_grouping_expression(queryset)
+        grouping_expression = self.get_grouping_expression(queryset, **kwargs)
 
         # Group the data
         queryset = queryset.values(grouping_expression)
@@ -115,6 +115,16 @@ class CategoricalDimension(object):
                 grouping_expression: grouping_key
             })
 
+        return queryset
+
+    def select_grouping_expression(self, queryset, expression, grouping_key):
+        """
+        Add an expression for grouping to the queryset's SELECT,
+        aliased to the provided grouping key.
+
+        For categorical dimensions this is a no-op.
+        Beware if your expression refers to a related table!
+        """
         return queryset
 
     def get_distribution(self, queryset, value_key='value', **kwargs):
@@ -137,6 +147,82 @@ class CategoricalDimension(object):
         """
         return self.field_name
 
+
+class RelatedDimensionMixin(object):
+    def __init__(self, key, name=None, description=None, field_name=None):
+        super(RelatedDimensionMixin, self).__init__(key, name, description, field_name)
+
+        # e.g. (sender, username)
+        self.local_field_name, self.target_field_name = self.field_name.split('__')
+
+    @property
+    def _path_info(self):
+        if not hasattr(self, '_path_info_cache'):
+            model = corpus_models.Message
+
+            # Get the django.db.models.related.PathInfo for this relation
+            path_infos = model._meta.get_field(self.local_field_name).get_path_info()
+            assert len(path_infos) == 1, "I cannot handle long path_infos!"
+
+            setattr(self, '_path_info_cache', path_infos[0])
+
+        return getattr(self, '_path_info_cache')
+
+    def _get_join_condition(self):
+        """
+        Return a join condition like "`table1`.`field` = `table2`.`field`"
+
+        """
+        pi = self._path_info
+        assert len(pi.target_fields) == 1, "Complex multi-field joins not supported"
+        target_field = pi.target_fields[0]
+
+        return "`{from_table}`.`{from_field}` = `{to_table}`.`{to_field}`".format(
+            from_table=pi.from_opts.db_table,
+            from_field=pi.join_field.column,
+            to_table=pi.to_opts.db_table,
+            to_field=target_field.column,
+            )
+
+    def _add_manual_join(self, queryset):
+        """Add a join to the queryset"""
+        to_table = self._path_info.to_opts.db_table
+        return queryset.extra(
+            tables=[to_table],
+            where=[self._get_join_condition()]
+        )
+
+    def select_grouping_expression(self, queryset, expression, grouping_key):
+        queryset = super(RelatedDimensionMixin, self).select_grouping_expression(
+            queryset,
+            expression,
+            grouping_key)
+
+        # We also need to specify the join manually :( :( :(
+        queryset = self._add_manual_join(queryset)
+
+        return queryset
+
+class RelatedCategoricalDimension(RelatedDimensionMixin, CategoricalDimension):
+    """
+    A categorical dimension where the values are in a related table, e.g. sender name.
+    """
+
+    def select_grouping_expression(self, queryset, expression, grouping_key):
+
+        return super(RelatedCategoricalDimension, self).select_grouping_expression(queryset, expression, grouping_key)
+
+    def get_grouping_expression(self, queryset, **kwargs):
+        """
+        Given a set of messages (possibly filtered),
+        returns a string that could be used with QuerySet.values() to
+        group the messages by this dimension.
+        """
+        to_table = self._path_info.to_opts.db_table
+        return "`{to_table}`.`{field_name}`".format(
+            to_table=to_table,
+            field_name=self.target_field_name,
+        )
 
 class QuantitativeDimension(CategoricalDimension):
     """
@@ -237,11 +323,15 @@ class QuantitativeDimension(CategoricalDimension):
             # No need for binning
             return self.field_name
 
-    def _attach_grouping_expression(self, queryset, grouping_expression, grouping_key):
+    def select_grouping_expression(self, queryset, expression, grouping_key):
         """
-        Make sure the queryset selects the grouping expression, aliased to grouping_key.
+        Add an expression for grouping to the queryset's SELECT,
+        aliased to the provided grouping key.
+
+        Beware if your expression refers to a related table!
         """
-        # This is a workaround for QuerySet.extra(select={})
+
+        # This mess is a workaround for QuerySet.extra(select={})
         # because it doesn't work if the value you are selecting
         # contains a %s -- even though Sqlite uses %s as a time format
         # string.
@@ -249,9 +339,11 @@ class QuantitativeDimension(CategoricalDimension):
         # Copy the queryset first to avoid problems
         queryset = queryset._clone()
         queryset.query.extra.update({
-            grouping_key: (grouping_expression, ())
+            grouping_key: (expression, ())
         })
+
         return queryset
+
 
     def group_by(self, queryset, grouping_key=None, bins=None, bin_size=None, **kwargs):
         """
@@ -284,7 +376,9 @@ class QuantitativeDimension(CategoricalDimension):
 
         else:
             # Sometimes this step gets complicated
-            queryset = self._attach_grouping_expression(queryset, expression, grouping_key)
+            queryset = self.select_grouping_expression(queryset,
+                                                       expression=expression,
+                                                       grouping_key=grouping_key)
 
             # Then use values to group by the grouping key.
             return queryset.values(grouping_key)
@@ -322,7 +416,7 @@ class QuantitativeDimension(CategoricalDimension):
                             max_val=max_val)
 
 
-class RelatedQuantitativeDimension(QuantitativeDimension):
+class RelatedQuantitativeDimension(RelatedDimensionMixin, QuantitativeDimension):
     """A quantitative dimension on a related model, e.g. sender message count."""
 
     # Expressions for grouping when we have to join tables
@@ -330,51 +424,6 @@ class RelatedQuantitativeDimension(QuantitativeDimension):
         'mysql': '{bin_size} * FLOOR(`{to_table}`.`{target_field_name}` / {bin_size})',
         'sqlite': '{bin_size} * CAST(`{to_table}`.`{target_field_name}` / {bin_size} AS INTEGER)',
     }
-
-    def __init__(self, key, name=None, description=None, field_name=None, default_bins=QUANTITATIVE_DIMENSION_BINS,
-                 min_bin_size=1):
-        super(RelatedQuantitativeDimension, self).__init__(key, name, description, field_name, default_bins,
-                                                           min_bin_size)
-
-        # e.g. (sender, username)
-        self.local_field_name, self.target_field_name = self.field_name.split('__')
-
-    @property
-    def _path_info(self):
-        if not hasattr(self, '_path_info_cache'):
-            model = corpus_models.Message
-
-            # Get the django.db.models.related.PathInfo for this relation
-            path_infos = model._meta.get_field(self.local_field_name).get_path_info()
-            assert len(path_infos) == 1, "I cannot handle long path_infos!"
-
-            setattr(self, '_path_info_cache', path_infos[0])
-
-        return getattr(self, '_path_info_cache')
-
-    def _get_join_condition(self):
-        """
-        Return a join condition like "`table1`.`field` = `table2`.`field`"
-
-        """
-        pi = self._path_info
-        assert len(pi.target_fields) == 1, "Complex multi-field joins not supported"
-        target_field = pi.target_fields[0]
-
-        return "`{from_table}`.`{from_field}` = `{to_table}`.`{to_field}`".format(
-            from_table=pi.from_opts.db_table,
-            from_field=pi.join_field.column,
-            to_table=pi.to_opts.db_table,
-            to_field=target_field.column,
-        )
-
-    def _add_manual_join(self, queryset):
-        """Add a join to the queryset"""
-        to_table = self._path_info.to_opts.db_table
-        return queryset.extra(
-            tables=[to_table],
-            where=[self._get_join_condition()]
-        )
 
     def _render_grouping_expression(self, bin_size):
         """Render the grouping expression, with support for manually joined tables"""
@@ -389,17 +438,6 @@ class RelatedQuantitativeDimension(QuantitativeDimension):
                 target_field_name=self.target_field_name,
                 bin_size=bin_size
             )
-
-    def _attach_grouping_expression(self, queryset, grouping_expression, grouping_key):
-        queryset = super(RelatedQuantitativeDimension, self)._attach_grouping_expression(
-            queryset,
-            grouping_expression,
-            grouping_key)
-
-        # We also need to specify the join manually :( :( :(
-        queryset = self._add_manual_join(queryset)
-
-        return queryset
 
 
 class TimeDimension(QuantitativeDimension):
@@ -476,18 +514,11 @@ class TimeDimension(QuantitativeDimension):
         return best_bin_millis / 1000
 
 
-class RelatedCategoricalDimension(CategoricalDimension):
-    """
-    A categorical dimension where the values are in a related table, e.g. sender name.
-
-    Clearly this doesn't really do anything special right now.
-    """
-
-
 class TextDimension(CategoricalDimension):
     """
     A dimension based on the words in a text field.
     """
+
 
 class DimensionKey(models.Model):
     """
