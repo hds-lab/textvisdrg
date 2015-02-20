@@ -73,26 +73,30 @@ class DataTable(object):
             secondary_group = self.secondary_dimension.get_grouping_expression(queryset,
                                                                                bins=desired_secondary_bins)
 
-            queryset = self.primary_dimension.select_grouping_expression(
+            queryset, internal_primary_key = self.primary_dimension.select_grouping_expression(
                 queryset,
-                primary_group,
-                self.primary_dimension.key)
+                primary_group)
 
-            queryset = self.secondary_dimension.select_grouping_expression(
+            queryset, internal_secondary_key = self.secondary_dimension.select_grouping_expression(
                 queryset,
-                secondary_group,
-                self.secondary_dimension.key)
+                secondary_group)
 
             # Group the data
-            queryset = queryset.values(self.primary_dimension.key,
-                                       self.secondary_dimension.key)
+            queryset = queryset.values(internal_primary_key,
+                                       internal_secondary_key)
 
             # Count the messages
             queryset = queryset.annotate(value=models.Count('id'))
 
-            return queryset
-            # return MappedValuesQuerySet.create_from(queryset, {
-            #     primary_group: self.primary_dimension.key,
-            #     secondary_group: self.secondary_dimension.key,
-            # })
+            # We may need to remap some fields
+            mapping = {}
+            if internal_primary_key != self.primary_dimension.key:
+                mapping[internal_primary_key] = self.primary_dimension.key
+            if internal_secondary_key != self.secondary_dimension.key:
+                mapping[internal_secondary_key] = self.secondary_dimension.key
+
+            if len(mapping) > 0:
+                return MappedValuesQuerySet.create_from(queryset, mapping)
+            else:
+                return queryset
 

@@ -4,6 +4,7 @@ from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.dimensions.models import CategoricalDimension
 from msgvis.apps.dimensions import registry
 import mock
+import math
 
 from msgvis.apps.base.tests import DistributionTestCaseMixins
 
@@ -158,7 +159,7 @@ class TestQuantitativeDataTable(DistributionTestCaseMixins, TestCase):
         binned_distribution = {
             (0, 0): quant_distribution[values[0]],
             (2, 0): quant_distribution[values[1]],
-            (6, 60000): quant_distribution[values[2]] + quant_distribution[values[3]]
+            (6, 59995): quant_distribution[values[2]] + quant_distribution[values[3]]
         }
 
         d1 = registry.get_dimension('shares')
