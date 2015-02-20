@@ -173,7 +173,7 @@ class ResearchQuestionsView(APIView):
     Get a list of research questions related to a selection of dimensions and filters.
     The request should include a list of :class:`.DimensionKey` ids and filter specifications.
 
-    The response will be a list of Research :class:`.Question`.
+    The response will include a list of Research :class:`.Question`.
 
     **Request:** ``POST /api/questions``
 
@@ -183,6 +183,18 @@ class ResearchQuestionsView(APIView):
 
         {
           "dimensions": ["hashtags", "time"]
+        }
+
+    **Example Response:**
+
+    ::
+
+        {
+          "dimensions": ["hashtags", "time"]
+          "questions" [
+            { /* a questions object */ },
+            { /* a questions object */ }
+          ]
         }
     """
 
