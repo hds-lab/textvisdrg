@@ -1,5 +1,5 @@
 from django.test import TestCase
-from models import Article, Question, get_sample_questions
+from models import Article, Question
 
 # Create your tests here.
 class GetSampleQuestionTest(TestCase):
@@ -24,17 +24,17 @@ class GetSampleQuestionTest(TestCase):
     def test_get_sample_question(self):
 
         dimension_list = []
-        questions = get_sample_questions(dimension_list=dimension_list)
+        questions = Question.get_sample_questions(dimension_list=dimension_list)
         self.assertEquals(questions.count(), 3)
 
         dimension_list = ["hashtags"]
-        questions = get_sample_questions(dimension_list=dimension_list)
+        questions = Question.get_sample_questions(dimension_list=dimension_list)
         self.assertEquals(questions.count(), 1)
 
         dimension_list = ["language"]
-        questions = get_sample_questions(dimension_list=dimension_list)
+        questions = Question.get_sample_questions(dimension_list=dimension_list)
         self.assertEquals(questions.count(), 2)
 
         dimension_list = ["language", "urls"]
-        questions = get_sample_questions(dimension_list=dimension_list)
+        questions = Question.get_sample_questions(dimension_list=dimension_list)
         self.assertEquals(questions.count(), 1)

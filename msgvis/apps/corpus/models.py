@@ -16,6 +16,25 @@ class Dataset(models.Model):
     def __unicode__(self):
         return self.name
 
+    @classmethod
+    def get_example_messages(cls, settings):
+        """Get example messages with filter and focus settings"""
+
+        from msgvis.apps.dimensions.registry import get_dimension
+
+        # TODO: convert this into a regular method so that we can easily filter on a dataset
+        # e.g. messages = self.message_set.all()
+        messages = Message.objects.all()
+        if settings.get("filters"):
+            for filter in settings["filters"]:
+                messages = get_dimension(filter["dimension"]).filter(messages, filter)
+
+        if settings.get("focus"):
+            for focus in settings["focus"]:
+                messages = get_dimension(focus["dimension"]).filter(messages, focus)
+
+        return messages[:10]
+
 
 class MessageType(models.Model):
     """The type of a message, e.g. retweet, reply, original, system..."""
@@ -210,17 +229,3 @@ class Message(models.Model):
     text = models.TextField()
     """The actual text of the message."""
 
-def get_example_messages(settings):
-    """Get example messages with filter and focus settings"""
-
-    from msgvis.apps.dimensions.registry import get_dimension
-    dataset = Message.objects.all()
-    if settings.get("filters"):
-        for filter in settings["filters"]:
-            dataset = get_dimension(filter["dimension"]).filter(dataset, filter)
-
-    if settings.get("focus"):
-        for focus in settings["focus"]:
-            dataset = get_dimension(focus["dimension"]).filter(dataset, focus)
-
-    return dataset[:10]

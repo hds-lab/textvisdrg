@@ -53,18 +53,19 @@ class Question(models.Model):
     def __unicode__(self):
         return self.text
 
-def get_sample_questions(dimension_list):
-    """
-    Given dimensions, return sample research questions.
-    """
+    @classmethod
+    def get_sample_questions(cls, dimension_list):
+        """
+        Given dimensions, return sample research questions.
+        """
 
-    questions = Question.objects.all()
-    for dimension in dimension_list:
-        questions = questions.filter(dimensions__key=dimension)
+        questions = cls.objects.all()
+        for dimension in dimension_list:
+            questions = questions.filter(dimensions__key=dimension)
 
-    if questions.count() == 0:
-        questions = Question.objects.all()
-        """Consider the case that no dimension in the existing questions matches"""
-        #TODO: may need a better way to handle this
+        if questions.count() == 0:
+            questions = cls.objects.all()
+            """Consider the case that no dimension in the existing questions matches"""
+            #TODO: may need a better way to handle this
 
-    return questions[:10]
+        return questions[:10]
