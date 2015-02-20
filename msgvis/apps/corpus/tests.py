@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from unittest import skip
 from django.test import TestCase
 
 from msgvis.apps.corpus import models as corpus_models
@@ -27,22 +28,26 @@ class MessageModelTest(TestCase):
 
 
 class GetExampleMessageTest(TestCase):
-    def setUp(self):
-        self.dataset = corpus_models.Dataset.objects.create(name="Test Corpus", description="My Dataset")
 
+    def generate_some_messages(self, dataset):
         corpus_models.Message.objects.create(
-            dataset=self.dataset,
+            dataset=dataset,
             text="blah blah blah",
             time="2015-02-02T01:19:02Z",
-        )
+            )
 
         hashtag = corpus_models.Hashtag.objects.create(text="OurPriorities")
         msg = corpus_models.Message.objects.create(
-            dataset=self.dataset,
+            dataset=dataset,
             text="blah blah blah #%s" % hashtag.text,
             time="2015-02-02T01:19:02Z"
         )
         msg.hashtags.add(hashtag)
+
+    def setUp(self):
+        self.dataset = corpus_models.Dataset.objects.create(name="Test Corpus", description="My Dataset")
+        self.generate_some_messages(self.dataset)
+
 
     def test_with_no_filters(self):
         """Empty filter settings should return all messages"""
@@ -115,5 +120,13 @@ class GetExampleMessageTest(TestCase):
         msgs = self.dataset.get_example_messages(settings=settings)
         self.assertEquals(msgs.count(), 1)
 
+    @skip("get_example_messages is not yet an instance method")
+    def test_dataset_specific_examples(self):
+        """Does not mix messages across datasets."""
 
+        other_dataset = corpus_models.Dataset.objects.create(name="second test corpus", description="blah")
+        self.generate_some_messages(other_dataset)
 
+        settings = {}
+        msgs = self.dataset.get_example_messages(settings=settings)
+        self.assertEquals(msgs.count(), 2)
