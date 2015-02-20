@@ -2,9 +2,32 @@
     'use strict';
 
     var module = angular.module('SparkQs.controllers', []);
+    module.config(function($interpolateProvider) {
+        $interpolateProvider.startSymbol('{$');
+        $interpolateProvider.endSymbol('$}');
+    });
+
+       
+    var dimension_one = "time";
+    var dimension_two = "hashtags";
 
     var DimensionController = function ($scope) {
 
+
+        $scope.plate_type = function(dimension_key){
+            if (dimension_one == dimension_key) return 1;
+            else if (dimension_two == dimension_key) return 2;
+            else return 0;
+        };
+        $scope.get_dimension_class = function(dimension_key){
+            if (dimension_one == dimension_key) return "first-dimension";
+            else if (dimension_two == dimension_key) return "second-dimension";
+            else return "";
+
+        };
+        $scope.filter_is_active = function(dimension_key){
+            return true;
+        };
         $scope.dimension_groups = [
             {
                 "group_name": "Time",
@@ -183,6 +206,17 @@
     module.controller('SparkQs.controllers.exampleMessageController', ExampleMessageController);
 
     var SampleQuestionController = function($scope, $http){
+
+        dimension_one = "time";
+        dimension_two = "hashtags";
+
+        $scope.get_dimension_class = function(dimension_key){
+            console.log(dimension_key);
+            if ($scope.dimension_one == dimension_key) return "first-dimension";
+            else if ($scope.dimension_two == dimension_key) return "second-dimension";
+            else return "";
+
+        };
 
         $scope.get_sample_questions = function(request){
             $http.post('/api/questions/', request)

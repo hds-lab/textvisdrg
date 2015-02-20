@@ -13,52 +13,77 @@
     <script type="text/javascript" src="{% static 'SparkQs/SparkQs.js' %}"></script>
     <script type="text/javascript" src="{% static 'SparkQs/controllers.js' %}"></script>
 {% endblock %}
-
-{% block header %}
+{% block navigation_bar %}
 {% endblock %}
-    <h1>SparQs</h1>
+
 {% block content %}
-<div class="container row" ng-app="SparkQs">
-    <div id="left" class="col-md-2">
+<div id="content" class="content" ng-app="SparkQs">
+    <div id="titleWrap">
+        <div id="logo" class="float-left">
+            <div><img src="{% static 'images/part1_logo.png' %}" /></div>
+        </div>
+        <div class="float-left">
+            <div id="title">SparQs</div>
+            <div id="subtitle">Inspiring exploration in social media data</div>
+        </div>
+        <div class="clear"></div>
+    </div>
+    <div id="left" class="content-box">
         <div id="dimensions" ng-controller="SparkQs.controllers.dimensionController">
-            <div ng-repeat="group in dimension_groups" class="row">
-                <div class="col-md-1"><span ng-bind="group.group_name"></span></div>
-                <div class="col-md-11">
-                    <div ng-repeat="dimension in group.dimensions">
+            <div class="dimension-group" ng-repeat="group in dimension_groups">
+                <div class="group-name" id="group-{$group.group_name$}"><div><span ng-bind="group.group_name"></span></div></div>
+                <div class="group-members">
+                    <div class='dimension-name' ng-class="get_dimension_class(dimension.key)" ng-repeat="dimension in group.dimensions">
+                        <span class="dim-plate">
+                            <span ng-show="plate_type(dimension.key)==0" class="dim-placeholder"><img src="{% static 'images/part2_placeholder.png' %}" /></span>
+                            <span ng-show="plate_type(dimension.key)==1" class="dim-placeholder"><img src="{% static 'images/part2_red.png' %}" /></span>
+                            <span ng-show="plate_type(dimension.key)==2" class="dim-placeholder"><img src="{% static 'images/part2_blue.png' %}" /></span>
+                        </span>
                         <span ng-bind="dimension.name"></span>
+                        <span class="dim-filter" ng-show="filter_is_active(dimension.key)">
+                            <img src="{% static 'images/part2_filter.png' %}" />
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
-    <div id="middle" class="col-md-8">
+    <div id="middle" class="content-box">
         <div id="viz">
+            <div id="viz-heading">Visualization</div>
+            <div id="viz-content"></div>
 
         </div>
         <div id="questions" ng-controller="SparkQs.controllers.sampleQuestionController">
-            <h2>From the literature...</h2>
+            <div id="questions-heading">From the literature...</div>
             <ul>
                 <li ng-repeat="question in sample_questions.questions">
                     <span ng-bind="question.text"></span> <br />
-                    Dimensions: <span ng-repeat="dimension in question.dimensions"><span ng-bind="dimension"></span> </span>
+                    Dimensions: <span ng-repeat="dimension in question.dimensions">
+                        <span ng-class="get_dimension_class(dimension)"><span ng-bind="dimension"></span> </span>
+                    </span>
                 </li>
             </ul>
 
         </div>
     </div>
-    <div id="right" class="col-md-2">
+    <div id="right" class="content-box">
         <div id="messages" ng-controller="SparkQs.controllers.exampleMessageController">
-            <h2>Example Messages</h2>
-            <div ng-repeat="message in example_messages.messages">
-                <span ng-bind="message.text"></span> <br />
-                <span ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span> by <span ng-bind="message.sender.full_name"></span>
-                <hr />
-            </div>
+            <div id="messages-heading">Example Messages</div>
+            <ul>
+            <li ng-repeat="message in example_messages.messages">
+                <div class="text"><span ng-bind="message.text"></span> </div>
+                <div class="meta"><span ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span> by <span ng-bind="message.sender.full_name"></span></div>
+            </li>
+            </ul>
         </div>
     </div>
-
+    <div class="clear"></div>
 
 
 
 </div>
+{% endblock %}
+{% block footer %}
 {% endblock %}
