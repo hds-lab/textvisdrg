@@ -56,53 +56,9 @@ class DataTableView(APIView):
 
     **Request:** ``POST /api/table``
 
-    **Example Request Body:**
-
-    ::
-
-        {
-          "dimensions": ['time'],
-          "filters": [
-            {
-              "dimension": 'time',
-              "min_time": "2010-02-25T00:23:53Z",
-              "max_time": "2010-02-26T00:23:53Z"
-            }
-          ],
-        }
-
-    **Example Response Body:**
-
-    ::
-
-        {
-          "dimensions": ['time', 'hashtags'],
-          "filters": [
-            {
-              "dimension": 'time',
-              "min": "2010-02-25T00:23:53Z",
-              "max": "2010-02-28T00:23:53Z"
-            }
-          ],
-          "result": [
-            {
-              "value": 35,
-              "time": "2010-02-25T00:23:53Z"
-            },
-            {
-              "value": 35,
-              "time": "2010-02-26T00:23:53Z"
-            },
-            {
-              "value": 35,
-              "time": "2010-02-27T00:23:53Z"
-            },
-            {
-              "value": 35,
-              "time": "2010-02-28T00:23:53Z"
-            }
-          ]
-        }
+    **Format:** The request and response should match
+    :class:`.DataTableSerializer`.
+    Requests should not include the ``result`` key.
     """
 
     def post(self, request, format=None):
@@ -139,34 +95,11 @@ class ExampleMessagesView(APIView):
     Get some example messages matching the current filters and a focus
     within the visualization.
 
-    The request should include a list active filters.
-    It should also include a ``focus`` object that specifies values for one
-    or both of the given dimensions, keyed by name.
-
-    The response will include a list of `message objects <#messages>`_.
-
     **Request:** ``POST /api/messages``
 
-    **Example Request Body:**
-
-    ::
-
-        {
-          "dataset": 2,
-          "filters": [
-            {
-              "dimension": "time",
-              "min_time": "2015-02-02T01:19:08Z",
-              "max_time": "2015-02-02T01:19:09Z"
-            }
-          ],
-          "focus": [
-            {
-              "dimension": "time",
-              "value": "2015-02-02T01:19:09Z"
-            }
-          ]
-        }
+    **Format:**: The request and response should match
+    :class:`.ExampleMessageSerializer`.
+    Requests should not include the ``messages`` key.
     """
 
     def post(self, request, format=None):
@@ -194,31 +127,12 @@ class ExampleMessagesView(APIView):
 class ResearchQuestionsView(APIView):
     """
     Get a list of research questions related to a selection of dimensions and filters.
-    The request should include a list of :class:`.DimensionKey` ids and filter specifications.
-
-    The response will include a list of Research :class:`.Question`.
 
     **Request:** ``POST /api/questions``
 
-    **Example Request Body:**
-
-    ::
-
-        {
-          "dimensions": ["hashtags", "time"]
-        }
-
-    **Example Response:**
-
-    ::
-
-        {
-          "dimensions": ["hashtags", "time"]
-          "questions" [
-            { /* a questions object */ },
-            { /* a questions object */ }
-          ]
-        }
+    **Format:** The request and response should match
+    :class:`.SampleQuestionSerializer`.
+    Requests should not include the ``questions`` key.
     """
 
     def post(self, request, format=None):
@@ -245,49 +159,11 @@ class DimensionDistributionView(APIView):
     In order to display helpful information for filtering, the distribution
     of a dimension may be queried using this API endpoint.
 
-    The request should include a dimension ``id`` and an optional ``query``
-    for very large dimensions that support filtering the distribution.
-
-    The response will include a ``domain`` property that is a list of values
-    for the dimension with a message count at each value.
-
     **Request:** ``POST /api/dimension``
 
-    **Example Request Body:**
-
-    ::
-
-        {
-          "dataset": 1,
-          "dimension": "time"
-        }
-
-    **Example Response:**
-
-    ::
-
-        {
-          "dataset": 2,
-          "dimension": 'time',
-          "distribution": [
-            {
-              "count": 5000,
-              "value": "some_time"
-            },
-            {
-              "count": 1000,
-              "value": "some_time"
-            },
-            {
-              "count": 500,
-              "value": "some_time"
-            },
-            {
-              "count": 50,
-              "value": "some_time"
-            }
-          ]
-        }
+    **Format:** The request and response should match
+    :class:`.DimensionDistributionSerializer`.
+    Requests should not include the ``messages`` key.
     """
 
     def post(self, request, format=None):
