@@ -7,9 +7,8 @@ virtualenv:
 
 before_install:
   # Get system-level math packages
-  - sudo apt-get update
   - sudo apt-get install -y gfortran libopenblas-dev liblapack-dev
-  # Install miniconda
+  # Use a miniconda environment instead of system python
   - wget 'http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh' -O miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda
   - export PATH=$HOME/miniconda/bin:$PATH
@@ -30,17 +29,14 @@ install:
   - travis_retry npm install -g bower
   - travis_retry pip install -q Fabric path.py
   - fab make_test_env
-  - fab python_info
-  - travis_retry fab dependencies_pip:test
-  - travis_retry fab dependencies_npm:test
-  - travis_retry fab dependencies_bower:test
+  - fab dependencies:test
   - travis_retry fab nltk_init
   - fab info
 
 # command to run tests
 script:
-  - "fab test_coverage"
-  - "fab docs"
+  - fab test_coverage
+  - fab docs
 
 after_success:
   - coveralls

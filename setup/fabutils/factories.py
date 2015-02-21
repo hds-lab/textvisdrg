@@ -5,7 +5,7 @@ from fabric.colors import green, red, yellow
 from fabutils import utils as fabutils, conf
 
 
-def dependencies_task(pip_requirements, pip=False, npm=False, bower=False, default_env='dev'):
+def dependencies_task(pip_requirements, default_env='dev'):
     """
     Build a task for installing dependencies.
 
@@ -20,12 +20,9 @@ def dependencies_task(pip_requirements, pip=False, npm=False, bower=False, defau
         reqs = pip_requirements[environment]
 
         success = True
-        if success and pip:
-            success = success and fabutils.pip_install(reqs)
-        if success and npm:
-            success = success and fabutils.npm_install()
-        if success and bower:
-            success = success and fabutils.bower_install()
+        success = success and fabutils.pip_install(reqs)
+        success = success and fabutils.npm_install()
+        success = success and fabutils.bower_install()
 
         if success:
             print "Dependency update successful."

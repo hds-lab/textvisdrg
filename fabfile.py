@@ -28,10 +28,8 @@ pip_requirements = {
 required_nltk_corpora = ["stopwords", "punkt"]
 
 # A dependencies management task
-dependencies = factories.dependencies_task(pip_requirements, default_env='dev', pip=True, npm=True, bower=True)
-dependencies_pip = factories.dependencies_task(pip_requirements, default_env='dev', pip=True)
-dependencies_npm = factories.dependencies_task(pip_requirements, default_env='dev', npm=True)
-dependencies_bower = factories.dependencies_task(pip_requirements, default_env='dev', bower=True)
+dependencies = factories.dependencies_task(pip_requirements,
+                                           default_env='dev', pip=True, npm=True, bower=True)
 
 test = factories.test_task(default_settings='msgvis.settings.test')
 test_coverage = factories.coverage_task(default_settings='msgvis.settings.test')
