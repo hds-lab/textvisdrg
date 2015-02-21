@@ -2,10 +2,14 @@ from rest_framework.test import APITestCase
 from django.core.urlresolvers import reverse
 from rest_framework import status
 
+from django.utils import timezone as tz
+
 from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.questions import models as questions_models
 from msgvis.apps.dimensions import models as dimensions_models
 import mock
+
+from msgvis.apps.api.tests import api_time_format
 
 
 class DimensionDistributionViewTest(APITestCase):
@@ -13,7 +17,7 @@ class DimensionDistributionViewTest(APITestCase):
         self.dataset = corpus_models.Dataset.objects.create(name="Api test dataset")
 
     @mock.patch('msgvis.apps.dimensions.registry.get_dimension')
-    def test_get_count_distribution(self, get_dimension):
+    def test_get_distribution_api(self, get_dimension):
         # Fake the dimension internally
         dimension = mock.Mock()
         dimension.key = 'time'
@@ -46,18 +50,20 @@ class DimensionDistributionViewTest(APITestCase):
             "dimension": dimension.key,
         }
 
-        response = self.client.post(url, data, format='json')
-
         expected_response = {
             "dataset": self.dataset.id,
             "dimension": dimension.key,
             "distribution": distribution
         }
 
-        get_dimension.assert_called_once_with(dimension.key)
-        dimension.get_distribution.assert_called_once_with(self.dataset)
+        response = self.client.post(url, data, format='json')
+
         self.assertEquals(response.data, expected_response)
         self.assertEquals(response.status_code, status.HTTP_200_OK)
+
+        get_dimension.assert_called_once_with(dimension.key)
+        dimension.get_distribution.assert_called_once_with(self.dataset)
+
 
 
 class ResearchQuestionsViewTest(APITestCase):
@@ -94,7 +100,7 @@ class ResearchQuestionsViewTest(APITestCase):
             q.dimensions.add(secondary_dim)
 
     @mock.patch('msgvis.apps.questions.models.Question.get_sample_questions')
-    def test_get_count_distribution(self, get_sample_questions):
+    def test_get_sample_questions_api(self, get_sample_questions):
         primary_dimension_key = self.dimension_keys[0]
         secondary_dimension_key = self.dimension_keys[1]
 
@@ -126,10 +132,10 @@ class ResearchQuestionsViewTest(APITestCase):
 
         response = self.client.post(url, data, format='json')
 
-        get_sample_questions.assert_called_once_with(primary_dimension_key, secondary_dimension_key)
-
         self.assertEquals(response.data, expected_response)
         self.assertEquals(response.status_code, status.HTTP_200_OK)
+
+        get_sample_questions.assert_called_once_with(primary_dimension_key, secondary_dimension_key)
 
 
 class ExampleMessagesViewTest(APITestCase):
@@ -146,18 +152,19 @@ class ExampleMessagesViewTest(APITestCase):
         self.sample_messages = [
             self.dataset.message_set.create(
                 text="i am a message",
+                time=tz.now(),
                 sender=sender,
             ),
             self.dataset.message_set.create(
                 text="another message",
+                time=tz.now(),
                 sender=sender,
             )
         ]
 
 
     @mock.patch('msgvis.apps.corpus.models.Dataset.get_example_messages')
-    def test_get_count_distribution(self, get_example_messages):
-
+    def test_get_example_messages_api(self, get_example_messages):
         # fake the actual example finding
         get_example_messages.return_value = self.sample_messages
 
@@ -186,22 +193,108 @@ class ExampleMessagesViewTest(APITestCase):
                     'id': m.id,
                     'dataset': m.dataset_id,
                     'text': m.text,
-                    'time': m.time,
+                    'time': api_time_format(m.time),
                     'sender': {
                         'id': m.sender.id,
                         'dataset': m.sender.dataset_id,
                         'original_id': m.sender.original_id,
                         'username': m.sender.username,
                         'full_name': m.sender.full_name,
-                        }
+                    }
                 } for m in self.sample_messages
             ]
         }
 
         response = self.client.post(url, data, format='json')
 
-        # Should literally use the input data
-        get_example_messages.assert_called_once_with(settings=data)
-
         self.assertEquals(response.data, expected_response)
         self.assertEquals(response.status_code, status.HTTP_200_OK)
+
+        self.assertEquals(get_example_messages.call_count, 1)
+
+class DataTableViewTest(APITestCase):
+    def setUp(self):
+        self.dataset = corpus_models.Dataset.objects.create(name="Api test dataset")
+
+        sender = self.dataset.person_set.create(
+            username='a person',
+            full_name='a more important person',
+            original_id=2353583,
+        )
+
+        # Create a couple of messages
+        self.sample_messages = [
+            self.dataset.message_set.create(
+                text="i am a message",
+                sender=sender,
+            ),
+            self.dataset.message_set.create(
+                text="another message",
+                sender=sender,
+            )
+        ]
+
+    @mock.patch('msgvis.apps.dimensions.registry.get_dimension')
+    @mock.patch('msgvis.apps.datatable.models.DataTable')
+    def test_get_datatable_api(self, DataTable, get_dimension):
+
+        # Provide a fake dimension
+        dimension = get_dimension.return_value
+        dimension.key = 'time'
+
+        # Fake the filtered queryset
+        filtered_queryset = dimension.filter.return_value
+
+        # Fake the data table itself
+        fake_datatable = [
+            {
+                "value": 35,
+                "time": "2010-02-25T00:23:53Z"
+            },
+            {
+                "value": 30,
+                "time": "2010-02-26T00:23:53Z"
+            },
+            {
+                "value": 25,
+                "time": "2010-02-27T00:23:53Z"
+            },
+            {
+                "value": 20,
+                "time": "2010-02-28T00:23:53Z"
+            }
+        ]
+        table_instance = DataTable.return_value
+        table_instance.render.return_value = fake_datatable
+
+        url = reverse('data-table')
+        data = {
+            "dataset": self.dataset.id,
+            "dimensions": ['time'],
+            "filters": [
+                {
+                    "dimension": 'time',
+                    "min_time": "2010-02-25T00:23:53Z",
+                    "max_time": "2010-02-28T00:23:53Z"
+                }
+            ],
+        }
+
+        expected_response = {
+            'dataset': self.dataset.id,
+            "dimensions": data['dimensions'],
+            "filters": data['filters'],
+            "result": fake_datatable,
+        }
+
+        response = self.client.post(url, data, format='json')
+
+        # And it should have rendered appropriately
+        self.assertEquals(response.data, expected_response)
+        self.assertEquals(response.status_code, status.HTTP_200_OK)
+
+        # It should have constructed a datatable for the dimension
+        DataTable.assert_called_once_with(dimension)
+
+        # It should have then given the filtered queryset to the data table
+        table_instance.render.assert_called_once_with(filtered_queryset)

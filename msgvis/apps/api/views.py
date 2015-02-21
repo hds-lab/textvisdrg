@@ -27,9 +27,11 @@ from rest_framework.compat import get_resolver_match, OrderedDict
 from msgvis.apps.api import serializers
 from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.questions import models as questions_models
+from msgvis.apps.datatable import models as datatable_models
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class DataTableView(APIView):
     """
@@ -59,12 +61,12 @@ class DataTableView(APIView):
     ::
 
         {
-          "dimensions": ['time', 'hashtags'],
+          "dimensions": ['time'],
           "filters": [
             {
               "dimension": 'time',
-              "min": "2010-02-25T00:23:53Z",
-              "max": "2010-02-30T00:23:53Z"
+              "min_time": "2010-02-25T00:23:53Z",
+              "max_time": "2010-02-26T00:23:53Z"
             }
           ],
         }
@@ -79,7 +81,7 @@ class DataTableView(APIView):
             {
               "dimension": 'time',
               "min": "2010-02-25T00:23:53Z",
-              "max": "2010-02-30T00:23:53Z"
+              "max": "2010-02-28T00:23:53Z"
             }
           ],
           "result": [
@@ -104,7 +106,32 @@ class DataTableView(APIView):
     """
 
     def post(self, request, format=None):
-        return Response()
+        input = serializers.DataTableSerializer(data=request.data)
+        if input.is_valid():
+            data = input.validated_data
+
+            dimensions = data['dimensions']
+            filters = data.get('filters', None)
+
+            queryset = corpus_models.Message.objects.all()
+
+            # Filter the data
+            for filter in filters:
+                dimension = filter['dimension']
+                queryset = dimension.filter(queryset, filter)
+
+            # Render a table
+            table = datatable_models.DataTable(*dimensions)
+            result = table.render(queryset)
+
+            # Just add the result key
+            response_data = data
+            response_data['result'] = result
+
+            output = serializers.DataTableSerializer(response_data)
+            return Response(output.data, status=status.HTTP_200_OK)
+
+        return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ExampleMessagesView(APIView):
@@ -146,16 +173,11 @@ class ExampleMessagesView(APIView):
         if input.is_valid():
             data = input.validated_data
 
-            settings = data
-            example_messages = corpus_models.Dataset.get_example_messages(settings=settings)
+            example_messages = corpus_models.Dataset.get_example_messages(settings=data)
 
-            response_data = {
-                "messages": example_messages,
-            }
-            if settings.get("filters"):
-                response_data["filters"] = settings["filters"]
-            if settings.get("focus"):
-                response_data["focus"] = settings["focus"]
+            # Just add the messages key to the response
+            response_data = data
+            response_data["messages"] = example_messages
 
             output = serializers.ExampleMessageSerializer(response_data)
             return Response(output.data, status=status.HTTP_200_OK)
@@ -280,7 +302,6 @@ class DimensionDistributionView(APIView):
             return Response(output.data, status=status.HTTP_200_OK)
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class APIRoot(APIView):

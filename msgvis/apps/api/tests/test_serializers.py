@@ -6,13 +6,7 @@ from msgvis.apps.dimensions import registry as dimensions
 from msgvis.apps.questions import models as questions_models
 from msgvis.apps.api import serializers
 
-
-def api_time_format(dt):
-    """Convert a datetime to string according to the API settings"""
-    from rest_framework.fields import DateTimeField
-
-    field = DateTimeField()
-    return field.to_representation(dt)
+from msgvis.apps.api.tests import api_time_format
 
 
 class PersonSerializerTest(TestCase):
@@ -389,3 +383,59 @@ class CategoricalFilterSerializerTest(TestCase):
         serializer = serializers.FilterSerializer(data=self.external_filter)
         self.assertTrue(serializer.is_valid())
         self.assertDictEqual(serializer.validated_data, self.internal_filter)
+
+
+class DataTableSerializerTest(TestCase):
+    """
+    {
+      "dataset": 2,
+      "dimensions": ['time'],
+      "filters": [...],
+      "result": [...]
+    }
+    """
+
+    def setUp(self):
+        self.dimension = dimensions.get_dimension('time')
+        self.dataset = corpus_models.Dataset.objects.create(name="test dataset", description='description')
+
+        internal_filter = {
+            'dimension': self.dimension,
+            'min_time': now(),
+            'max_time': now() + timedelta(minutes=5),
+        }
+
+        serialized_filter = serializers.FilterSerializer(internal_filter).data
+
+        self.serialized_representation = {
+            'dataset': self.dataset.id,
+            'dimensions': [self.dimension.key],
+            'filters': [serialized_filter],
+        }
+
+        # Should lookup exactly the same dimension
+        self.deserialized_representation = {
+            'dataset': self.dataset,
+            'dimensions': [self.dimension],
+            'filters': [internal_filter],
+        }
+
+
+    def test_dimension_distribution_serialization(self):
+        datatable = [
+            dict(value=2, count=5),
+            dict(value=56, count=23),
+            dict(value='asdf', count=53),
+        ]
+
+        self.deserialized_representation['result'] = datatable
+        self.serialized_representation['result'] = datatable
+
+        serializer = serializers.DataTableSerializer(self.deserialized_representation)
+        result = serializer.data
+        self.assertDictEqual(result, self.serialized_representation)
+
+    def test_dimension_distribution_deserialization(self):
+        serializer = serializers.DataTableSerializer(data=self.serialized_representation)
+        self.assertTrue(serializer.is_valid())
+        self.assertEquals(serializer.validated_data, self.deserialized_representation)
