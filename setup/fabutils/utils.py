@@ -151,6 +151,7 @@ def pip_install(requirements):
 
     use_sudo = False
     if pip_path.get_owner() == 'root':
+        # If pip is owned by root, we are gonna need sudo
         use_sudo = True
 
     print "Installing python requirements..."
