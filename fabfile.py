@@ -156,16 +156,9 @@ def deploy():
         run('fab build_static restart_webserver')
 
 
-def topic_pipeline(name="tweet data, no punctuation", num_topics=30):
-    import logging
-    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO, )
-
-    from msgvis.apps.enhance.tasks import get_message_context,_data_pipeline, _setup_django
-    _setup_django(debug=False)
-
-
-    context = get_message_context(name)
-    _data_pipeline(context, num_topics=int(num_topics))
+def topic_pipeline(dataset, name="my topic model", num_topics=30):
+    command = "extract_topics --topics %d --name '%s' %s" % (num_topics, name, dataset)
+    fabutils.manage_py(command)
 
 def nltk_init():
     import nltk

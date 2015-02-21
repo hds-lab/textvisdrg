@@ -1,23 +1,26 @@
 from django.conf import settings
 from models import Dictionary, MessageWord, Word, MessageTopic
 from django.apps import apps as django_apps
-from msgvis.apps.corpus.models import Message
+from msgvis.apps.corpus.models import Message, Dataset
 
 import nltk
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 __all__ = ['get_twitter_context', 'get_chat_context', 'Dictionary']
 
 _stoplist = None
+
+
 def get_stoplist():
     global _stoplist
     if not _stoplist:
         from nltk.corpus import stopwords
+
         _stoplist = stopwords.words('english')
     return _stoplist
-
 
 
 class DbTextIterator(object):
@@ -76,10 +79,10 @@ class DbWordVectorIterator(object):
 
     def __len__(self):
         from django.db.models import Count
+
         count = self.wv_class.objects.filter(dictionary=self.dictionary).aggregate(Count('source', distinct=True))
         if count:
             return count['source__count']
-
 
 
 class Tokenizer(object):
@@ -102,20 +105,22 @@ class Tokenizer(object):
         for word in self.split(text.lower()):
             if word not in self.stoplist:
                 if len(word) >= self.max_length:
-                    word = word[:self.max_length-1]
+                    word = word[:self.max_length - 1]
                 words.append(word)
         return words
 
     def split(self, text):
         return text.split()
 
+
 class WordTokenizer(Tokenizer):
     def split(self, text):
         return nltk.word_tokenize(text)
 
-class TaskContext(object):
 
-    def __init__(self, name, queryset, textfield, word_vector_class, topic_vector_class, tokenizer, minimum_frequency=2, stoplist=None):
+class TaskContext(object):
+    def __init__(self, name, queryset, textfield, word_vector_class, topic_vector_class, tokenizer, minimum_frequency=2,
+                 stoplist=None):
         self.name = name
         self.queryset = queryset
         self.textfield = textfield
@@ -123,7 +128,7 @@ class TaskContext(object):
         self.topic_vector_class = topic_vector_class
         self.tokenizer = tokenizer
         self.stoplist = stoplist
-        self.minimum_frequency=minimum_frequency
+        self.minimum_frequency = minimum_frequency
 
     def queryset_str(self):
         return str(self.queryset.query)
@@ -138,17 +143,16 @@ class TaskContext(object):
         )
 
         import json
+
         return json.dumps(settings, sort_keys=True)
 
 
     def find_dictionary(self):
-
         results = Dictionary.objects.filter(settings=self.get_dict_settings())
         return results.last()
 
 
     def build_dictionary(self):
-
         texts = DbTextIterator(self.queryset, textfield=self.textfield)
 
         tokenized_texts = self.tokenizer(texts, stoplist=self.stoplist)
@@ -164,7 +168,6 @@ class TaskContext(object):
 
 
     def build_bows(self, dictionary):
-
         texts = DbTextIterator(self.queryset, textfield=self.textfield)
         tokenized_texts = self.tokenizer(texts, stoplist=self.stoplist)
 
@@ -186,26 +189,7 @@ class TaskContext(object):
         return dictionary._evaluate_lda(model, corpus, lda=lda)
 
 
-_django_set_up = False
-def _setup_django(debug=None):
-    global _django_set_up
-
-    if not _django_set_up:
-
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "msgvis.settings.dev")
-
-        from msgvis import env_file
-        env_file.load()
-
-        if debug is not None:
-            os.environ.setdefault("DEBUG", str(debug))
-
-        import django
-        django.setup()
-
-        _django_set_up = True
-
-def _data_pipeline(context, num_topics):
+def data_pipeline(context, num_topics):
     dictionary = context.find_dictionary()
     if dictionary is None:
         dictionary = context.build_dictionary()
@@ -217,9 +201,10 @@ def _data_pipeline(context, num_topics):
     context.apply_lda(dictionary, model, lda)
     context.evaluate_lda(dictionary, model, lda)
 
-def get_message_context(name):
 
-    queryset = Message.objects.filter(language__code='en')
+def get_message_context(name, dataset_id):
+    dataset = Dataset.objects.get(pk=dataset_id)
+    queryset = dataset.message_set.filter(language__code='en')
     textfield = 'text'
 
     return TaskContext(name=name, queryset=queryset,
@@ -229,4 +214,3 @@ def get_message_context(name):
                        tokenizer=WordTokenizer,
                        stoplist=get_stoplist(),
                        minimum_frequency=4)
-
