@@ -160,6 +160,44 @@ def topic_pipeline(dataset, name="my topic model", num_topics=30):
     command = "extract_topics --topics %d --name '%s' %s" % (num_topics, name, dataset)
     fabutils.manage_py(command)
 
+def python_info():
+    from pprint import pprint
+    import pip
+    import os, sys
+    print "---------- Python environment ------------"
+
+    print "Environment:"
+    pprint(os.environ.data)
+    print "System Path:"
+    pprint(sys.path)
+    print "Pip Distributions:"
+    pprint(sorted(["%s==%s" % (i.key, i.version) for i in pip.get_installed_distributions()]))
+
+    print "---------- Checking packages ------------"
+    try:
+        import nltk
+        print "NLTK %s:" % nltk.__version__, nltk.__file__
+    except ImportError:
+        print "Could not find nltk"
+
+    try:
+        import numpy
+        print "Numpy %s:" % numpy.__version__, numpy.__file__
+
+        print "Numpy sysinfo:"
+        import numpy.distutils.system_info as sysinfo
+        sysinfo.get_info('atlas')
+
+    except ImportError:
+        print "Could not find numpy"
+
+    try:
+        import gensim
+        print "Gensim %s:" % gensim.__version__, gensim.__file__
+    except ImportError:
+        print "Could not find gensim"
+
+
 def nltk_init():
     import nltk
     nltk.download(["stopwords", "punkt"])
