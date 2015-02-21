@@ -8,7 +8,7 @@ import msgvis.apps.enhance.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('corpus', '0013_auto_20150217_0053'),
+        ('corpus', '0014_auto_20150221_0240'),
     ]
 
     operations = [
@@ -25,6 +25,33 @@ class Migration(migrations.Migration):
                 ('num_nnz', msgvis.apps.enhance.fields.PositiveBigIntegerField(default=0)),
             ],
             options={
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='MessageTopic',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('probability', models.FloatField()),
+                ('source', models.ForeignKey(related_name='topics', to='corpus.Message')),
+            ],
+            options={
+                'abstract': False,
+            },
+            bases=(models.Model,),
+        ),
+        migrations.CreateModel(
+            name='MessageWord',
+            fields=[
+                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
+                ('word_index', models.IntegerField()),
+                ('count', models.FloatField()),
+                ('tfidf', models.FloatField()),
+                ('dictionary', models.ForeignKey(to='enhance.Dictionary', db_index=False)),
+                ('source', models.ForeignKey(related_name='words', to='corpus.Message')),
+            ],
+            options={
+                'abstract': False,
             },
             bases=(models.Model,),
         ),
@@ -68,35 +95,6 @@ class Migration(migrations.Migration):
             bases=(models.Model,),
         ),
         migrations.CreateModel(
-            name='TweetTopic',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('probability', models.FloatField()),
-                ('source', models.ForeignKey(to='corpus.Message')),
-                ('topic', models.ForeignKey(to='enhance.Topic')),
-                ('topic_model', models.ForeignKey(to='enhance.TopicModel', db_index=False)),
-            ],
-            options={
-                'abstract': False,
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
-            name='TweetWord',
-            fields=[
-                ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('word_index', models.IntegerField()),
-                ('count', models.FloatField()),
-                ('tfidf', models.FloatField()),
-                ('dictionary', models.ForeignKey(to='enhance.Dictionary', db_index=False)),
-                ('source', models.ForeignKey(related_name='words', to='corpus.Message')),
-            ],
-            options={
-                'abstract': False,
-            },
-            bases=(models.Model,),
-        ),
-        migrations.CreateModel(
             name='Word',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
@@ -110,20 +108,6 @@ class Migration(migrations.Migration):
             bases=(models.Model,),
         ),
         migrations.AddField(
-            model_name='tweetword',
-            name='word',
-            field=models.ForeignKey(to='enhance.Word'),
-            preserve_default=True,
-        ),
-        migrations.AlterIndexTogether(
-            name='tweetword',
-            index_together=set([('dictionary', 'source')]),
-        ),
-        migrations.AlterIndexTogether(
-            name='tweettopic',
-            index_together=set([('topic_model', 'source')]),
-        ),
-        migrations.AddField(
             model_name='topicword',
             name='word',
             field=models.ForeignKey(to='enhance.Word'),
@@ -134,5 +118,31 @@ class Migration(migrations.Migration):
             name='model',
             field=models.ForeignKey(related_name='topics', to='enhance.TopicModel'),
             preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='messageword',
+            name='word',
+            field=models.ForeignKey(to='enhance.Word'),
+            preserve_default=True,
+        ),
+        migrations.AlterIndexTogether(
+            name='messageword',
+            index_together=set([('dictionary', 'source')]),
+        ),
+        migrations.AddField(
+            model_name='messagetopic',
+            name='topic',
+            field=models.ForeignKey(to='enhance.Topic'),
+            preserve_default=True,
+        ),
+        migrations.AddField(
+            model_name='messagetopic',
+            name='topic_model',
+            field=models.ForeignKey(to='enhance.TopicModel', db_index=False),
+            preserve_default=True,
+        ),
+        migrations.AlterIndexTogether(
+            name='messagetopic',
+            index_together=set([('topic_model', 'source')]),
         ),
     ]
