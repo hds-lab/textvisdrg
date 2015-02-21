@@ -28,8 +28,7 @@ install:
   - conda install python=$TRAVIS_PYTHON_VERSION atlas numpy scipy pip
   - travis_retry npm install -g bower
   - travis_retry pip install -q Fabric path.py
-  - fab make_test_env
-  - fab dependencies:test
+  - travis_retry fab dependencies:test
   - travis_retry fab nltk_init
   - fab info
 

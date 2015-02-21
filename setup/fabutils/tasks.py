@@ -85,18 +85,6 @@ def clear_cache():
     else:
         print yellow("Django not configured for static file compression")
 
-
-def make_test_env(outpath=None):
-    """Make an empty .env file for testing purposes."""
-    if outpath is None:
-        outpath = conf.PROJECT_ROOT / '.env'
-    else:
-        outpath = path(outpath)
-
-    # An empty file for now
-    local('touch %s' % outpath)
-
-
 def interpolate_env(outpath=None):
     """Writes a .env file with variables interpolated from the current environment"""
 

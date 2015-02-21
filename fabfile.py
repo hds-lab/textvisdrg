@@ -29,7 +29,7 @@ required_nltk_corpora = ["stopwords", "punkt"]
 
 # A dependencies management task
 dependencies = factories.dependencies_task(pip_requirements,
-                                           default_env='dev', pip=True, npm=True, bower=True)
+                                           default_env='dev')
 
 test = factories.test_task(default_settings='msgvis.settings.test')
 test_coverage = factories.coverage_task(default_settings='msgvis.settings.test')
@@ -117,6 +117,16 @@ def supervisor():
     print green("Supervisor launching...")
     fabutils.manage_py('supervisor')
 
+def dtest():
+    denv = fabutils.dot_env()
+
+    host = denv.get('DEPLOY_HOST', None)
+    virtualenv = denv.get('DEPLOY_VIRTUALENV', None)
+    env.host_string = host
+
+    with prefix('workon %s' % virtualenv):
+        has_bower = run('which bower')
+        print has_bower
 
 def deploy():
     """
@@ -150,7 +160,7 @@ def deploy():
             pips = run('pip freeze')
             if "Fabric" not in pips or 'path.py' not in pips:
                 print green("Installing Fabric...")
-                run('pip install Fabric path.py')
+                run('pip install -q Fabric path.py')
 
         run('fab pull')
         run('fab dependencies:prod')
