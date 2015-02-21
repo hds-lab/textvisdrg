@@ -155,43 +155,18 @@ def deploy():
         run('fab print_env check_database migrate')
         run('fab build_static restart_webserver')
 
-_django_set_up = False
-def _setup_django(debug=None):
-    global _django_set_up
 
-    if not _django_set_up:
-
-        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "msgvis.settings.dev")
-
-        from msgvis import env_file
-        env_file.load()
-
-        if debug is not None:
-            os.environ.setdefault("DEBUG", str(debug))
-
-        import django
-        django.setup()
-
-        _django_set_up = True
-
-def _data_pipeline(context, num_topics):
-    dictionary = context.find_dictionary()
-    if dictionary is None:
-        dictionary = context.build_dictionary()
-
-    if not context.bows_exist(dictionary):
-        context.build_bows(dictionary)
-
-    model, lda = context.build_lda(dictionary, num_topics=num_topics)
-    context.apply_lda(dictionary, model, lda)
-    context.evaluate_lda(dictionary, model, lda)
-
-def tweet_pipeline(name="tweet data, no punctuation", num_topics=30):
+def topic_pipeline(name="tweet data, no punctuation", num_topics=30):
     import logging
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO, )
 
+    from msgvis.apps.enhance.tasks import get_message_context,_data_pipeline, _setup_django
     _setup_django(debug=False)
 
-    from msgvis.apps.enhance.tasks import get_twitter_context
-    context = get_twitter_context(name)
+
+    context = get_message_context(name)
     _data_pipeline(context, num_topics=int(num_topics))
+
+def nltk_init():
+    import nltk
+    nltk.download(["stopwords", "punkt"])
