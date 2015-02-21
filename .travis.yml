@@ -6,6 +6,12 @@ python:
 # Use the new infrastructure
 sudo: false
 
+# Set up the cache
+cache:
+  directories:
+    - node_modules
+    - msgvis/static/bower
+
 before_install:
   # Use a miniconda environment instead of system python
   - wget 'http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh' -O miniconda.sh
@@ -27,6 +33,8 @@ install:
   - travis_retry fab dependencies:test
   - travis_retry fab nltk_init
   - fab info
+  - ls -la $HOME
+  - ls -la $HOME/miniconda
 
 # command to run tests
 script:
