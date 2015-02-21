@@ -18,6 +18,68 @@ import msgvis.apps.questions.models as questions_models
 from msgvis.apps.dimensions import registry
 
 
+# A simple string field that looks up dimensions on deserialization
+class DimensionKeySerializer(serializers.CharField):
+    def to_internal_value(self, data):
+        return registry.get_dimension(data)
+
+    def to_representation(self, instance):
+        return instance.key
+
+
+class FilterSerializer(serializers.Serializer):
+    """
+    Filters indicate a subset of the range of a specific dimension. Below is
+    an array of three filter objects.
+
+    ::
+
+        [{
+          "dimension": 'time',
+          "min_time": "2010-02-25T00:23:53Z",
+          "max_time": "2010-02-30T00:23:53Z"
+        },
+        {
+          "dimension": 'words',
+          "levels": [
+            "cat",
+            "dog",
+            "alligator"
+          ]
+        },
+        {
+          "dimension": 'reply_count',
+          "max": 100
+        }]
+
+    Although every filter has a ``dimension`` field, the specific properties
+    vary depending on the type of the dimension and the kind of filter.
+
+    At this time, there are three types of filters:
+
+    -  Quantitative dimensions can be filtered using one or both of the
+       ``min`` and ``max`` properties (inclusive).
+    -  The time dimension can be filtered using one or both of the ``min_time``
+       and ``max_time`` properties (inclusive).
+    -  Categorical dimensions can be filtered by specifying an ``include``
+       list. All other items are assumed to be excluded.
+
+    The 'value' field may also be used for exact matches.
+    """
+
+    dimension = DimensionKeySerializer()
+
+    min = serializers.FloatField(required=False)
+    max = serializers.FloatField(required=False)
+
+    min_time = serializers.DateTimeField(required=False)
+    max_time = serializers.DateTimeField(required=False)
+
+    levels = serializers.ListSerializer(child=serializers.CharField(), required=False)
+
+    value = serializers.CharField(required=False)
+
+
 class PersonSerializer(serializers.ModelSerializer):
     class Meta:
         model = corpus_models.Person
@@ -57,6 +119,7 @@ class MessageSerializer(serializers.ModelSerializer):
         model = corpus_models.Message
         fields = ('id', 'dataset', 'text', 'sender', 'time')
 
+
 class ExampleMessageSerializer(serializers.Serializer):
     """
     Example message requests.
@@ -64,6 +127,7 @@ class ExampleMessageSerializer(serializers.Serializer):
     ::
 
         {
+            "dataset": 2,
             "filters": [
                 {
                     "dimension": "time",
@@ -94,9 +158,9 @@ class ExampleMessageSerializer(serializers.Serializer):
             ]
         }
     """
-
-    filters = serializers.ListField(child=serializers.DictField(), required=False)
-    focus = serializers.ListField(child=serializers.DictField(), required=False)
+    dataset = dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
+    filters = serializers.ListField(child=FilterSerializer(), required=False)
+    focus = serializers.ListField(child=FilterSerializer(), required=False)
     messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
 
 
@@ -199,64 +263,6 @@ class DimensionSerializer(serializers.Serializer):
         return registry.get_dimension(data['key'])
 
 
-# A simple string field that looks up dimensions on deserialization
-class DimensionKeySerializer(serializers.CharField):
-    def to_internal_value(self, data):
-        return registry.get_dimension(data)
-
-    def to_representation(self, instance):
-        return instance.key
-
-
-class FilterSerializer(serializers.Serializer):
-    """
-    Filters indicate a subset of the range of a specific dimension. Below is
-    an array of three filter objects.
-
-    ::
-
-        [{
-          "dimension": 'time',
-          "min_time": "2010-02-25T00:23:53Z",
-          "max_time": "2010-02-30T00:23:53Z"
-        },
-        {
-          "dimension": 'words',
-          "levels": [
-            "cat",
-            "dog",
-            "alligator"
-          ]
-        },
-        {
-          "dimension": 'reply_count',
-          "max": 100
-        }]
-
-    Although every filter has a ``dimension`` field, the specific properties
-    vary depending on the type of the dimension and the kind of filter.
-
-    At this time, there are three types of filters:
-
-    -  Quantitative dimensions can be filtered using one or both of the
-       ``min`` and ``max`` properties (inclusive).
-    -  The time dimension can be filtered using one or both of the ``min_time``
-       and ``max_time`` properties (inclusive).
-    -  Categorical dimensions can be filtered by specifying an ``include``
-       list. All other items are assumed to be excluded.
-    """
-
-    dimension = DimensionKeySerializer()
-
-    min = serializers.FloatField(required=False)
-    max = serializers.FloatField(required=False)
-
-    min_time = serializers.DateTimeField(required=False)
-    max_time = serializers.DateTimeField(required=False)
-
-    levels = serializers.ListSerializer(child=serializers.CharField(), required=False)
-
-
 class DimensionDistributionSerializer(serializers.Serializer):
     """
     Dimension distribution requests.
@@ -291,3 +297,47 @@ class DimensionDistributionSerializer(serializers.Serializer):
     dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
     dimension = DimensionKeySerializer()
     distribution = serializers.ListField(child=serializers.DictField(), required=False, read_only=True)
+
+
+class DataTableSerializer(serializers.Serializer):
+    """
+    Format for data table requests.
+    Post these without the result key.
+
+    ::
+
+        {
+          "dataset": 2,
+          "dimensions": ['time'],
+          "filters": [
+            {
+              "dimension": 'time',
+              "min": "2010-02-25T00:23:53Z",
+              "max": "2010-02-30T00:23:53Z"
+            }
+          ],
+          "result": [
+            {
+              "value": 35,
+              "time": "2010-02-25T00:23:53Z"
+            },
+            {
+              "value": 35,
+              "time": "2010-02-26T00:23:53Z"
+            },
+            {
+              "value": 35,
+              "time": "2010-02-27T00:23:53Z"
+            },
+            {
+              "value": 35,
+              "time": "2010-02-28T00:23:53Z"
+            }
+          ]
+        }
+    """
+
+    dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
+    dimensions = serializers.ListField(child=DimensionKeySerializer())
+    filters = serializers.ListField(child=FilterSerializer(), required=False)
+    result = serializers.ListField(child=serializers.DictField(), required=False, read_only=True)

@@ -27,9 +27,11 @@ from rest_framework.compat import get_resolver_match, OrderedDict
 from msgvis.apps.api import serializers
 from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.questions import models as questions_models
+from msgvis.apps.datatable import models as datatable_models
 import logging
 
 logger = logging.getLogger(__name__)
+
 
 class DataTableView(APIView):
     """
@@ -54,61 +56,38 @@ class DataTableView(APIView):
 
     **Request:** ``POST /api/table``
 
-    **Example Request Body:**
-
-    ::
-
-        {
-          "dimensions": [5, 8],
-          "filters": [
-            {
-              "dimension": 5,
-              "min": "2010-02-25T00:23:53Z",
-              "max": "2010-02-30T00:23:53Z"
-            }
-          ],
-          "measure": {
-            "statistic": "message",
-            "aggregation": "count"
-          }
-        }
-
-    **Example Response Body:**
-
-    ::
-
-        {
-          "dimensions": [5, 8],
-          "filters": [
-            {
-              "dimension": 5,
-              "min": "2010-02-25T00:23:53Z",
-              "max": "2010-02-30T00:23:53Z"
-            }
-          ],
-          "result": [
-            {
-              "value": 35,
-              "time": "2010-02-25T00:23:53Z"
-            },
-            {
-              "value": 35,
-              "time": "2010-02-26T00:23:53Z"
-            },
-            {
-              "value": 35,
-              "time": "2010-02-27T00:23:53Z"
-            },
-            {
-              "value": 35,
-              "time": "2010-02-28T00:23:53Z"
-            }
-          ]
-        }
+    **Format:** The request and response should match
+    :class:`.DataTableSerializer`.
+    Requests should not include the ``result`` key.
     """
 
     def post(self, request, format=None):
-        return Response()
+        input = serializers.DataTableSerializer(data=request.data)
+        if input.is_valid():
+            data = input.validated_data
+
+            dimensions = data['dimensions']
+            filters = data.get('filters', None)
+
+            queryset = corpus_models.Message.objects.all()
+
+            # Filter the data
+            for filter in filters:
+                dimension = filter['dimension']
+                queryset = dimension.filter(queryset, filter)
+
+            # Render a table
+            table = datatable_models.DataTable(*dimensions)
+            result = table.render(queryset)
+
+            # Just add the result key
+            response_data = data
+            response_data['result'] = result
+
+            output = serializers.DataTableSerializer(response_data)
+            return Response(output.data, status=status.HTTP_200_OK)
+
+        return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ExampleMessagesView(APIView):
@@ -116,34 +95,11 @@ class ExampleMessagesView(APIView):
     Get some example messages matching the current filters and a focus
     within the visualization.
 
-    The request should include a list of dimension ids and active filters.
-    It should also include a ``focus`` object that specifies values for one
-    or both of the given dimensions, keyed by name.
-
-    The response will be a list of `message objects <#messages>`_.
-
     **Request:** ``POST /api/messages``
 
-    **Example Request Body:**
-
-    ::
-
-        {
-          "dimensions": ["time", "hashtags"],
-          "filters": [
-            {
-              "dimension": "time",
-              "min_time": "2015-02-02T01:19:08Z",
-              "max_time": "2015-02-02T01:19:09Z"
-            }
-          ],
-          "focus": [
-            {
-              "dimension": "time",
-              "value": "2015-02-02T01:19:09Z"
-            }
-          ]
-        }
+    **Format:**: The request and response should match
+    :class:`.ExampleMessageSerializer`.
+    Requests should not include the ``messages`` key.
     """
 
     def post(self, request, format=None):
@@ -151,16 +107,16 @@ class ExampleMessagesView(APIView):
         if input.is_valid():
             data = input.validated_data
 
-            settings = data
-            example_messages = corpus_models.Dataset.get_example_messages(settings=settings)
+            dataset = data['dataset']
 
-            response_data = {
-                "messages": example_messages,
-            }
-            if settings.get("filters"):
-                response_data["filters"] = settings["filters"]
-            if settings.get("focus"):
-                response_data["focus"] = settings["focus"]
+            filters = data['filters']
+            focus = data.get('focus', [])
+
+            example_messages = dataset.get_example_messages(filters + focus)
+
+            # Just add the messages key to the response
+            response_data = data
+            response_data["messages"] = example_messages
 
             output = serializers.ExampleMessageSerializer(response_data)
             return Response(output.data, status=status.HTTP_200_OK)
@@ -171,19 +127,12 @@ class ExampleMessagesView(APIView):
 class ResearchQuestionsView(APIView):
     """
     Get a list of research questions related to a selection of dimensions and filters.
-    The request should include a list of :class:`.DimensionKey` ids and filter specifications.
-
-    The response will be a list of Research :class:`.Question`.
 
     **Request:** ``POST /api/questions``
 
-    **Example Request Body:**
-
-    ::
-
-        {
-          "dimensions": ["hashtags", "time"]
-        }
+    **Format:** The request and response should match
+    :class:`.SampleQuestionSerializer`.
+    Requests should not include the ``questions`` key.
     """
 
     def post(self, request, format=None):
@@ -192,7 +141,7 @@ class ResearchQuestionsView(APIView):
             data = input.validated_data
 
             dimension_list = data["dimensions"]
-            questions = questions_models.Question.get_sample_questions(dimension_list=dimension_list)
+            questions = questions_models.Question.get_sample_questions(*dimension_list)
 
             response_data = {
                 "dimensions": dimension_list,
@@ -210,49 +159,11 @@ class DimensionDistributionView(APIView):
     In order to display helpful information for filtering, the distribution
     of a dimension may be queried using this API endpoint.
 
-    The request should include a dimension ``id`` and an optional ``query``
-    for very large dimensions that support filtering the distribution.
-
-    The response will include a ``domain`` property that is a list of values
-    for the dimension with a message count at each value.
-
     **Request:** ``POST /api/dimension``
 
-    **Example Request Body:**
-
-    ::
-
-        {
-          "dataset": 1,
-          "dimension": "time"
-        }
-
-    **Example Response:**
-
-    ::
-
-        {
-          "dataset": 2,
-          "dimension": 'time',
-          "distribution": [
-            {
-              "count": 5000,
-              "value": "some_time"
-            },
-            {
-              "count": 1000,
-              "value": "some_time"
-            },
-            {
-              "count": 500,
-              "value": "some_time"
-            },
-            {
-              "count": 50,
-              "value": "some_time"
-            }
-          ]
-        }
+    **Format:** The request and response should match
+    :class:`.DimensionDistributionSerializer`.
+    Requests should not include the ``messages`` key.
     """
 
     def post(self, request, format=None):
@@ -273,7 +184,6 @@ class DimensionDistributionView(APIView):
             return Response(output.data, status=status.HTTP_200_OK)
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class APIRoot(APIView):

@@ -54,7 +54,7 @@ class Question(models.Model):
         return self.text
 
     @classmethod
-    def get_sample_questions(cls, dimension_list):
+    def get_sample_questions(cls, *dimension_list):
         """
         Given dimensions, return sample research questions.
         """

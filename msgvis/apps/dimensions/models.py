@@ -52,10 +52,10 @@ class CategoricalDimension(object):
         self.description = description
         self.field_name = field_name if field_name is not None else key
 
-    def _exact_filter(self, queryset, filter):
+    def _exact_filter(self, queryset, **kwargs):
         """Filtering for exact value"""
-        if filter.get('value'):
-            queryset = queryset.filter(Q((self.field_name, filter['value'])))
+        if kwargs.get('value'):
+            queryset = queryset.filter(Q((self.field_name, kwargs['value'])))
         return queryset
 
     def get_key_model(self):
@@ -63,22 +63,20 @@ class CategoricalDimension(object):
         return dimension_key_model
 
 
-    def filter(self, queryset, filter):
+    def filter(self, queryset, **kwargs):
         """Apply a filter to a queryset and return the new queryset."""
 
         # Type checking
         queryset = find_messages(queryset)
 
-        # Make sure this filter is for us
-        if not filter['dimension'] == self.key:
-            raise ValueError("'%s' dimension cannot handle filter on '%s'" % (self.key, filter['dimension']))
+        queryset = self._exact_filter(queryset, **kwargs)
 
-        queryset = self._exact_filter(queryset, filter)
-        if filter.get('levels'):
+        if kwargs.get('levels'):
             filter_ors = []
-            for level in filter.get('levels'):
+            for level in kwargs.get('levels'):
                 filter_ors.append((self.field_name, level))
             queryset = queryset.filter(reduce(operator.or_, [Q(x) for x in filter_ors]))
+
         return queryset
 
     def group_by(self, queryset, grouping_key=None, **kwargs):
@@ -180,19 +178,14 @@ class QuantitativeDimension(CategoricalDimension):
         self._cached_range_queryset_id = None
         self._cached_range = None
 
-    def filter(self, queryset, filter):
+    def filter(self, queryset, **kwargs):
         # Type checking
-        queryset = find_messages(queryset)
+        queryset = super(QuantitativeDimension, self).filter(queryset, **kwargs)
 
-        # Make sure this filter is for us
-        if not filter['dimension'] == self.key:
-            raise ValueError("'%s' dimension cannot handle filter on '%s'" % (self.key, filter['dimension']))
-
-        queryset = self._exact_filter(queryset, filter)
-        if filter.get('min'):
-            queryset = queryset.filter(Q((self.field_name + "__gte", filter['min'])))
-        if filter.get('max'):
-            queryset = queryset.filter(Q((self.field_name + "__lte", filter['max'])))
+        if kwargs.get('min'):
+            queryset = queryset.filter(Q((self.field_name + "__gte", kwargs['min'])))
+        if kwargs.get('max'):
+            queryset = queryset.filter(Q((self.field_name + "__lte", kwargs['max'])))
         return queryset
 
     def get_range(self, queryset):
@@ -345,7 +338,8 @@ class QuantitativeDimension(CategoricalDimension):
         bin_size = self._get_bin_size(min_val, max_val, bins)
 
         # Group by that bin size
-        queryset = self.group_by(queryset, grouping_key=grouping_key, bin_size=bin_size, min_val=min_val, max_val=max_val)
+        queryset = self.group_by(queryset, grouping_key=grouping_key, bin_size=bin_size, min_val=min_val,
+                                 max_val=max_val)
 
         # Count the messages in each group
         queryset = queryset.annotate(count=models.Count('id'))
@@ -441,20 +435,15 @@ class RelatedQuantitativeDimension(QuantitativeDimension):
 class TimeDimension(QuantitativeDimension):
     """A dimension for time fields on Message"""
 
-    def filter(self, queryset, filter):
+    def filter(self, queryset, **kwargs):
 
-        # Type checking
-        queryset = find_messages(queryset)
+        queryset = super(TimeDimension, self).filter(queryset, **kwargs)
 
-        # Make sure this filter is for us
-        if not filter['dimension'] == self.key:
-            raise ValueError("'%s' dimension cannot handle filter on '%s'" % (self.key, filter['dimension']))
+        if kwargs.get('min_time'):
+            queryset = queryset.filter(Q((self.field_name + "__gte", kwargs['min_time'])))
+        if kwargs.get('max_time'):
+            queryset = queryset.filter(Q((self.field_name + "__lte", kwargs['max_time'])))
 
-        queryset = self._exact_filter(queryset, filter)
-        if filter.get('min_time'):
-            queryset = queryset.filter(Q((self.field_name + "__gte", filter['min_time'])))
-        if filter.get('max_time'):
-            queryset = queryset.filter(Q((self.field_name + "__lte", filter['max_time'])))
         return queryset
 
     # Convert to unix timestamp. Divide by bin size. Floor. Multiply by bin size. Convert to datetime.
