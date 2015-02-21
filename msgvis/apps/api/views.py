@@ -59,18 +59,14 @@ class DataTableView(APIView):
     ::
 
         {
-          "dimensions": [5, 8],
+          "dimensions": ['time', 'hashtags'],
           "filters": [
             {
-              "dimension": 5,
+              "dimension": 'time',
               "min": "2010-02-25T00:23:53Z",
               "max": "2010-02-30T00:23:53Z"
             }
           ],
-          "measure": {
-            "statistic": "message",
-            "aggregation": "count"
-          }
         }
 
     **Example Response Body:**
@@ -78,10 +74,10 @@ class DataTableView(APIView):
     ::
 
         {
-          "dimensions": [5, 8],
+          "dimensions": ['time', 'hashtags'],
           "filters": [
             {
-              "dimension": 5,
+              "dimension": 'time',
               "min": "2010-02-25T00:23:53Z",
               "max": "2010-02-30T00:23:53Z"
             }
