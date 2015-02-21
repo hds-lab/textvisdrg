@@ -32,5 +32,4 @@ django-angular
 textblob
 
 # topics
-nltk
 gensim

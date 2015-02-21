@@ -23,6 +23,7 @@ install:
   - conda install --yes python=$TRAVIS_PYTHON_VERSION pip atlas numpy scipy
   - "fab make_test_env"
   - "fab dependencies:test"
+  - "pip install -y nltk"
   - "fab nltk_init"
 
 
