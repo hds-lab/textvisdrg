@@ -116,11 +116,11 @@ class ExampleMessagesView(APIView):
     Get some example messages matching the current filters and a focus
     within the visualization.
 
-    The request should include a list of dimension ids and active filters.
+    The request should include a list active filters.
     It should also include a ``focus`` object that specifies values for one
     or both of the given dimensions, keyed by name.
 
-    The response will be a list of `message objects <#messages>`_.
+    The response will include a list of `message objects <#messages>`_.
 
     **Request:** ``POST /api/messages``
 
@@ -129,7 +129,6 @@ class ExampleMessagesView(APIView):
     ::
 
         {
-          "dimensions": ["time", "hashtags"],
           "filters": [
             {
               "dimension": "time",
