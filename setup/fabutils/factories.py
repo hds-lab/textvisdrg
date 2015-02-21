@@ -1,11 +1,11 @@
 """Functions for making fab tasks"""
 
-from fabric.api import local
+from fabric.api import local, abort
 from fabric.colors import green, red, yellow
 from fabutils import utils as fabutils, conf
 
 
-def dependencies_task(pip_requirements, default_env='dev'):
+def dependencies_task(pip_requirements, pip=False, npm=False, bower=False, default_env='dev'):
     """
     Build a task for installing dependencies.
 
@@ -18,10 +18,19 @@ def dependencies_task(pip_requirements, default_env='dev'):
         print green("Updating %s dependencies..." % environment)
 
         reqs = pip_requirements[environment]
-        if fabutils.pip_install(reqs) and \
-            fabutils.npm_install() and \
-            fabutils.bower_install():
+
+        success = True
+        if success and pip:
+            success = success and fabutils.pip_install(reqs)
+        if success and npm:
+            success = success and fabutils.npm_install()
+        if success and bower:
+            success = success and fabutils.bower_install()
+
+        if success:
             print "Dependency update successful."
+        else:
+            abort(red("Dependency update failed."))
 
     return dependencies
 

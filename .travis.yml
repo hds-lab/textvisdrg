@@ -26,14 +26,16 @@ before_install:
 
 # command to install dependencies
 install:
-  - conda install python=$TRAVIS_PYTHON_VERSION atlas numpy scipy
-  - travis_retry pip install -v Fabric path.py
-  - npm install -g bower
+  - conda install python=$TRAVIS_PYTHON_VERSION atlas numpy scipy pip
+  - travis_retry npm install -g bower
+  - travis_retry pip install -q Fabric path.py
   - fab make_test_env
   - fab python_info
-  - travis_retry fab dependencies:test
-  - fab python_info
-  - fab nltk_init
+  - travis_retry fab dependencies_pip:test
+  - travis_retry fab dependencies_npm:test
+  - travis_retry fab dependencies_bower:test
+  - travis_retry fab nltk_init
+  - fab info
 
 # command to run tests
 script:
