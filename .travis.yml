@@ -2,14 +2,30 @@ language: python
 python:
   - "2.7"
 
+virtualenv:
+  system_site_packages: true
+
 before_install:
   - "npm install -g bower"
+  - "sudo apt-get install -y gfortran libopenblas-dev liblapack-dev"
+  - wget 'http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh' -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda/bin:$PATH
+  - conda update --yes conda
+  # The next couple lines fix a crash with multiprocessing on Travis and are not specific to using Miniconda
+  - sudo rm -rf /dev/shm
+  - sudo ln -s /run/shm /dev/shm
 
 # command to install dependencies
 install:
   - "pip install Fabric path.py"
+  - conda install --yes python=$TRAVIS_PYTHON_VERSION pip atlas numpy scipy
   - "fab make_test_env"
   - "fab dependencies:test"
+  - "pip install -U nltk"
+  - "fab nltk_init"
+
 
 # command to run tests
 script:

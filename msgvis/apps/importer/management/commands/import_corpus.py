@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 from msgvis.apps.importer.models import create_an_instance_from_json
 
 from msgvis.apps.corpus.models import Dataset
@@ -13,14 +13,16 @@ class Command(BaseCommand):
         $ python manage.py import_corpus <file_path>
 
     """
+    args = '<corpus_filename>'
     help = "Import a corpus into the database."
 
-    def handle(self, *args, **options):
-        if len(args) == 0:
-            return False # TODO: replace with exception
+    def handle(self, corpus_filename, *args, **options):
+        if not corpus_filename:
+            raise CommandError('Corpus filename must be provided.')
 
-        fp = open(args[0], 'r')
-        dataset_obj = Dataset.objects.create(name=args[0], description=args[0])
+        fp = open(corpus_filename, 'r')
+        dataset_obj = Dataset.objects.create(name=corpus_filename, description=corpus_filename)
+
         for json_str in iter(lambda: fp.readline(), ''):
             json_str = json_str.rstrip('\r\n')
             if len(json_str) > 0:

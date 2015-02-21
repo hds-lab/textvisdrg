@@ -155,3 +155,11 @@ def deploy():
         run('fab print_env check_database migrate')
         run('fab build_static restart_webserver')
 
+
+def topic_pipeline(dataset, name="my topic model", num_topics=30):
+    command = "extract_topics --topics %d --name '%s' %s" % (num_topics, name, dataset)
+    fabutils.manage_py(command)
+
+def nltk_init():
+    import nltk
+    nltk.download(["stopwords", "punkt"])

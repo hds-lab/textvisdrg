@@ -11,4 +11,4 @@ admin.site.register(models.Message)
 admin.site.register(models.Hashtag)
 admin.site.register(models.Media)
 admin.site.register(models.Url)
-admin.site.register(models.Topic)
+

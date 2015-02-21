@@ -1,0 +1,43 @@
+{% extends '_layouts/base.html' %}
+{% load static %}
+
+{% block css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'topic_browser/css/base.css' %}">   
+{% endblock %}
+{% block content %}
+
+    <ol class="breadcrumb">
+        <li class="active">Models</li>
+    </ol>
+
+    <h1>Topic Models</h1>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th></th>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Dictionary</th>
+            <th>Time</th>
+            <th>Topics</th>
+            <th title="per-word likelihood bound">-Log(Perplexity)</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for obj in topic_models %}
+            <tr>
+                <td><a href="{% url 'topics_model' model_id=obj.id %}" class="btn btn-sm btn-default">Inspect</a></td>
+                <td>{{ obj.id }}</td>
+                <td>{{ obj.name }}</td>
+                <td>{{ obj.dictionary.words.count }} words from {{ obj.dictionary.num_docs }} {{ obj.dictionary.dataset }}s</td>
+                <td>{{ obj.time }}</td>
+                <td>{{ obj.topics.count }}</td>
+                <td>{{ obj.perplexity|floatformat:3 }}</td>
+            </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+{% endblock %}

@@ -195,7 +195,7 @@ if exists 'virtualenvwrapper.sh'; then
 
     # Create it
     rmvirtualenv $VENV_NAME
-    mkvirtualenv --python="${PYTHON_EXE}" -a "$PROJECT_ROOT" "$VENV_NAME" || echo "mkvirtualenv returns weird exit statuses"
+    mkvirtualenv --system-site-packages --python="${PYTHON_EXE}" -a "$PROJECT_ROOT" "$VENV_NAME" || echo "mkvirtualenv returns weird exit statuses"
 
     failif "ERROR: Could not create virtualenv"
 
@@ -203,7 +203,7 @@ elif exists 'virtualenv'; then
 
     echo "Using plain virtualenv..."
     echo "Virtual environment location: ${PROJECT_ROOT}/.virtualenv"
-    virtualenv --python="${PYTHON_EXE}" "${PROJECT_ROOT}/.virtualenv"
+    virtualenv --system-site-packages --python="${PYTHON_EXE}" "${PROJECT_ROOT}/.virtualenv"
     failif "ERROR: Could not create virtualenv"
     
     source "${PROJECT_ROOT}/.virtualenv/bin/activate"

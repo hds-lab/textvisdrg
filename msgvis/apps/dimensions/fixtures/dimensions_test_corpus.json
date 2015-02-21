@@ -367,7 +367,6 @@
       "contains_mention": false,
       "mentions": [],
       "type": 1,
-      "topics": [],
       "contains_url": false
    },
    "model": "corpus.message",
@@ -392,7 +391,6 @@
          1
       ],
       "type": 3,
-      "topics": [],
       "contains_url": false
    },
    "model": "corpus.message",
@@ -417,7 +415,6 @@
          1
       ],
       "type": 2,
-      "topics": [],
       "contains_url": false
    },
    "model": "corpus.message",
@@ -442,7 +439,6 @@
       "contains_mention": false,
       "mentions": [],
       "type": 1,
-      "topics": [],
       "contains_url": true
    },
    "model": "corpus.message",

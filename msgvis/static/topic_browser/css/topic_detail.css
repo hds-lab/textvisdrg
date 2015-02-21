@@ -1,0 +1,45 @@
+.word-list {
+
+}
+
+.word-list .word {
+    margin: 4px;
+    padding: 3px 6px;
+    border: 2px solid white;
+}
+
+.word-list .word.active {
+    border: 2px solid #009f84;
+    font-weight: bold;
+}
+
+.word-list .word:hover {
+    border: 2px solid #009f84;
+}
+
+.examples > div {
+    padding: 6px;
+    border: 1px solid transparent;
+    margin: 6px;
+}
+
+.examples > div:hover {
+    border-color: #eee;
+}
+
+.examples > div .author {
+    font-weight: bold;
+    min-width: 120px;
+    text-align: right;
+    display: inline-block;
+}
+
+.examples > div .pull-right {
+    font-size: 0.8em;
+    color: #aaa;
+    text-align: right;
+}
+
+.examples > div .pull-right span {
+    display: block;
+}

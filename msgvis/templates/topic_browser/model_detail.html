@@ -1,0 +1,54 @@
+{% extends '_layouts/base.html' %}
+
+{% load static %}
+
+{% block javascript %}
+    {{ block.super }}
+    <script src="{% static 'topic_browser/js/shade_words.js' %}"></script>
+{% endblock %}
+
+{% block css %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'topic_browser/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'topic_browser/css/topic_table.css' %}">
+{% endblock %}
+
+{% block content %}
+
+    <ol class="breadcrumb">
+        <li><a href="{% url 'topics_models' %}">Models</a></li>
+        <li class="active">Topics</li>
+    </ol>
+
+    <h1>Model <em>{{ topic_model.name }}</em></h1>
+
+    <table class="topics-table">
+        <thead>
+        <tr>
+            {% for topic in topic_model.topics.all %}
+                <th>
+                    <h3>Topic <span>{{ topic.index }}</span></h3>
+                    <a href="{% url 'topics_topic' model_id=topic_model.id topic_id=topic.id %}"
+                       class="btn btn-sm btn-default">Examples</a>
+                </th>
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in word_rows %}
+            <tr>
+                {% for word in row %}
+                    <td title="Prob: {{ word.probability|floatformat:5 }}, Freq: {{word.word.document_frequency}}">
+                        <a class="word"
+                           data-probability="{{ word.probability }}"
+                           href="{% url 'topics_topic_word' model_id=topic_model.id topic_id=word.topic_id word_id=word.id %}">
+                            {{ word.word.text }}
+                        </a>
+                    </td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

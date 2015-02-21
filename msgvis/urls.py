@@ -7,4 +7,5 @@ urlpatterns = patterns('',
                        url(r'^api/', include('msgvis.apps.api.urls')),
                        url(r'^docs/', include('docs.urls')),
                        url(r'^', include('msgvis.apps.base.urls')),
+                       url(r'^topics/', include('msgvis.apps.enhance.urls')),
 )

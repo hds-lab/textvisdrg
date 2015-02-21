@@ -1,0 +1,20 @@
+.breadcrumb {
+    margin-top: 10px;
+}
+
+a.word {
+    color: #333;
+    text-shadow: 0 0 5px white;
+    border: 2px solid transparent;
+    display: inline-block;
+}
+
+.word:hover,
+.word.active {
+    border: 2px solid #009f84;
+}
+
+.word.active {
+    font-weight: bold;
+    text-decoration: none;
+}
