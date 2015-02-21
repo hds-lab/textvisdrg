@@ -152,6 +152,7 @@ class ExampleMessagesView(APIView):
     ::
 
         {
+          "dataset": 2,
           "filters": [
             {
               "dimension": "time",
@@ -173,7 +174,12 @@ class ExampleMessagesView(APIView):
         if input.is_valid():
             data = input.validated_data
 
-            example_messages = corpus_models.Dataset.get_example_messages(settings=data)
+            dataset = data['dataset']
+
+            filters = data['filters']
+            focus = data.get('focus', [])
+
+            example_messages = dataset.get_example_messages(filters + focus)
 
             # Just add the messages key to the response
             response_data = data

@@ -163,13 +163,15 @@ class ExampleMessagesViewTest(APITestCase):
         ]
 
 
-    @mock.patch('msgvis.apps.corpus.models.Dataset.get_example_messages')
+    @mock.patch.object(corpus_models.Dataset, 'get_example_messages')
     def test_get_example_messages_api(self, get_example_messages):
+
         # fake the actual example finding
         get_example_messages.return_value = self.sample_messages
 
         url = reverse('example-messages')
         data = {
+            "dataset": self.dataset.id,
             "filters": [
                 {
                     "dimension": "time",
@@ -186,6 +188,7 @@ class ExampleMessagesViewTest(APITestCase):
         }
 
         expected_response = {
+            "dataset": data['dataset'],
             "filters": data['filters'],
             "focus": data['focus'],
             "messages": [

@@ -16,22 +16,18 @@ class Dataset(models.Model):
     def __unicode__(self):
         return self.name
 
-    @classmethod
-    def get_example_messages(cls, settings):
-        """Get example messages with filter and focus settings"""
+    def get_example_messages(self, filters):
+        """Get example messages given some filters (dictionaries containing dimensions and filter params)"""
 
-        from msgvis.apps.dimensions.registry import get_dimension
+        messages = self.message_set.all()
 
-        # TODO: convert this into a regular method so that we can easily filter on a dataset
-        # e.g. messages = self.message_set.all()
-        messages = Message.objects.all()
-        if settings.get("filters"):
-            for filter in settings["filters"]:
-                messages = get_dimension(filter["dimension"]).filter(messages, filter)
+        for filter in filters:
+            dimension = filter["dimension"]
 
-        if settings.get("focus"):
-            for focus in settings["focus"]:
-                messages = get_dimension(focus["dimension"]).filter(messages, focus)
+            # Remove the dimension key
+            params = {key: value for key, value in filter.iteritems() if key != "dimension"}
+
+            messages = dimension.filter(messages, **params)
 
         return messages[:10]
 

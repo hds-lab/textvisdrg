@@ -127,6 +127,7 @@ class ExampleMessageSerializer(serializers.Serializer):
     ::
 
         {
+            "dataset": 2,
             "filters": [
                 {
                     "dimension": "time",
@@ -157,7 +158,7 @@ class ExampleMessageSerializer(serializers.Serializer):
             ]
         }
     """
-
+    dataset = dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
     filters = serializers.ListField(child=FilterSerializer(), required=False)
     focus = serializers.ListField(child=FilterSerializer(), required=False)
     messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
