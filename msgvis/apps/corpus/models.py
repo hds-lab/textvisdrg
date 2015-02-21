@@ -83,17 +83,6 @@ class Timezone(models.Model):
     name = models.CharField(max_length=150)
     """Another name for the timezone, perhaps the country where it is located?"""
 
-
-class Topic(models.Model):
-    """Topics in messages"""
-
-    name = models.CharField(max_length=100)
-    """A short-ish name for the topic"""
-
-    description = models.TextField()
-    """A longer description"""
-
-
 class Person(models.Model):
     """
     A person who sends messages in a dataset.
@@ -173,9 +162,6 @@ class Message(models.Model):
 
     timezone = models.ForeignKey(Timezone, null=True, blank=True, default=None)
     """The :class:`Timezone` of the message."""
-
-    topics = models.ManyToManyField(Topic, null=True, blank=True, default=None)
-    """The set of :class:`Topic` associated with the message."""
 
     replied_to_count = models.PositiveIntegerField(blank=True, default=0)
     """The number of replies this message received."""

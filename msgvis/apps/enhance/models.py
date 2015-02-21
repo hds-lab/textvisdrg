@@ -351,12 +351,12 @@ class AbstractTopicVector(models.Model):
         return examples.order_by('-probability')
 
 
-class TweetWord(AbstractWordVector):
+class MessageWord(AbstractWordVector):
     source = models.ForeignKey(Message, related_name='words')
 
 
-class TweetTopic(AbstractTopicVector):
-    source = models.ForeignKey(Message)
+class MessageTopic(AbstractTopicVector):
+    source = models.ForeignKey(Message, related_name='topics')
 
 
 def set_message_sentiment(message):

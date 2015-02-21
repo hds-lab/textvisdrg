@@ -1,5 +1,5 @@
 from django.conf import settings
-from models import Dictionary, TweetWord, Word, TweetTopic
+from models import Dictionary, MessageWord, Word, MessageTopic
 from django.apps import apps as django_apps
 from msgvis.apps.corpus.models import Message
 
@@ -186,16 +186,46 @@ class TaskContext(object):
         return dictionary._evaluate_lda(model, corpus, lda=lda)
 
 
-def get_twitter_context(name):
+_django_set_up = False
+def _setup_django(debug=None):
+    global _django_set_up
 
-    Tweet = Message
-    queryset = Tweet.objects.filter(language__code='en')
+    if not _django_set_up:
+
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "msgvis.settings.dev")
+
+        from msgvis import env_file
+        env_file.load()
+
+        if debug is not None:
+            os.environ.setdefault("DEBUG", str(debug))
+
+        import django
+        django.setup()
+
+        _django_set_up = True
+
+def _data_pipeline(context, num_topics):
+    dictionary = context.find_dictionary()
+    if dictionary is None:
+        dictionary = context.build_dictionary()
+
+    if not context.bows_exist(dictionary):
+        context.build_bows(dictionary)
+
+    model, lda = context.build_lda(dictionary, num_topics=num_topics)
+    context.apply_lda(dictionary, model, lda)
+    context.evaluate_lda(dictionary, model, lda)
+
+def get_message_context(name):
+
+    queryset = Message.objects.filter(language__code='en')
     textfield = 'text'
 
     return TaskContext(name=name, queryset=queryset,
                        textfield=textfield,
-                       word_vector_class=TweetWord,
-                       topic_vector_class=TweetTopic,
+                       word_vector_class=MessageWord,
+                       topic_vector_class=MessageTopic,
                        tokenizer=WordTokenizer,
                        stoplist=get_stoplist(),
                        minimum_frequency=4)
