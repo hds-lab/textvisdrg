@@ -42,7 +42,6 @@ class MappedValuesQuerySetTest(TestCase):
 
 
 class CategoricalDimensionTest(TestCase):
-
     def test_can_get_distribution(self):
         """Just check that the Dimension.get_distribution method runs"""
 
@@ -71,7 +70,7 @@ class CategoricalDimensionTest(TestCase):
             self.assertEquals(result, grouped_queryset.annotate.return_value)
 
         # We should be grouping with the key field aliased to value
-        group_by.assert_called_once_with(queryset, 'value')
+        group_by.assert_called_once_with(queryset, grouping_key='value')
 
         # And then we should aggregate by Count('id')
         Count.assert_called_once_with('id')
@@ -152,8 +151,25 @@ class CategoricalDimensionTest(TestCase):
         with mock.patch.object(dimension, 'get_grouping_expression', get_grouping_expression):
             result = dimension.group_by(queryset, grouping_key)
 
-            #It should not be a mapped values queryset
+            # It should not be a mapped values queryset
             self.assertEquals(result, values_query_set)
 
         self.assertEquals(MappedValuesQuerySet.create_from.call_count, 0)
 
+    def test_select_grouping_quantitative_no_grouping(self):
+        """When the grouping expression equals the dimension field name, nothing fancy necessary."""
+
+        dimension = models.QuantitativeDimension(
+            key='shares',
+            name='Count of shares',
+            description='Count of shares',
+            field_name='shared_count',
+        )
+
+        queryset = mock.Mock()
+
+        result, internal_key = dimension.select_grouping_expression(queryset, dimension.field_name)
+
+        # It should't need a different internal key in this simple case
+        self.assertEquals(internal_key, dimension.field_name)
+        self.assertEquals(result, queryset)

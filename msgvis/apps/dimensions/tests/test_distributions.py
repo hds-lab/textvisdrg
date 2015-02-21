@@ -19,13 +19,7 @@ class CategoricalDimensionsRegistryTest(DistributionTestCaseMixins, TestCase):
         """
 
         # Create some language labels
-        for val in [("en", "English", "jp", "Japanese", "fr", "French")]:
-            corpus_models.Language.objects.create(
-                code=val[0],
-                name=val[1]
-            )
-
-        language_ids = corpus_models.Language.objects.values_list('id', flat=True).distinct()
+        language_ids = self.create_test_languages()
         language_distribution = self.get_distribution(language_ids)
         language_code_distribution = self.recover_related_field_distribution(language_distribution,
                                                                                corpus_models.Language, 'code')
@@ -48,13 +42,7 @@ class CategoricalDimensionsRegistryTest(DistributionTestCaseMixins, TestCase):
         in this case Hashtags, can be calculated correctly.
         """
 
-        # Create some hashtags
-        for ht in range(5):
-            corpus_models.Hashtag.objects.create(
-                text="#ht%d" % ht
-            )
-
-        hashtag_ids = corpus_models.Hashtag.objects.values_list('id', flat=True).distinct()
+        hashtag_ids = self.create_test_hashtags()
         hashtag_distribution = self.get_distribution(hashtag_ids)
         hashtag_text_distribution = self.recover_related_field_distribution(hashtag_distribution,
                                                                             corpus_models.Hashtag, 'text')
@@ -323,34 +311,11 @@ class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
 
 
 class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
-    def generate_authors(self, field_name, values):
-        """Generate a dataset and a set of authors with fields set to the given values."""
-        dataset = corpus_models.Dataset.objects.create(
-            name="Test author name distribution",
-            description="Created by test_author_name_distribution",
-        )
 
-        # Create some authors
-        for value in values:
-            corpus_models.Person.objects.create(**{'dataset': dataset, field_name: value})
-
-        return dataset
-
-    def distibute_messages_to_authors(self, dataset):
-        """Create messages for each author, and return a dict of author id to message count."""
-        author_ids = dataset.person_set.values_list('id', flat=True).distinct()
-        author_distribution = self.get_distribution(author_ids)
-
-        self.generate_messages_for_distribution(
-            field_name='sender_id',
-            distribution=author_distribution,
-            dataset=dataset,
-        )
-        return author_distribution
 
     def test_author_name_distribution(self):
         """Count messages by author name"""
-        dataset = self.generate_authors('username', ['username_%d' % d for d in xrange(5)])
+        dataset = self.create_authors_with_values('username', ['username_%d' % d for d in xrange(5)])
         author_distribution = self.distibute_messages_to_authors(dataset)
         author_name_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
                                                                            'username')
@@ -363,7 +328,7 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
 
     def test_author_count_distribution(self):
         """Can count messages for different author message_counts"""
-        dataset = self.generate_authors('message_count', [5, 10, 15, 20, 25])
+        dataset = self.create_authors_with_values('message_count', [5, 10, 15, 20, 25])
         author_distribution = self.distibute_messages_to_authors(dataset)
         author_count_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
                                                                             'message_count')
@@ -374,7 +339,7 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
 
     def test_author_count_distribution_with_duplicates(self):
         """Multiple authors with the same message_count."""
-        dataset = self.generate_authors('message_count', [5, 10, 15, 20, 25, 5, 10, 15])
+        dataset = self.create_authors_with_values('message_count', [5, 10, 15, 20, 25, 5, 10, 15])
         author_distribution = self.distibute_messages_to_authors(dataset)
         author_count_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
                                                                             'message_count')
@@ -389,7 +354,7 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
         If the range of the counts is very large,
         they should come out binned.
         """
-        dataset = self.generate_authors('message_count', [5, 10, 2005])
+        dataset = self.create_authors_with_values('message_count', [5, 10, 2005])
         author_distribution = self.distibute_messages_to_authors(dataset)
         author_count_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
                                                                             'message_count')
@@ -413,7 +378,7 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
         we should get a bin size of 1.
         """
 
-        dataset = self.generate_authors('message_count', [5, 6, 7])
+        dataset = self.create_authors_with_values('message_count', [5, 6, 7])
         author_distribution = self.distibute_messages_to_authors(dataset)
         author_count_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
                                                                             'message_count')

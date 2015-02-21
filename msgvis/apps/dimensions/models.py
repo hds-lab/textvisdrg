@@ -52,10 +52,10 @@ class CategoricalDimension(object):
         self.description = description
         self.field_name = field_name if field_name is not None else key
 
-    def _exact_filter(self, queryset, filter):
+    def _exact_filter(self, queryset, **kwargs):
         """Filtering for exact value"""
-        if filter.get('value'):
-            queryset = queryset.filter(Q((self.field_name, filter['value'])))
+        if kwargs.get('value'):
+            queryset = queryset.filter(Q((self.field_name, kwargs['value'])))
         return queryset
 
     def get_key_model(self):
@@ -63,22 +63,20 @@ class CategoricalDimension(object):
         return dimension_key_model
 
 
-    def filter(self, queryset, filter):
+    def filter(self, queryset, **kwargs):
         """Apply a filter to a queryset and return the new queryset."""
 
         # Type checking
         queryset = find_messages(queryset)
 
-        # Make sure this filter is for us
-        if not filter['dimension'] == self.key:
-            raise ValueError("'%s' dimension cannot handle filter on '%s'" % (self.key, filter['dimension']))
+        queryset = self._exact_filter(queryset, **kwargs)
 
-        queryset = self._exact_filter(queryset, filter)
-        if filter.get('levels'):
+        if kwargs.get('levels'):
             filter_ors = []
-            for level in filter.get('levels'):
+            for level in kwargs.get('levels'):
                 filter_ors.append((self.field_name, level))
             queryset = queryset.filter(reduce(operator.or_, [Q(x) for x in filter_ors]))
+
         return queryset
 
     def group_by(self, queryset, grouping_key=None, **kwargs):
@@ -103,28 +101,41 @@ class CategoricalDimension(object):
         queryset = find_messages(queryset)
 
         # Get the expression that groups this dimension for this queryset
-        grouping_expression = self.get_grouping_expression(queryset)
+        grouping_expression = self.get_grouping_expression(queryset, **kwargs)
+
+        queryset, internal_key = self.select_grouping_expression(queryset, grouping_expression)
 
         # Group the data
         queryset = queryset.values(grouping_expression)
 
-        if grouping_key != grouping_expression:
+        if internal_key == grouping_key:
+            return queryset
+        else:
             # We need to transform the output to match the requested grouping key
             # queryset = queryset.extra(select={grouping_key: grouping_expression})
-            queryset = MappedValuesQuerySet.create_from(queryset, {
-                grouping_expression: grouping_key
+            return MappedValuesQuerySet.create_from(queryset, {
+                internal_key: grouping_key
             })
 
-        return queryset
 
-    def get_distribution(self, queryset, value_key='value', **kwargs):
+    def select_grouping_expression(self, queryset, expression):
+        """
+        Add an expression for grouping to the queryset's SELECT.
+        Returns the queryset plus the alias for the expression.
+
+        For categorical dimensions this is a no-op.
+        Beware if your expression refers to a related table!
+        """
+        return queryset, expression
+
+    def get_distribution(self, queryset, grouping_key='value', **kwargs):
         """Get the distribution of the dimension within the dataset."""
 
         # Type checking
         queryset = find_messages(queryset)
 
         # Use 'values' to group the queryset
-        queryset = self.group_by(queryset, value_key)
+        queryset = self.group_by(queryset, grouping_key=grouping_key)
 
         # Count the messages in each group
         return queryset.annotate(count=models.Count('id'))
@@ -136,6 +147,14 @@ class CategoricalDimension(object):
         group the messages by this dimension.
         """
         return self.field_name
+
+
+class RelatedCategoricalDimension(CategoricalDimension):
+    """
+    A categorical dimension where the values are in a related table, e.g. sender name.
+
+    Currently doesn't really do much beyond CategoricalDimension.
+    """
 
 
 class QuantitativeDimension(CategoricalDimension):
@@ -159,19 +178,14 @@ class QuantitativeDimension(CategoricalDimension):
         self._cached_range_queryset_id = None
         self._cached_range = None
 
-    def filter(self, queryset, filter):
+    def filter(self, queryset, **kwargs):
         # Type checking
-        queryset = find_messages(queryset)
+        queryset = super(QuantitativeDimension, self).filter(queryset, **kwargs)
 
-        # Make sure this filter is for us
-        if not filter['dimension'] == self.key:
-            raise ValueError("'%s' dimension cannot handle filter on '%s'" % (self.key, filter['dimension']))
-
-        queryset = self._exact_filter(queryset, filter)
-        if filter.get('min'):
-            queryset = queryset.filter(Q((self.field_name + "__gte", filter['min'])))
-        if filter.get('max'):
-            queryset = queryset.filter(Q((self.field_name + "__lte", filter['max'])))
+        if kwargs.get('min'):
+            queryset = queryset.filter(Q((self.field_name + "__gte", kwargs['min'])))
+        if kwargs.get('max'):
+            queryset = queryset.filter(Q((self.field_name + "__lte", kwargs['max'])))
         return queryset
 
     def get_range(self, queryset):
@@ -237,21 +251,31 @@ class QuantitativeDimension(CategoricalDimension):
             # No need for binning
             return self.field_name
 
-    def _attach_grouping_expression(self, queryset, grouping_expression, grouping_key):
+    def select_grouping_expression(self, queryset, expression):
         """
-        Make sure the queryset selects the grouping expression, aliased to grouping_key.
-        """
-        # This is a workaround for QuerySet.extra(select={})
-        # because it doesn't work if the value you are selecting
-        # contains a %s -- even though Sqlite uses %s as a time format
-        # string.
+        Add an expression for grouping to the queryset's SELECT.
 
-        # Copy the queryset first to avoid problems
-        queryset = queryset._clone()
-        queryset.query.extra.update({
-            grouping_key: (grouping_expression, ())
-        })
-        return queryset
+        Returns a queryset, grouping_key tuple.
+        The grouping_key could be used in values to identify the grouping expression.
+        """
+
+        if expression == self.field_name:
+            return queryset, self.field_name
+        else:
+            # This mess is a workaround for QuerySet.extra(select={})
+            # because it doesn't work if the value you are selecting
+            # contains a %s -- even though Sqlite uses %s as a time format
+            # string.
+
+            # Copy the queryset first to avoid problems
+            grouping_key = "gk_%s" % self.key
+            queryset = queryset._clone()
+            queryset.query.extra.update({
+                grouping_key: (expression, ())
+            })
+
+            return queryset, grouping_key
+
 
     def group_by(self, queryset, grouping_key=None, bins=None, bin_size=None, **kwargs):
         """
@@ -284,16 +308,21 @@ class QuantitativeDimension(CategoricalDimension):
 
         else:
             # Sometimes this step gets complicated
-            queryset = self._attach_grouping_expression(queryset, expression, grouping_key)
+            queryset, internal_key = self.select_grouping_expression(queryset,
+                                                                     expression=expression)
 
             # Then use values to group by the grouping key.
-            return queryset.values(grouping_key)
+            queryset = queryset.values(internal_key)
 
-    def get_distribution(self, queryset, value_key='value', bins=None, **kwargs):
+            return MappedValuesQuerySet.create_from(queryset, {
+                internal_key: grouping_key,
+            })
+
+    def get_distribution(self, queryset, grouping_key='value', bins=None, **kwargs):
         """
         On the given :class:`.Dataset`, calculate a binned distribution.
         A desired number of bins may be provided.
-        The results will be keyed by value_key.
+        The results will be keyed by grouping_key.
         """
         if bins is None:
             bins = self.default_bins
@@ -309,7 +338,8 @@ class QuantitativeDimension(CategoricalDimension):
         bin_size = self._get_bin_size(min_val, max_val, bins)
 
         # Group by that bin size
-        queryset = self.group_by(queryset, value_key, bin_size=bin_size, min_val=min_val, max_val=max_val)
+        queryset = self.group_by(queryset, grouping_key=grouping_key, bin_size=bin_size, min_val=min_val,
+                                 max_val=max_val)
 
         # Count the messages in each group
         queryset = queryset.annotate(count=models.Count('id'))
@@ -331,10 +361,11 @@ class RelatedQuantitativeDimension(QuantitativeDimension):
         'sqlite': '{bin_size} * CAST(`{to_table}`.`{target_field_name}` / {bin_size} AS INTEGER)',
     }
 
-    def __init__(self, key, name=None, description=None, field_name=None, default_bins=QUANTITATIVE_DIMENSION_BINS,
+    def __init__(self, key, name=None, description=None, field_name=None,
+                 default_bins=QUANTITATIVE_DIMENSION_BINS,
                  min_bin_size=1):
-        super(RelatedQuantitativeDimension, self).__init__(key, name, description, field_name, default_bins,
-                                                           min_bin_size)
+        super(RelatedQuantitativeDimension, self).__init__(key, name, description, field_name,
+                                                           default_bins=default_bins, min_bin_size=min_bin_size)
 
         # e.g. (sender, username)
         self.local_field_name, self.target_field_name = self.field_name.split('__')
@@ -376,6 +407,16 @@ class RelatedQuantitativeDimension(QuantitativeDimension):
             where=[self._get_join_condition()]
         )
 
+    def select_grouping_expression(self, queryset, expression):
+        queryset, internal_key = super(RelatedQuantitativeDimension, self).select_grouping_expression(
+            queryset,
+            expression)
+
+        # We also need to specify the join manually :( :( :(
+        queryset = self._add_manual_join(queryset)
+
+        return queryset, internal_key
+
     def _render_grouping_expression(self, bin_size):
         """Render the grouping expression, with support for manually joined tables"""
 
@@ -390,35 +431,19 @@ class RelatedQuantitativeDimension(QuantitativeDimension):
                 bin_size=bin_size
             )
 
-    def _attach_grouping_expression(self, queryset, grouping_expression, grouping_key):
-        queryset = super(RelatedQuantitativeDimension, self)._attach_grouping_expression(
-            queryset,
-            grouping_expression,
-            grouping_key)
-
-        # We also need to specify the join manually :( :( :(
-        queryset = self._add_manual_join(queryset)
-
-        return queryset
-
 
 class TimeDimension(QuantitativeDimension):
     """A dimension for time fields on Message"""
 
-    def filter(self, queryset, filter):
+    def filter(self, queryset, **kwargs):
 
-        # Type checking
-        queryset = find_messages(queryset)
+        queryset = super(TimeDimension, self).filter(queryset, **kwargs)
 
-        # Make sure this filter is for us
-        if not filter['dimension'] == self.key:
-            raise ValueError("'%s' dimension cannot handle filter on '%s'" % (self.key, filter['dimension']))
+        if kwargs.get('min_time'):
+            queryset = queryset.filter(Q((self.field_name + "__gte", kwargs['min_time'])))
+        if kwargs.get('max_time'):
+            queryset = queryset.filter(Q((self.field_name + "__lte", kwargs['max_time'])))
 
-        queryset = self._exact_filter(queryset, filter)
-        if filter.get('min_time'):
-            queryset = queryset.filter(Q((self.field_name + "__gte", filter['min_time'])))
-        if filter.get('max_time'):
-            queryset = queryset.filter(Q((self.field_name + "__lte", filter['max_time'])))
         return queryset
 
     # Convert to unix timestamp. Divide by bin size. Floor. Multiply by bin size. Convert to datetime.
@@ -476,18 +501,11 @@ class TimeDimension(QuantitativeDimension):
         return best_bin_millis / 1000
 
 
-class RelatedCategoricalDimension(CategoricalDimension):
-    """
-    A categorical dimension where the values are in a related table, e.g. sender name.
-
-    Clearly this doesn't really do anything special right now.
-    """
-
-
 class TextDimension(CategoricalDimension):
     """
     A dimension based on the words in a text field.
     """
+
 
 class DimensionKey(models.Model):
     """

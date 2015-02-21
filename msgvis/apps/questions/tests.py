@@ -1,5 +1,5 @@
 from django.test import TestCase
-from models import Article, Question, get_sample_questions
+from models import Article, Question
 
 # Create your tests here.
 class GetSampleQuestionTest(TestCase):
@@ -21,20 +21,19 @@ class GetSampleQuestionTest(TestCase):
         question.add_dimension("language")
         question.save()
 
-    def test_get_sample_question(self):
-
-        dimension_list = []
-        questions = get_sample_questions(dimension_list=dimension_list)
+    def test_no_dimensions(self):
+        """When you don't request any dimensions it returns all the questions"""
+        questions = Question.get_sample_questions()
         self.assertEquals(questions.count(), 3)
-
-        dimension_list = ["hashtags"]
-        questions = get_sample_questions(dimension_list=dimension_list)
+    def test_one_dimension(self):
+        """With a dimension that matches one question"""
+        questions = Question.get_sample_questions('hashtags')
         self.assertEquals(questions.count(), 1)
-
-        dimension_list = ["language"]
-        questions = get_sample_questions(dimension_list=dimension_list)
+    def test_one_dimension_multi_match(self):
+        """Try matching a dimension with multiple questions"""
+        questions = Question.get_sample_questions('language')
         self.assertEquals(questions.count(), 2)
-
-        dimension_list = ["language", "urls"]
-        questions = get_sample_questions(dimension_list=dimension_list)
+    def test_multiple_dimensions(self):
+        """Match against multiple dimensions"""
+        questions = Question.get_sample_questions('language', 'urls')
         self.assertEquals(questions.count(), 1)

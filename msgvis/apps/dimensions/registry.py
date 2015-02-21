@@ -102,7 +102,7 @@ register(models.RelatedCategoricalDimension(
     key='media',
     name='Media',
     description='Photos in the message',
-    field_name='media',
+    field_name='media__type',
 ))
 
 register(models.CategoricalDimension(
@@ -156,7 +156,7 @@ register(models.RelatedCategoricalDimension(
     key='mentions',
     name='Mentions',
     description='Usernames mentioned in the message',
-    field_name='mentions',
+    field_name='mentions__username',
 ))
 
 register(models.CategoricalDimension(

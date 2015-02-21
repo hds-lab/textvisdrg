@@ -75,6 +75,9 @@ def django_settings(default_settings_module='settings'):
 
     from django.conf import settings
 
+    import django
+    django.setup()
+
     return settings
 
 
