@@ -56,9 +56,39 @@ class DataTableView(APIView):
 
     **Request:** ``POST /api/table``
 
-    **Format:** The request and response should match
-    :class:`.DataTableSerializer`.
-    Requests should not include the ``result`` key.
+    **Format:** (request without ``result`` key)
+
+    ::
+
+        {
+          "dataset": 2,
+          "dimensions": ["time"],
+          "filters": [
+            {
+              "dimension": "time",
+              "min": "2010-02-25T00:23:53Z",
+              "max": "2010-02-28T00:23:53Z"
+            }
+          ],
+          "result": [
+            {
+              "value": 35,
+              "time": "2010-02-25T00:23:53Z"
+            },
+            {
+              "value": 35,
+              "time": "2010-02-26T00:23:53Z"
+            },
+            {
+              "value": 35,
+              "time": "2010-02-27T00:23:53Z"
+            },
+            {
+              "value": 35,
+              "time": "2010-02-28T00:23:53Z"
+            }
+          ]
+        }
     """
 
     def post(self, request, format=None):
@@ -67,7 +97,7 @@ class DataTableView(APIView):
             data = input.validated_data
 
             dimensions = data['dimensions']
-            filters = data.get('filters', None)
+            filters = data.get('filters', [])
 
             queryset = corpus_models.Message.objects.all()
 
@@ -97,9 +127,41 @@ class ExampleMessagesView(APIView):
 
     **Request:** ``POST /api/messages``
 
-    **Format:**: The request and response should match
-    :class:`.ExampleMessageSerializer`.
-    Requests should not include the ``messages`` key.
+    **Format:**: (request should not have ``messages`` key)
+
+    ::
+
+        {
+            "dataset": 2,
+            "filters": [
+                {
+                    "dimension": "time",
+                    "min_time": "2010-02-25T00:23:53Z",
+                    "max_time": "2010-02-28T00:23:53Z"
+                }
+            ],
+            "focus": [
+                {
+                    "dimension": "time",
+                    "value": "2010-02-28T00:23:53Z"
+                }
+            ],
+            "messages": [
+                {
+                    "id": 52,
+                    "dataset": 2,
+                    "text": "Some sort of thing or other",
+                    "sender": {
+                        "id": 2,
+                        "dataset": 1
+                        "original_id": 2568434,
+                        "username": "my_name",
+                        "full_name": "My Name"
+                    },
+                    "time": "2010-02-25T00:23:53Z"
+                }
+            ]
+        }
     """
 
     def post(self, request, format=None):
@@ -130,9 +192,28 @@ class ResearchQuestionsView(APIView):
 
     **Request:** ``POST /api/questions``
 
-    **Format:** The request and response should match
-    :class:`.SampleQuestionSerializer`.
-    Requests should not include the ``questions`` key.
+    **Format:** (request without ``questions`` key)
+
+    ::
+
+        {
+            "dimensions": ["time", "hashtags"],
+            "questions": [
+                {
+                  "id": 5,
+                  "text": "What is your name?",
+                  "source": {
+                    "id": 13,
+                    "authors": "Thingummy & Bob",
+                    "link": "http://ijn.com/3453295",
+                    "title": "Names and such",
+                    "year": "2001",
+                    "venue": "International Journal of Names"
+                  },
+                  "dimensions": ["time", "author_name"]
+                }
+            ]
+        }
     """
 
     def post(self, request, format=None):
@@ -161,9 +242,32 @@ class DimensionDistributionView(APIView):
 
     **Request:** ``POST /api/dimension``
 
-    **Format:** The request and response should match
-    :class:`.DimensionDistributionSerializer`.
-    Requests should not include the ``messages`` key.
+    **Format:** (requests should not include the ``distribution`` key)
+
+    ::
+
+        {
+          "dataset": 2,
+          "dimension": "time",
+          "distribution": [
+            {
+              "count": 5000,
+              "value": "some_time"
+            },
+            {
+              "count": 1000,
+              "value": "some_time"
+            },
+            {
+              "count": 500,
+              "value": "some_time"
+            },
+            {
+              "count": 50,
+              "value": "some_time"
+            }
+          ]
+        }
     """
 
     def post(self, request, format=None):
