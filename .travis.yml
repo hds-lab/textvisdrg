@@ -14,7 +14,7 @@ cache:
     - node_modules
     - msgvis/static/bower
     - $HOME/nltk_data
-    - $HOME/miniconda
+    - $HOME/miniconda/lib/python2.7
 
 before_install:
   # Use a miniconda environment instead of system python
