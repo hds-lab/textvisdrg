@@ -2,5 +2,9 @@
 
 # Make sure the machine is updated
 loggy "Updating system..."
-buffer_fail "apt-get update" "ERROR: Could not download package info."
-buffer_fail "apt-get upgrade -y" "ERROR: Could not update system."
+
+apt-get update -q
+failif "ERROR: Could not download package info."
+
+apt-get upgrade -y -q
+failif "ERROR: Could not update system."

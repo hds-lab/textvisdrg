@@ -180,7 +180,6 @@ def npm_install():
     with lcd(conf.PROJECT_ROOT):
         if path(conf.PROJECT_ROOT / 'package.json').exists():
             if symlink_supported():
-                local('ls && pwd')
                 local('npm install')
             else:
                 print yellow("Symbolic links not supported. Using no-bin-link option.")

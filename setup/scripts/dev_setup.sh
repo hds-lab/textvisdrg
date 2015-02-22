@@ -17,7 +17,7 @@ set -e
 function script_dir {
     cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd
 }
-echo ">>>>> $TEST_DBNAME does this name exist?"
+
 SCRIPTS_DIR=$(script_dir)
 source $SCRIPTS_DIR/functions.sh
 
