@@ -117,9 +117,13 @@ def _django_test_command(settings_module):
 
 def django_tests(settings_module, coverage=False):
     """Run django tests, optionally with coverage."""
+
     test_cmd = _django_test_command(settings_module)
     if test_cmd is None:
         return False
+
+    # Tests require a .env file
+    ensure_test_env()
 
     if coverage:
         test_cmd = 'coverage run --source={SOURCE} {TEST_CMD} && coverage report'.format(
@@ -147,6 +151,7 @@ def pip_install(requirements):
 
     use_sudo = False
     if pip_path.get_owner() == 'root':
+        # If pip is owned by root, we are gonna need sudo
         use_sudo = True
 
     print "Installing python requirements..."
@@ -155,9 +160,9 @@ def pip_install(requirements):
 
         for req in requirements:
             if use_sudo:
-                result = local('sudo pip install --upgrade %s' % req)
+                result = local('sudo pip install -q %s' % req)
             else:
-                result = local('pip install --upgrade %s' % req)
+                result = local('pip install -q %s' % req)
 
             if not result.succeeded:
                 print red("Failed to install %s" % req)
@@ -175,7 +180,6 @@ def npm_install():
     with lcd(conf.PROJECT_ROOT):
         if path(conf.PROJECT_ROOT / 'package.json').exists():
             if symlink_supported():
-                local('ls && pwd')
                 local('npm install')
             else:
                 print yellow("Symbolic links not supported. Using no-bin-link option.")
@@ -241,4 +245,14 @@ def test_database():
     except db.OperationalError:
         return False
 
+@require_configured
+def ensure_test_env(outpath=None):
+    """Make an empty .env file for testing purposes."""
+    if outpath is None:
+        outpath = conf.PROJECT_ROOT / '.env'
+    else:
+        outpath = path(outpath)
 
+    if not outpath.exists():
+        # It's fine if it's empty, just make sure it exists
+        local('touch %s' % outpath)

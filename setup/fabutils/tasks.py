@@ -3,7 +3,7 @@ A collection of runnable fabric tasks.
 Make sure to call conf.configure() first!
 """
 from path import path
-from fabric.api import local, lcd
+from fabric.api import local, lcd, abort
 from fabric.colors import green, yellow, red
 import os
 
@@ -85,18 +85,6 @@ def clear_cache():
     else:
         print yellow("Django not configured for static file compression")
 
-
-def make_test_env(outpath=None):
-    """Make an empty .env file for testing purposes."""
-    if outpath is None:
-        outpath = conf.PROJECT_ROOT / '.env'
-    else:
-        outpath = path(outpath)
-
-    # An empty file for now
-    local('touch %s' % outpath)
-
-
 def interpolate_env(outpath=None):
     """Writes a .env file with variables interpolated from the current environment"""
 
@@ -125,3 +113,22 @@ def print_env():
     import pprint
 
     pprint.pprint(denv)
+
+
+def npm_install():
+    """Install npm requirements"""
+    print green("Updating npm dependencies...")
+
+    if fabutils.npm_install():
+        print "Npm dependency update successful."
+    else:
+        abort(red("Npm dependency update failed."))
+
+def bower_install():
+    """Install bower requirements"""
+    print green("Updating bower dependencies...")
+
+    if fabutils.bower_install():
+        print "Bower dependency update successful."
+    else:
+        abort(red("Bower dependency update failed."))

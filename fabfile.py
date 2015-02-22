@@ -6,7 +6,7 @@ For more info: http://docs.fabfile.org/en/latest/
 import sys
 
 from path import path
-from fabric.api import run, env, prefix, quiet
+from fabric.api import run, env, prefix, quiet, abort
 
 
 PROJECT_ROOT = path(__file__).abspath().realpath().dirname()
@@ -19,21 +19,27 @@ conf.configure(PROJECT_ROOT, 'msgvis')
 from fabutils import factories
 from fabutils.tasks import *
 
-# A dependencies management task
-dependencies = factories.dependencies_task(
-    {
-        'dev': ('-r requirements/dev.txt',),
-        'prod': ('-r requirements/prod.txt',),
-        'test': ('-r requirements/test.txt',),
-    },
-    default_env='dev'
-)
+pip_requirements = {
+    'dev': ('-r requirements/dev.txt',),
+    'prod': ('-r requirements/prod.txt',),
+    'test': ('-r requirements/test.txt',),
+}
+
+required_nltk_corpora = ["stopwords", "punkt"]
+
+pip_install = factories.pip_install_task(pip_requirements, default_env='dev')
+
+def dependencies(default_env='dev'):
+    """Install requirements for pip, npm, and bower all at once."""
+    pip_install(default_env)
+    npm_install()
+    bower_install()
 
 test = factories.test_task(default_settings='msgvis.settings.test')
 test_coverage = factories.coverage_task(default_settings='msgvis.settings.test')
 
 test_data_path = conf.PROJECT_ROOT / 'setup' / 'fixtures' / 'test_data.json'
-make_test_data = factories.make_test_data_task(('base', 'api', #'corpus',
+make_test_data = factories.make_test_data_task(('base', 'api',  # 'corpus',
                                                 'dimensions', 'datatable',
                                                 'importer', 'enhance', 'questions',
                                                 'auth', '--exclude=auth.Permission'),
@@ -115,6 +121,16 @@ def supervisor():
     print green("Supervisor launching...")
     fabutils.manage_py('supervisor')
 
+def dtest():
+    denv = fabutils.dot_env()
+
+    host = denv.get('DEPLOY_HOST', None)
+    virtualenv = denv.get('DEPLOY_VIRTUALENV', None)
+    env.host_string = host
+
+    with prefix('workon %s' % virtualenv):
+        has_bower = run('which bower')
+        print has_bower
 
 def deploy():
     """
@@ -148,7 +164,7 @@ def deploy():
             pips = run('pip freeze')
             if "Fabric" not in pips or 'path.py' not in pips:
                 print green("Installing Fabric...")
-                run('pip install Fabric path.py')
+                run('pip install -q Fabric path.py')
 
         run('fab pull')
         run('fab dependencies:prod')
@@ -160,6 +176,75 @@ def topic_pipeline(dataset, name="my topic model", num_topics=30):
     command = "extract_topics --topics %d --name '%s' %s" % (num_topics, name, dataset)
     fabutils.manage_py(command)
 
+
+def info():
+    from pprint import pprint
+
+    import pip
+    import os, sys
+
+    print green("---------- System info ------------")
+    print "System OS:"
+    local('uname -a && cat /etc/*-release')
+
+    print "Project dir:"
+    print "  ", PROJECT_ROOT
+
+    print "Git branch:"
+    local('git branch -v')
+
+    print "Last three commits:"
+    local('git log -3')
+
+    print green("---------- Python environment ------------")
+
+    print "Python version: %s" % sys.version
+
+    print "Environment:"
+    pprint(os.environ.data)
+
+    print "System Path:"
+    pprint(sys.path)
+
+    print "Pip Distributions:"
+    pprint(sorted(["%s==%s" % (i.key, i.version) for i in pip.get_installed_distributions()]))
+
+    print green("---------- Checking specific packages ------------")
+    try:
+        import nltk
+
+        print green("NLTK %s:" % nltk.__version__), nltk.__file__
+    except ImportError:
+        print yellow("Could not find nltk")
+
+    try:
+        import numpy
+
+        print green("Numpy %s:" % numpy.__version__), numpy.__file__
+
+        print "Numpy sysinfo:"
+        import numpy.distutils.system_info as sysinfo
+
+        sysinfo.get_info('lapack')
+        sysinfo.get_info('blas')
+        sysinfo.get_info('atlas')
+
+    except ImportError:
+        print yellow("Could not find numpy")
+
+    try:
+        import gensim
+
+        print green("Gensim %s:" % gensim.__version__), gensim.__file__
+    except ImportError:
+        print yellow("Could not find gensim")
+
+
 def nltk_init():
-    import nltk
-    nltk.download(["stopwords", "punkt"])
+    try:
+        import nltk
+
+        if not nltk.download(required_nltk_corpora):
+            abort(red('Unable to download nltk corpora: %s' % required_nltk_corpora))
+    except ImportError:
+        abort(red("Failed to import nltk"))
