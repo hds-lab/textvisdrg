@@ -36,7 +36,7 @@ def django_module():
 
 
 @require_configured
-def dot_env():
+def dot_env(default=None):
     """Parse the .env file and return a dictionary"""
 
     global _env_already_read
@@ -44,7 +44,7 @@ def dot_env():
     if not _env_already_read:
         from fabutils import env_file
 
-        _env_already_read = env_file.read(conf.PROJECT_ROOT / '.env')
+        _env_already_read = env_file.read(conf.PROJECT_ROOT / '.env', default=default)
 
     return _env_already_read
 
@@ -306,5 +306,5 @@ def env_info():
     print os.linesep, green("---------- Deployment info ------------")
 
     print os.linesep, ".env file:"
-    denv = dot_env()
+    denv = dot_env(default={})
     pprint(denv)

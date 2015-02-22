@@ -1,13 +1,15 @@
 import os
 
-def read(envFile='.env'):
+def read(envFile='.env', default=None):
     result = {}
 
     try:
         with open(envFile) as f:
             content = f.read()
     except IOError:
-        raise RuntimeError("Env file %s not found! Please create it." % envFile)
+        if default is None:
+            raise RuntimeError("Env file %s not found! Please create it." % envFile)
+        return default
 
     import re
     for line in content.splitlines():
