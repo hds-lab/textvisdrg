@@ -10,14 +10,15 @@
     <script src="{% static 'bower/angular-route/angular-route.js' %}"></script>
     <script src="{% static 'djangular/js/django-angular.js' %}"></script>
     <script type="text/javascript" src="{% static 'bower/angular-resource/angular-resource.js' %}"></script>
-    <script type="text/javascript" src="{% static 'SparkQs/SparkQs.js' %}"></script>
-    <script type="text/javascript" src="{% static 'SparkQs/controllers.js' %}"></script>
+    <script type="text/javascript" src="{% static 'SparQs/SparQs.js' %}"></script>
+    <script type="text/javascript" src="{% static 'SparQs/controllers.js' %}"></script>
+    <script type="text/javascript" src="{% static 'SparQs/services.js' %}"></script>
 {% endblock %}
 {% block navigation_bar %}
 {% endblock %}
 
 {% block content %}
-<div id="content" class="content" ng-app="SparkQs">
+<div id="content" class="content" ng-app="SparQs">
     <div id="titleWrap">
         <div id="logo" class="float-left">
             <div><img src="{% static 'images/part1_logo.png' %}" /></div>
@@ -29,8 +30,8 @@
         <div class="clear"></div>
     </div>
     <div id="left" class="content-box">
-        <div id="dimensions" ng-controller="SparkQs.controllers.dimensionController">
-            <div class="dimension-group" ng-repeat="group in dimension_groups">
+        <div id="dimensions" ng-controller="SparQs.controllers.DimensionController">
+            <div class="dimension-group" ng-repeat="group in dimensions.groups">
                 <div class="group-name" id="group-{$group.group_name$}"><div><span ng-bind="group.group_name"></span></div></div>
                 <div class="group-members">
                     <div class='dimension-name' ng-class="get_dimension_class(dimension.key)" ng-repeat="dimension in group.dimensions">
@@ -55,7 +56,7 @@
             <div id="viz-content"></div>
 
         </div>
-        <div id="questions" ng-controller="SparkQs.controllers.sampleQuestionController">
+        <div id="questions" ng-controller="SparQs.controllers.SampleQuestionController">
             <div id="questions-heading">From the literature...</div>
             <ul>
                 <li ng-repeat="question in sample_questions.questions">
@@ -69,7 +70,7 @@
         </div>
     </div>
     <div id="right" class="content-box">
-        <div id="messages" ng-controller="SparkQs.controllers.exampleMessageController">
+        <div id="messages" ng-controller="SparQs.controllers.ExampleMessageController">
             <div id="messages-heading">Example Messages</div>
             <ul>
             <li ng-repeat="message in example_messages.messages">

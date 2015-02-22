@@ -6,8 +6,8 @@
 
     // Declare app level module which depends on other modules
     var app = angular
-        .module('SparkQs', [
-            'SparkQs.controllers',
+        .module('SparQs', [
+            'SparQs.controllers',
             'ngCookies'
         ]);
 
