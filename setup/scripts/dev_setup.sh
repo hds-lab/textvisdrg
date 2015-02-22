@@ -11,10 +11,6 @@
 #   ./dev_setup.sh
 # Provide database settings on the command line:
 #   ./dev_setup.sh dbhost dbport dbname dbuser dbpass
-# Specify the project root (useful for vagrant setups):
-#   ./dev_setup.sh project_root
-# Specify the project root and db settings:
-#   ./dev_setup.sh project_root dbhost dbport dbname dbuser dbpass
 
 function script_dir {
     cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd
@@ -25,30 +21,21 @@ source $SCRIPTS_DIR/functions.sh
 
 set -e
 
-if ! ([ $# -eq 0 ] || [ $# -eq 1 ] || [ $# -eq 5 ] || [ $# -eq 6 ]); then
+if ! ([ $# -eq 0 ] || [ $# -eq 5 ]); then
 
-    loggy "ERROR: Must be called with 0, 1, 5, or 6 arguments." "error"
+    loggy "ERROR: Must be called with 0 or 5 arguments." "error"
 
     echo "Script usage:"
     echo "  Prompts the user for database settings:"
     echo "    ./dev_setup.sh"
     echo "  Provide database settings on the command line:"
     echo "    ./dev_setup.sh dbhost dbport dbname dbuser dbpass"
-    echo "  Specify the project root (useful for vagrant setups):"
-    echo "    ./dev_setup.sh project_root"
-    echo "  Specify the project root and db settings:"
-    echo "    ./dev_setup.sh project_root dbhost dbport dbname dbuser dbpass"
     echo
     exit 1
 fi
 
 
-if [ $# -eq 1 ] || [ $# -eq 6 ]; then
-    PROJECT_ROOT=$1
-else
-    PROJECT_ROOT=$(cd $(script_dir) && cd ../.. && pwd)
-fi
-
+PROJECT_ROOT=$(cd $(script_dir) && cd ../.. && pwd)
 VENV_NAME=$(basename $PROJECT_ROOT)
 
 
@@ -115,13 +102,7 @@ loggy "Confirmed Python 2.7, pip, virtualenv, mysql, npm, and bower."
 
 loggy "MYSQL DATABASE SETUP"
 
-if [ $# -eq 6 ]; then
-    DATABASE_HOST=$2
-    DATABASE_PORT=$3
-    DATABASE_NAME=$4
-    DATABASE_USER=$5
-    DATABASE_PASS=$6
-elif [ $# -eq 5 ]; then
+if [ $# -eq 5 ]; then
     DATABASE_HOST=$1
     DATABASE_PORT=$2
     DATABASE_NAME=$3
@@ -177,7 +158,6 @@ do
 done
 
 echo "Database connection successful."
-
 
 
 
