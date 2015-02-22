@@ -163,78 +163,28 @@ def deploy():
 
 
 def topic_pipeline(dataset, name="my topic model", num_topics=30):
+    """Run the topic pipeline on a dataset"""
     command = "extract_topics --topics %d --name '%s' %s" % (num_topics, name, dataset)
     fabutils.manage_py(command)
 
 
 def info():
-    from pprint import pprint
+    """Print a bunch of info about the environment"""
+    fabutils.env_info()
 
-    import pip
-    import os, sys
+    print os.linesep, green("---------- Scientific computing packages ------------"), os.linesep
+    fabutils.try_load_module('nltk')
+    fabutils.try_load_module('gensim')
 
-    print green("---------- System info ------------")
-    print "System OS:"
-    local('uname -a && cat /etc/*-release')
+    numpy = fabutils.try_load_module('numpy')
+    if numpy is not None:
 
-    print "Project dir:"
-    print "  ", PROJECT_ROOT
-
-    print "Git branch:"
-    local('git branch -v')
-
-    print "Last three commits:"
-    local('git log -3')
-
-    print green("---------- Python environment ------------")
-
-    print "Python version: %s" % sys.version
-
-    print "Environment:"
-    pprint(os.environ.data)
-
-    print "System Path:"
-    pprint(sys.path)
-
-    print "Pip Distributions:"
-    pprint(sorted(["%s==%s" % (i.key, i.version) for i in pip.get_installed_distributions()]))
-
-    print green("---------- Checking specific packages ------------")
-    try:
-        import nltk
-
-        print green("NLTK %s:" % nltk.__version__), nltk.__file__
-    except ImportError:
-        print yellow("Could not find nltk")
-
-    try:
-        import numpy
-
-        print green("Numpy %s:" % numpy.__version__), numpy.__file__
-
-        print "Numpy sysinfo:"
+        print "  Numpy sysinfo:"
         import numpy.distutils.system_info as sysinfo
 
-        sysinfo.get_info('lapack')
-        sysinfo.get_info('blas')
-        sysinfo.get_info('atlas')
-
-    except ImportError:
-        print yellow("Could not find numpy")
-
-    try:
-        import gensim
-
-        print green("Gensim %s:" % gensim.__version__), gensim.__file__
-    except ImportError:
-        print yellow("Could not find gensim")
+        print "   lapack:", sysinfo.get_info('lapack')
+        print "     blas:", sysinfo.get_info('blas')
+        print "    atlas:", sysinfo.get_info('atlas')
 
 
-def nltk_init():
-    try:
-        import nltk
-
-        if not nltk.download(required_nltk_corpora):
-            abort(red('Unable to download nltk corpora: %s' % required_nltk_corpora))
-    except ImportError:
-        abort(red("Failed to import nltk"))
+nltk_init = factories.nltk_download_task(required_nltk_corpora)

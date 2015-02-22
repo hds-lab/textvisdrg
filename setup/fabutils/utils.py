@@ -256,3 +256,55 @@ def ensure_test_env(outpath=None):
     if not outpath.exists():
         # It's fine if it's empty, just make sure it exists
         local('touch %s' % outpath)
+
+def try_load_module(module_name):
+    """
+    Import a module by name, print the version info and file name.
+    Return None on failure.
+    """
+    try:
+        import importlib
+        mod = importlib.import_module(module_name)
+        print green("%s %s:" % (module_name, mod.__version__)), mod.__file__
+        return mod
+    except ImportError:
+        print yellow("Could not find nltk")
+        return None
+
+def env_info():
+    """Print a ton of stuff about the environment"""
+    from pprint import pprint
+    import pip
+
+    print green("---------- System info ------------")
+    print os.linesep, "System OS:"
+    local('uname -a && cat /etc/*-release')
+
+    print os.linesep, green("---------- Project info ------------")
+    print os.linesep, green("Project dir:")
+    print "  ", conf.PROJECT_ROOT
+
+    print os.linesep, green("Git branch:")
+    local('git branch -v')
+
+    print os.linesep, green("Last three commits:")
+    local('git log -3')
+
+    print os.linesep, green("---------- Python environment ------------")
+
+    print os.linesep, "Python version: %s" % sys.version
+
+    print os.linesep, green("Environment:")
+    pprint(os.environ.data)
+
+    print os.linesep, green("System Path:")
+    pprint(sys.path)
+
+    print os.linesep, green("Pip Distributions:")
+    pprint(sorted(["%s==%s" % (i.key, i.version) for i in pip.get_installed_distributions()]))
+
+    print os.linesep, green("---------- Deployment info ------------")
+
+    print os.linesep, ".env file:"
+    denv = dot_env()
+    pprint(denv)
