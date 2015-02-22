@@ -6,7 +6,7 @@ python:
 before_install:
   # These math packages are white-listed, hopefully
   # https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-precise
-  - apt-get install gfortran liblapack-dev
+  - sudo apt-get install gfortran liblapack-dev
   # Use a miniconda environment instead of system python
   - wget 'http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh' -O miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda -f
