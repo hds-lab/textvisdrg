@@ -1,12 +1,7 @@
 language: python
 
-node:
-
 python:
   - "2.7"
-
-# Use the new infrastructure
-sudo: false
 
 before_install:
   # These math packages are white-listed, hopefully
