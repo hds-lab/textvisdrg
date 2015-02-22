@@ -121,16 +121,6 @@ def supervisor():
     print green("Supervisor launching...")
     fabutils.manage_py('supervisor')
 
-def dtest():
-    denv = fabutils.dot_env()
-
-    host = denv.get('DEPLOY_HOST', None)
-    virtualenv = denv.get('DEPLOY_VIRTUALENV', None)
-    env.host_string = host
-
-    with prefix('workon %s' % virtualenv):
-        has_bower = run('which bower')
-        print has_bower
 
 def deploy():
     """
@@ -162,9 +152,9 @@ def deploy():
         # Check prereqs
         with quiet():
             pips = run('pip freeze')
-            if "Fabric" not in pips or 'path.py' not in pips:
-                print green("Installing Fabric...")
-                run('pip install -q Fabric path.py')
+        if "Fabric" not in pips or 'path.py' not in pips:
+            print green("Installing Fabric...")
+            run('pip install -q Fabric path.py')
 
         run('fab pull')
         run('fab dependencies:prod')
