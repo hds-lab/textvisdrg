@@ -10,3 +10,9 @@ Fabric Commands
 
 .. automodule:: fabfile
     :members:
+
+Extra Fabric Commands
+~~~~~~~~~~~~~~~~~~~~~
+
+.. automodule:: fabutils.tasks
+    :members:

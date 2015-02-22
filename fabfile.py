@@ -148,7 +148,8 @@ def deploy():
     env.host_string = host
 
     with prefix('workon %s' % virtualenv):
-
+        run('which python')
+        
         # Check prereqs
         with quiet():
             pips = run('pip freeze')
