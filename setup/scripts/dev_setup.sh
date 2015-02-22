@@ -12,14 +12,19 @@
 # Provide database settings on the command line:
 #   ./dev_setup.sh dbhost dbport dbname dbuser dbpass
 
+set -e
+
 function script_dir {
     cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd
 }
-
+echo ">>>>> $TEST_DBNAME does this name exist?"
 SCRIPTS_DIR=$(script_dir)
 source $SCRIPTS_DIR/functions.sh
 
-set -e
+PROJECT_ROOT=$(cd $(script_dir) && cd ../.. && pwd)
+VENV_NAME=$(basename $PROJECT_ROOT)
+DATABASE_CHARSET=utf8mb4
+DATABASE_COLLACTION=utf8mb4_unicode_ci
 
 if ! ([ $# -eq 0 ] || [ $# -eq 5 ]); then
 
@@ -35,8 +40,6 @@ if ! ([ $# -eq 0 ] || [ $# -eq 5 ]); then
 fi
 
 
-PROJECT_ROOT=$(cd $(script_dir) && cd ../.. && pwd)
-VENV_NAME=$(basename $PROJECT_ROOT)
 
 
 
@@ -131,8 +134,8 @@ EOF
         echo "--------------"
         cat << EOF
 CREATE DATABASE IF NOT EXISTS ${DATABASE_NAME}
-    DEFAULT CHARACTER SET = 'utf8'
-    DEFAULT COLLATE = 'utf8_unicode_ci';
+    DEFAULT CHARACTER SET = '${DATABASE_CHARSET}'
+    DEFAULT COLLATE = '${DATABASE_COLLATION}';
 GRANT USAGE ON *.* to ${DATABASE_USER}@localhost identified by '${DATABASE_PASS}';
 GRANT ALL PRIVILEGES ON ${DATABASE_NAME}.* TO ${DATABASE_USER}@localhost;
 FLUSH PRIVILEGES;

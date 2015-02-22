@@ -18,6 +18,8 @@ DBPORT=3306
 DBNAME=textvisdrg
 DBUSER=dbuser
 DBPASS=dbpass
+DBCHARSET=utf8mb4
+DBCOLLATION=utf8mb4_unicode_ci
 TEST_DBNAME=test_$DBNAME
 
 SCRIPTS_DIR=$PROJECT_ROOT/setup/scripts
@@ -29,7 +31,7 @@ source "${SCRIPTS_DIR}/vagrant/scipy.sh"
 
 loggy "Running development setup script...\n-----------------------------------"
 
-su --login -c "${SCRIPTS_DIR}/dev_setup.sh $PROJECT_ROOT $DBHOST $DBPORT $DBNAME $DBUSER $DBPASS" $VAGRANT_USER
+su --login -c "${SCRIPTS_DIR}/dev_setup.sh $DBHOST $DBPORT $DBNAME $DBUSER $DBPASS" $VAGRANT_USER
 
 loggy "-----------------------------------"
 
