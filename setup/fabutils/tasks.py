@@ -3,7 +3,7 @@ A collection of runnable fabric tasks.
 Make sure to call conf.configure() first!
 """
 from path import path
-from fabric.api import local, lcd
+from fabric.api import local, lcd, abort
 from fabric.colors import green, yellow, red
 import os
 
@@ -113,3 +113,22 @@ def print_env():
     import pprint
 
     pprint.pprint(denv)
+
+
+def npm_install():
+    """Install npm requirements"""
+    print green("Updating npm dependencies...")
+
+    if fabutils.npm_install():
+        print "Npm dependency update successful."
+    else:
+        abort(red("Npm dependency update failed."))
+
+def bower_install():
+    """Install bower requirements"""
+    print green("Updating bower dependencies...")
+
+    if fabutils.bower_install():
+        print "Bower dependency update successful."
+    else:
+        abort(red("Bower dependency update failed."))

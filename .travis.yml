@@ -8,15 +8,10 @@ python:
 # Use the new infrastructure
 sudo: false
 
-# Set up the cache
-cache:
-  directories:
-    - node_modules
-    - msgvis/static/bower
-    - $HOME/nltk_data
-    - $HOME/miniconda/lib/python2.7
-
 before_install:
+  # These math packages are white-listed, hopefully
+  # https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-precise
+  - apt-get install gfortran liblapack-dev
   # Use a miniconda environment instead of system python
   - wget 'http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh' -O miniconda.sh
   - bash miniconda.sh -b -p $HOME/miniconda -f
@@ -32,14 +27,16 @@ before_install:
 # command to install dependencies
 install:
   - conda install python=$TRAVIS_PYTHON_VERSION atlas numpy scipy pip
+  # Global npm packages
   - travis_retry npm install -g bower
+  # Before we can run fabric
   - travis_retry pip install -q Fabric path.py
-  - travis_retry fab dependencies:test
+  # Separated these for debuggability
+  - travis_retry fab pip_install:test
+  - travis_retry fab npm_install
+  - travis_retry fab bower_install
   - travis_retry fab nltk_init
   - fab info
-  - ls -la $HOME
-  - ls -la $HOME/miniconda
-  - ls -la $HOME/miniconda/lib/python2.7/site-packages/
 
 # command to run tests
 script:

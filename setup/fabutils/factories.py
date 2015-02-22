@@ -5,31 +5,26 @@ from fabric.colors import green, red, yellow
 from fabutils import utils as fabutils, conf
 
 
-def dependencies_task(pip_requirements, default_env='dev'):
+def pip_install_task(pip_requirements, default_env='dev'):
     """
-    Build a task for installing dependencies.
+    Build a task for installing pip dependencies.
 
     ``pip_requirements`` should be a dict mapping environment keys to pip settings.
     """
 
-    def dependencies(environment=default_env):
-        """Installs Python, NPM, and Bower packages"""
+    def pip_install(environment=default_env):
+        """Install pip requirements for the given environment, from %s""" % pip_requirements.keys()
 
-        print green("Updating %s dependencies..." % environment)
+        print green("Updating pip %s requirements..." % environment)
 
         reqs = pip_requirements[environment]
 
-        success = True
-        success = success and fabutils.pip_install(reqs)
-        success = success and fabutils.npm_install()
-        success = success and fabutils.bower_install()
-
-        if success:
-            print "Dependency update successful."
+        if fabutils.pip_install(reqs):
+            print green("Pip install update successful.")
         else:
-            abort(red("Dependency update failed."))
+            abort(red("Pip dependency update failed."))
 
-    return dependencies
+    return pip_install
 
 
 def test_task(default_settings):
@@ -61,6 +56,7 @@ def make_test_data_task(test_data_apps, default_test_data_path):
             print "Make test data successful."
 
     return make_test_data
+
 
 def load_test_data_task(default_test_data_path):
     def load_test_data(infile=None):
