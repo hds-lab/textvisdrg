@@ -3,6 +3,7 @@
 
     var module = angular.module('SparQs.services', ['ng.django.urls']);
 
+    //The collection of tokens.
     module.factory('SparQs.services.Tokens', [
         'token_images',
         function tokensFactory(token_images) {
@@ -28,10 +29,12 @@
                     name: 'secondary',
                     image: token_images['secondary']
                 })
-            ]
+            ];
         }
     ]);
 
+    //The collection of dimennsions.
+    //Dimension objects have some extra functionality added.
     module.factory('SparQs.services.Dimensions', [
         function () {
 
@@ -201,9 +204,28 @@
         }
     ]);
 
+    //A service for summarizing the state of the current selection,
+    //including selected dimensions, filters, and focus.
     module.factory('SparQs.services.Selection', [
         'SparQs.services.Dimensions',
         function selectionFactory(Dimensions) {
+
+            var test_filters = [
+                {
+                    "dimension": "time",
+                    "min_time": "2015-02-02T01:19:08Z",
+                    "max_time": "2015-03-02T01:19:09Z"
+                }
+            ];
+
+            var test_focus = [
+                //{
+                //    "dimension": "time",
+                //    "value": "2015-02-02T01:19:09Z"
+                //}
+            ];
+
+
             var Selection = function () {
 
             };
@@ -219,10 +241,10 @@
                     return with_token;
                 },
                 filters: function () {
-                    return {};
+                    return test_filters;
                 },
                 focus: function () {
-                    return {};
+                    return test_focus;
                 }
             });
 
@@ -230,6 +252,7 @@
         }
     ]);
 
+    //A service for loading sample questions.
     module.factory('SparQs.services.SampleQuestions', [
         '$http', 'djangoUrl', 'SparQs.services.Dimensions',
         function sampleQuestionsFactory($http, djangoUrl, Dimensions) {
@@ -274,7 +297,7 @@
         }
     ]);
 
-
+    //A service for loading example messages.
     module.factory('SparQs.services.ExampleMessages', [
         '$http', 'djangoUrl',
         function sampleQuestionsFactory($http, djangoUrl) {

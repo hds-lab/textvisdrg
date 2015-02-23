@@ -2,12 +2,16 @@
     'use strict';
 
 
-    var dataset = 1;
-
+    
     var module = angular.module('SparQs.controllers', [
         'SparQs.services'
     ]);
 
+    //Hard coded dataset id for now
+    module.constant('SparQs.bootstrap', {
+        dataset: 1
+    });
+    
     module.config(function ($interpolateProvider) {
         $interpolateProvider.startSymbol('{$');
         $interpolateProvider.endSymbol('$}');
@@ -23,7 +27,7 @@
                 return "";
             }
         };
-
+        
         //Hierarchy of dimensions
         $scope.dimension_groups = [
             {
@@ -98,32 +102,27 @@
     module.controller('SparQs.controllers.DimensionController', DimensionController);
 
 
-    var ExampleMessageController = function ($scope, ExampleMessages) {
-        var filters = [
-            {
-                "dimension": "time",
-                "min_time": "2015-02-02T01:19:08Z",
-                "max_time": "2015-03-02T01:19:09Z"
-            }
-        ];
+    var ExampleMessageController = function ($scope, ExampleMessages, Selection, bootstrap) {
 
-        var focus = [
-            //{
-            //    "dimension": "time",
-            //    "value": "2015-02-02T01:19:09Z"
-            //}
-        ];
-
+        var dataset = bootstrap.dataset;
+        
         $scope.messages = ExampleMessages;
 
         $scope.get_example_messages = function () {
+            var filters = Selection.filters();
+            var focus = Selection.focus();
             ExampleMessages.load(dataset, filters, focus);
         };
 
         $scope.get_example_messages();
 
     };
-    ExampleMessageController.$inject = ['$scope', 'SparQs.services.ExampleMessages'];
+    ExampleMessageController.$inject = [
+        '$scope',
+        'SparQs.services.ExampleMessages', 
+        'SparQs.services.Selection',
+        'SparQs.bootstrap'
+    ];
     module.controller('SparQs.controllers.ExampleMessageController', ExampleMessageController);
 
     var SampleQuestionController = function ($scope, Selection, SampleQuestions) {
