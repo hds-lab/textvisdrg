@@ -108,11 +108,13 @@
         ];
 
         var focus = [
-            {
-                "dimension": "time",
-                "value": "2015-02-02T01:19:09Z"
-            }
+            //{
+            //    "dimension": "time",
+            //    "value": "2015-02-02T01:19:09Z"
+            //}
         ];
+
+        $scope.messages = ExampleMessages;
 
         $scope.get_example_messages = function () {
             ExampleMessages.load(dataset, filters, focus);

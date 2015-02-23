@@ -138,10 +138,13 @@
             <div id="messages" class="row app-panel" ng-controller="SparQs.controllers.ExampleMessageController">
                 <div class="heading">Example Messages</div>
                 <ul class="message-list heading-body">
-                    <li ng-repeat="message in example_messages.messages">
+                    <li ng-repeat="message in messages.list">
                         <div class="text"><span ng-bind="message.text"></span></div>
-                        <div class="meta"><span ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span> by
-                            <span ng-bind="message.sender.full_name"></span></div>
+                        <div class="meta">
+                            <span ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
+                            by
+                            <span ng-bind="message.sender.full_name"></span>
+                        </div>
                     </li>
                 </ul>
             </div>
