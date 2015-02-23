@@ -25,8 +25,57 @@
             }
         };
 
-        /* Models */
-        $scope.dimensions = Dimensions;
+        //Hierarchy of dimensions
+        $scope.dimension_groups = [
+            {
+                "group_name": "Time",
+                "dimensions": [
+                    Dimensions.get_by_key('time'),
+                    Dimensions.get_by_key('timezone')
+                ]
+            },
+            {
+                "group_name": "Contents",
+                "dimensions": [
+                    Dimensions.get_by_key('topics'),
+                    Dimensions.get_by_key('keywords'),
+                    Dimensions.get_by_key('hashtags'),
+                    Dimensions.get_by_key('contains_hashtag'),
+                    Dimensions.get_by_key('urls'),
+                    Dimensions.get_by_key('contains_url'),
+                    Dimensions.get_by_key('contains_media')
+                ]
+            },
+            {
+                "group_name": "Meta",
+                "dimensions": [
+                    Dimensions.get_by_key('language'),
+                    Dimensions.get_by_key('sentiment')
+                ]
+            },
+            {
+                "group_name": "Interaction",
+                "dimensions": [
+                    Dimensions.get_by_key('type'),
+                    Dimensions.get_by_key('replies'),
+                    Dimensions.get_by_key('shares'),
+                    Dimensions.get_by_key('mentions'),
+                    Dimensions.get_by_key('contains_mention')
+                ]
+            },
+            {
+                "group_name": "Author",
+                "dimensions": [
+                    Dimensions.get_by_key('sender_name'),
+                    Dimensions.get_by_key('sender_message_count'),
+                    Dimensions.get_by_key('sender_reply_count'),
+                    Dimensions.get_by_key('sender_mention_count'),
+                    Dimensions.get_by_key('sender_share_count'),
+                    Dimensions.get_by_key('sender_friend_count'),
+                    Dimensions.get_by_key('sender_follower_count')
+                ]
+            }
+        ];
 
         //The token tray is a list of token placeholders, which may contain tokens.
         $scope.tokenTray = Tokens.map(function(token) {
@@ -84,12 +133,12 @@
     var SampleQuestionController = function ($scope, Selection, SampleQuestions) {
 
         $scope.get_sample_questions = function (request) {
-            $scope.questions.load(Selection.dimensions);
+            $scope.questions.load(Selection.dimensions());
         };
 
         $scope.selection = Selection;
         $scope.questions = SampleQuestions;
-        $scope.questions.load(Selection.dimensions);
+        $scope.questions.load(Selection.dimensions());
 
     };
     SampleQuestionController.$inject = ['$scope', 'SparQs.services.Selection', 'SparQs.services.SampleQuestions'];
