@@ -120,12 +120,14 @@ body {
     .user-select(none);
     cursor: default;
 
+    top: 0;
+    bottom: 0;
+    overflow-y: auto;
+
     border: 1px solid @dimension-group-border-color;
 
     .dimension-group {
         position: relative;
-        //subtract 2 for the border
-        width: @dimension-group-width + @dimension-group-name-height;
 
         //Top borders, inside borders, and one bottom border
         border-bottom: 1px solid @dimension-group-border-color;
@@ -155,7 +157,6 @@ body {
 
         .group-members {
             margin-left: @dimension-group-name-height;
-            width: @dimension-group-width - 2;
         }
 
         /* Even and odd alternate styles */
