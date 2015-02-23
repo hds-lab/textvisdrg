@@ -31,9 +31,9 @@
     {% endblock cdn_css %}
 
     {% compress css %}
-        <link rel="stylesheet" href="{% static 'bower/components-bootstrap/less/bootstrap.less' %}" type="text/less">
-        <link rel="stylesheet" href="{% static 'style.less' %}" type="text/less">
         {% block css %}
+            <link rel="stylesheet" href="{% static 'bower/components-bootstrap/less/bootstrap.less' %}" type="text/less">
+            <link rel="stylesheet" href="{% static 'style.less' %}" type="text/less">
         {% endblock %}
     {% endcompress %}
     <!-- More ideas for your <head> here: h5bp.com/d/head-Tips -->

@@ -1,0 +1,364 @@
+@import 'bower/components-bootstrap/less/mixins';
+
+@section-margin: 5px;
+
+/* Full page application */
+// http://blog.stevensanderson.com/2011/10/05/full-height-app-layouts-a-css-trick-to-make-it-easier/
+body { margin: 0 }
+.row, .col { overflow: hidden; position: absolute; margin: 0; padding: 0}
+.row { left: 0; right: 0; }
+.col { top: 0; bottom: 0; }
+.scroll-x { overflow-x: auto; }
+.scroll-y { overflow-y: auto; }
+.scroll-x, .scroll-y { -webkit-overflow-scrolling: touch; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background-color: black;
+    font-family: 'Source Sans Pro', "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    color: white;
+}
+
+#application {
+    left: @section-margin;
+    top: @section-margin;
+    right: @section-margin;
+    bottom: @section-margin;
+}
+
+@header-height: 90px;
+#titleWrap {
+    height: @header-height;
+    top: 0;
+
+    .logo {
+        float: left;
+
+        margin-right: 20px;
+        height: 90px;
+        text-align: left;
+        vertical-align: bottom;
+
+        img {
+            height: 75px;
+        }
+    }
+
+    .logo-titles {
+        float: left;
+        margin-top: 3px;
+
+        .title {
+            font-size: 36px;
+            color: #fff;
+        }
+
+        .subtitle {
+            font-weight: 300;
+            font-size: 21px;
+            color: #B3B3B3;
+        }
+    }
+
+}
+
+#content {
+    top: @header-height + @section-margin;
+    bottom: 0;
+}
+
+/* setting content boxes */
+@left-col-width: 255px;
+@right-col-width: 255px;
+#left {
+    left: 0;
+    width: @left-col-width;
+}
+
+#middle {
+    left: @left-col-width + @section-margin;
+    right: @right-col-width + @section-margin;
+}
+
+#right {
+    right: 0;
+    min-width: @right-col-width;
+}
+
+/* selectors */
+@dimension-height: 27px;
+@dimension-group-name-height: 30px;
+@dimension-group-width: @left-col-width - @dimension-group-name-height;
+@token-size: @dimension-height - 2;
+@dimension-group-border-color: #4d4f52;
+@dimension-border-color: #1a1c1e;
+
+.heading {
+    font-size: 18px;
+    color: #ccc;
+    font-weight: 500;
+    padding: 4px 8px;
+}
+
+.heading-body {
+    margin: 5px;
+}
+
+.app-panel {
+    border: 1px solid #1a1c1e;
+}
+
+#dimensions {
+    .user-select(none);
+    cursor: default;
+
+    border: 1px solid @dimension-group-border-color;
+
+    .dimension-group {
+        position: relative;
+        //subtract 2 for the border
+        width: @dimension-group-width + @dimension-group-name-height;
+
+        //Top borders, inside borders, and one bottom border
+        border-bottom: 1px solid @dimension-group-border-color;
+
+        &:last-child {
+            border-bottom-width: 0;
+        }
+
+
+        .group-name {
+            height: @dimension-group-name-height;
+            line-height: @dimension-group-name-height;
+
+            background-color: #999999;
+            color: #000;
+            font-size: 18px;
+            font-weight: 500;
+
+            transform: rotate(-90deg);
+            transform-origin: left bottom 0;
+
+            text-align: center;
+            position: absolute;
+            bottom: 0;
+            left: 30px;
+        }
+
+        .group-members {
+            margin-left: @dimension-group-name-height;
+            width: @dimension-group-width - 2;
+        }
+
+        /* Even and odd alternate styles */
+
+        &:nth-child(even) {
+            .group-name {
+                background: #666;
+                color: #fff;
+            }
+        }
+
+    }
+
+    /* Dimension-specific overrides */
+
+    #group-Time {
+        .group-name {
+            width: @dimension-height * 2;
+        }
+    }
+
+    #group-Contents {
+        .group-name {
+            width: @dimension-height * 7;
+        }
+    }
+
+    #group-Meta {
+        .group-name {
+            width: @dimension-height * 2;
+        }
+    }
+    #group-Interaction {
+        .group-name {
+            width: @dimension-height * 5;
+        }
+    }
+    #group-Author {
+        .group-name {
+            width: @dimension-height * 7;
+        }
+    }
+
+    .token {
+        width: @token-size;
+        height: @token-size;
+        background-position: center;
+        background-repeat: no-repeat;
+
+        &.token-primary {
+            background-image: url('images/part2_red.png');
+        }
+
+        &.token-secondary {
+            background-image: url('images/part2_blue.png');
+        }
+    }
+
+    .token-placeholder {
+        width: @token-size;
+        height: @token-size;
+        background: url('images/part2_placeholder.png') no-repeat center;
+    }
+
+    .dimension {
+        position: relative;
+        height: @dimension-height;
+
+        // Interior borders only
+        border-bottom: 1px solid @dimension-border-color;
+        border-top-width: 0;
+        &:last-child {
+            border-bottom-width: 0;
+        }
+
+        font-size: 12pt;
+        background: -webkit-linear-gradient(left, rgb(1, 16, 40), #000); /* For Safari 5.1 to 6.0 */
+        background: -o-linear-gradient(right, rgb(1, 16, 40), #000); /* For Opera 11.1 to 12.0 */
+        background: -moz-linear-gradient(right, rgb(1, 16, 40), #000); /* For Firefox 3.6 to 15 */
+        background: linear-gradient(to right, rgb(1, 16, 40), #000); /* Standard syntax */
+
+        color: #999;
+
+        .dimension-placeholder {
+            .token-placeholder();
+            position: absolute;
+            left: 5px;
+            top: 0;
+        }
+
+        .dimension-name {
+            margin-left: @token-size + 10px;
+            line-height: @dimension-height;
+        }
+
+        .dimension-filter {
+            position: absolute;
+            right: 5px;
+            top: 0;
+            width: @token-size;
+            height: @token-size;
+            background: url('images/part2_filter.png') no-repeat center;
+            cursor: pointer;
+
+            .opacity(0.1);
+
+            &:hover {
+                .opacity(0.8);
+            }
+            &:active {
+                .opacity(1);
+            }
+        }
+
+        &.selected-primary {
+            background: #680F37;
+            color: white;
+        }
+
+        &.selected-secondary {
+            background: #022D47;
+            color: white;
+        }
+    }
+
+    #token-tray {
+
+        //A position in the token tray
+        .token-tray-zone {
+            .token-placeholder();
+            display: inline-block;
+            margin: 5px;
+        }
+    }
+
+
+
+
+}
+
+@questions-row-height: 170px;
+
+/* visualization */
+#viz {
+    top: 0;
+    bottom: @questions-row-height + @section-margin;
+
+    background: -webkit-linear-gradient(top, rgb(1, 16, 40), #000); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(bottom, rgb(1, 16, 40), #000); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(bottom, rgb(1, 16, 40), #000); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(to bottom, rgb(1, 16, 40), #000); /* Standard syntax */
+}
+
+/* research questions */
+#questions {
+    height: @questions-row-height;
+    bottom: 0;
+
+    .questions-list {
+        padding-left: 22px;
+
+        li {
+            color: #cfcfcf;
+            list-style-image: url("images/part4_step1.png");
+
+            .first-dimension {
+                color: #FF174E;
+            }
+
+            .second-dimension {
+                color: #5A82F2;
+            }
+        }
+    }
+}
+
+/* example messages */
+
+
+
+#messages {
+    top: 0;
+    bottom: 0;
+
+    overflow-y: auto;
+
+    background: -webkit-linear-gradient(right, rgb(1, 16, 40), #000); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(left, rgb(1, 16, 40), #000); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(left, rgb(1, 16, 40), #000); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(to left, rgb(1, 16, 40), #000); /* Standard syntax */
+
+    .message-list {
+        padding-left: 15px;
+
+        li {
+            color: #cfcfcf;
+            list-style-image: url("images/part6_dots.png");
+
+            .meta {
+                color: #B3B3B3;
+                font-size: 10px;
+            }
+        }
+    }
+}
+
