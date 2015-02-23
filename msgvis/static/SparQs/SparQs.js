@@ -8,7 +8,8 @@
     var app = angular
         .module('SparQs', [
             'SparQs.controllers',
-            'ngCookies'
+            'ngCookies',
+            'ngDragDrop'
         ]);
 
     //Fix CSRF

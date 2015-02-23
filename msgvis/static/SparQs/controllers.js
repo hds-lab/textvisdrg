@@ -14,8 +14,7 @@
     var dimension_one = "time";
     var dimension_two = "hashtags";
 
-    var DimensionController = function ($scope, Dimensions) {
-
+    var DimensionController = function ($scope, Dimensions, token_images) {
 
         $scope.plate_type = function (dimension_key) {
             if (dimension_one == dimension_key) return 1;
@@ -33,9 +32,45 @@
         };
 
         $scope.dimensions = Dimensions;
+
+        $scope.tokenTray = [
+            {
+                name: 'primary',
+                image: token_images['primary']
+            },
+            {
+                name: 'secondary',
+                image: token_images['secondary']
+            }
+        ];
+
+        $scope.drag = {
+            onStart: function () {
+                console.log('start', arguments);
+            },
+            onStop: function () {
+                console.log('stop', arguments);
+            },
+            onDrag: function () {
+                console.log('drag', arguments);
+            }
+        };
+
+        $scope.drop = {
+            foo: 'hello',
+            onDrop: function () {
+                console.log('drop', arguments);
+            },
+            onOver: function () {
+                console.log('over', arguments);
+            },
+            onOut: function () {
+                console.log('out', arguments);
+            }
+        };
     };
 
-    DimensionController.$inject = ['$scope', 'SparQs.services.Dimensions'];
+    DimensionController.$inject = ['$scope', 'SparQs.services.Dimensions', 'token_images'];
     module.controller('SparQs.controllers.DimensionController', DimensionController);
 
 

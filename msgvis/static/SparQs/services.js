@@ -5,6 +5,7 @@
 
     module.factory('SparQs.services.Dimensions', [
         function () {
+
             var dimension_groups = [
                 {
                     "group_name": "Time",
@@ -147,6 +148,25 @@
                     ]
                 }
             ];
+
+            var Dimension = function(data) {
+                angular.extend(this, data);
+
+                this.token = {};
+            };
+
+            angular.extend(Dimension.prototype, {
+                selected: function() {
+                    return 'name' in this.token;
+                }
+            });
+
+            //Instantiate Dimensions
+            dimension_groups.forEach(function(grp) {
+                grp.dimensions = grp.dimensions.map(function(dimdata) {
+                    return new Dimension(dimdata);
+                })
+            });
 
             return {
                 'groups': dimension_groups
