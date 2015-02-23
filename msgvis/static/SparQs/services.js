@@ -153,11 +153,15 @@
                 angular.extend(this, data);
 
                 this.token = {};
+                this.filter = undefined;
             };
 
             angular.extend(Dimension.prototype, {
-                selected: function() {
+                has_token: function() {
                     return 'name' in this.token;
+                },
+                has_filter: function() {
+                    return this.filter;
                 }
             });
 

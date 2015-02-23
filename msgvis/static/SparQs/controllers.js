@@ -16,21 +16,29 @@
 
     var DimensionController = function ($scope, Dimensions, token_images) {
 
-        $scope.plate_type = function (dimension_key) {
-            if (dimension_one == dimension_key) return 1;
-            else if (dimension_two == dimension_key) return 2;
-            else return 0;
-        };
-        $scope.get_dimension_class = function (dimension_key) {
-            if (dimension_one == dimension_key) return "first-dimension";
-            else if (dimension_two == dimension_key) return "second-dimension";
-            else return "";
+        /* Rendering helpers, these are basically filters */
+        $scope.get_dimension_class = function (dimension) {
+            if (dimension.has_token()) {
+                return "selected-" + dimension.token.name;
+            } else {
+                return "";
+            }
 
         };
-        $scope.filter_is_active = function (dimension_key) {
-            return true;
+        $scope.get_filter_class = function (dimension) {
+            if (dimension.has_filter()) {
+                return "filter-active";
+            } else {
+                return "";
+            }
         };
 
+        $scope.get_token_class = function (token) {
+            return "token-" + token.name;
+        };
+
+
+        /* Models */
         $scope.dimensions = Dimensions;
 
         $scope.tokenTray = [
@@ -44,30 +52,15 @@
             }
         ];
 
-        $scope.drag = {
-            onStart: function () {
-                console.log('start', arguments);
-            },
-            onStop: function () {
-                console.log('stop', arguments);
-            },
-            onDrag: function () {
-                console.log('drag', arguments);
-            }
+
+        $scope.onTokenTrayDrop = function() {
+            console.log("Dropped on tray");
         };
 
-        $scope.drop = {
-            foo: 'hello',
-            onDrop: function () {
-                console.log('drop', arguments);
-            },
-            onOver: function () {
-                console.log('over', arguments);
-            },
-            onOut: function () {
-                console.log('out', arguments);
-            }
+        $scope.onTokenDimensionDrop = function () {
+            console.log("Dropped on dimension");
         };
+
     };
 
     DimensionController.$inject = ['$scope', 'SparQs.services.Dimensions', 'token_images'];
