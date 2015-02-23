@@ -1,6 +1,9 @@
 (function () {
     'use strict';
 
+
+    var dataset = 1;
+
     var module = angular.module('SparQs.controllers', [
         'SparQs.services'
     ]);
@@ -9,10 +12,6 @@
         $interpolateProvider.startSymbol('{$');
         $interpolateProvider.endSymbol('$}');
     });
-
-
-    var dimension_one = "time";
-    var dimension_two = "hashtags";
 
     var DimensionController = function ($scope, Dimensions, Tokens) {
 
@@ -99,48 +98,44 @@
     module.controller('SparQs.controllers.DimensionController', DimensionController);
 
 
-    var ExampleMessageController = function ($scope, $http) {
+    var ExampleMessageController = function ($scope, ExampleMessages) {
+        var filters = [
+            {
+                "dimension": "time",
+                "min_time": "2015-02-02T01:19:08Z",
+                "max_time": "2015-03-02T01:19:09Z"
+            }
+        ];
 
-        $scope.get_example_messages = function (request) {
-            $http.post('/api/message/', request)
-                .success(function (data) {
-                    $scope.example_messages = data;
-                });
+        var focus = [
+            {
+                "dimension": "time",
+                "value": "2015-02-02T01:19:09Z"
+            }
+        ];
+
+        $scope.get_example_messages = function () {
+            ExampleMessages.load(dataset, filters, focus);
         };
 
-        $scope.get_example_messages({
-            "dataset": 1,
-            "dimensions": ["time", "hashtags"],
-            "filters": [
-                {
-                    "dimension": "time",
-                    "min_time": "2015-02-02T01:19:08Z",
-                    "max_time": "2015-03-02T01:19:09Z"
-                }
-            ],
-            //"focus": [
-            //    {
-            //        "dimension": "time",
-            //        "value": "2015-02-02T01:19:09Z"
-            //    }
-            //]
-        });
+        $scope.get_example_messages();
 
     };
-    ExampleMessageController.$inject = ['$scope', '$http'];
+    ExampleMessageController.$inject = ['$scope', 'SparQs.services.ExampleMessages'];
     module.controller('SparQs.controllers.ExampleMessageController', ExampleMessageController);
 
     var SampleQuestionController = function ($scope, Selection, SampleQuestions) {
 
-        $scope.get_sample_questions = function (request) {
-            $scope.questions.load(Selection.dimensions());
-        };
-
         $scope.selection = Selection;
         $scope.questions = SampleQuestions;
-        $scope.questions.load(Selection.dimensions());
 
+        $scope.get_sample_questions = function () {
+            SampleQuestions.load(Selection.dimensions());
+        };
+
+        $scope.get_sample_questions();
     };
+
     SampleQuestionController.$inject = ['$scope', 'SparQs.services.Selection', 'SparQs.services.SampleQuestions'];
     module.controller('SparQs.controllers.SampleQuestionController', SampleQuestionController);
 })();

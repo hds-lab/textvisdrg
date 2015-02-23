@@ -237,7 +237,7 @@
             var apiUrl = djangoUrl.reverse('research-questions');
 
             //A model class for sample questions
-            var SampleQuestion = function (data) {
+            var Question = function (data) {
                 angular.extend(this, data);
 
                 //Hook up the dimensions to the question
@@ -263,12 +263,51 @@
                     var self = this;
                     $http.post(apiUrl, request)
                         .success(function (data) {
-                            self.list = data;
+                            self.list = data.questions.map(function(qdata) {
+                                return new Question(qdata);
+                            });
                         });
                 }
             });
 
             return new SampleQuestions();
+        }
+    ]);
+
+
+    module.factory('SparQs.services.ExampleMessages', [
+        '$http', 'djangoUrl',
+        function sampleQuestionsFactory($http, djangoUrl) {
+
+            var apiUrl = djangoUrl.reverse('example-messages');
+
+            //A model class for messages
+            var Message = function (data) {
+                angular.extend(this, data);
+            };
+
+            var ExampleMessages = function () {
+                this.list = [];
+            };
+
+            angular.extend(ExampleMessages.prototype, {
+                load: function (dataset, filters, focus) {
+
+                    var request = {
+                        dataset: dataset,
+                        filters: filters,
+                        focus: focus
+                    };
+
+                    var self = this;
+                    $http.post(apiUrl, request)
+                        .success(function (data) {
+                            self.list = data;
+                        });
+                }
+            });
+
+            return new ExampleMessages();
         }
     ]);
 

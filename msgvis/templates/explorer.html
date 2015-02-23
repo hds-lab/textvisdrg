@@ -124,11 +124,11 @@
                  ng-controller="SparQs.controllers.SampleQuestionController">
                 <div class="heading">From the literature...</div>
                 <ul class="questions-list heading-body">
-                    <li ng-repeat="question in questions.questions">
+                    <li ng-repeat="question in questions.list">
                         <span ng-bind="question.text"></span> <br/>
                         Dimensions: <span ng-repeat="dimension in question.dimensions">
-                        <span ng-class="get_dimension_class(dimension)"><span ng-bind="dimension"></span> </span>
-                    </span>
+                            <span ng-class="dimension.token_class()" ng-bind="dimension.name"></span>
+                        </span>
                     </li>
                 </ul>
 
