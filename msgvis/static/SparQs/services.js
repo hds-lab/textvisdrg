@@ -1,7 +1,34 @@
 (function () {
     'use strict';
 
-    var module = angular.module('SparQs.services', []);
+    var module = angular.module('SparQs.services', ['ng.django.urls']);
+
+    module.factory('SparQs.services.Tokens', [
+        'token_images',
+        function tokensFactory(token_images) {
+
+            var Token = function (data) {
+                angular.extend(this, data);
+            };
+
+            angular.extend(Token.prototype, {
+                token_class: function () {
+                    return "token-" + this.name;
+                }
+            });
+
+            return [
+                new Token({
+                    name: 'primary',
+                    image: token_images['primary']
+                }),
+                new Token({
+                    name: 'secondary',
+                    image: token_images['secondary']
+                })
+            ]
+        }
+    ]);
 
     module.factory('SparQs.services.Dimensions', [
         function () {
@@ -149,33 +176,107 @@
                 }
             ];
 
-            var Dimension = function(data) {
+            // A simple model class for dimensions
+            var Dimension = function (data) {
                 angular.extend(this, data);
 
-                this.token = {};
+                this.token_holder = {};
                 this.filter = undefined;
             };
 
             angular.extend(Dimension.prototype, {
-                has_token: function() {
-                    return 'name' in this.token;
+                token: function () {
+                    // Get the token on this dimension, or null.
+                    return this.token_holder.token;
                 },
-                has_filter: function() {
+                token_class: function () {
+                    var token = this.token();
+                    return token ? token.token_class() : "";
+                },
+                has_filter: function () {
                     return this.filter;
                 }
             });
 
-            //Instantiate Dimensions
-            dimension_groups.forEach(function(grp) {
-                grp.dimensions = grp.dimensions.map(function(dimdata) {
-                    return new Dimension(dimdata);
-                })
+            //The actual dimension service class
+            var Dimensions = function (dimension_groups) {
+                this.by_key = {};
+                var self = this;
+
+                //Instantiate Dimensions
+                dimension_groups.forEach(function (grp) {
+                    grp.dimensions = grp.dimensions.map(function (dimdata) {
+                        var dim = new Dimension(dimdata);
+                        self.by_key[dim.key] = dim;
+                        return dim;
+                    })
+                });
+
+                this.groups = dimension_groups;
+            };
+
+            angular.extend(Dimensions.prototype, {
+                get_by_key: function (key) {
+                    return this.by_key[key];
+                }
             });
 
-            return {
-                'groups': dimension_groups
-            };
+            return new Dimensions(dimension_groups);
         }
-    ])
+    ]);
+
+    module.factory('SparQs.services.Selection', [
+        function selectionFactory() {
+            var Selection = function () {
+                this.dimensions = [];
+                this.filters = [];
+                this.focus = [];
+            };
+
+            return new Selection();
+        }
+    ]);
+
+    module.factory('SparQs.services.SampleQuestions', [
+        '$http', 'djangoUrl', 'SparQs.services.Dimensions',
+        function sampleQuestionsFactory($http, djangoUrl, Dimensions) {
+
+            var apiUrl = djangoUrl.reverse('research-questions');
+
+            //A model class for sample questions
+            var SampleQuestion = function (data) {
+                angular.extend(this, data);
+
+                //Hook up the dimensions
+                this.dimensions = this.dimensions.map(function (dimkey) {
+                    return Dimensions.get_by_key(dimkey);
+                });
+            };
+
+            var SampleQuestions = function () {
+                this.list = [];
+            };
+
+            angular.extend(SampleQuestions.prototype, {
+                load: function (dimensions) {
+                    var dimension_keys = dimensions.map(function (d) {
+                        return d.key
+                    });
+
+                    var request = {
+                        dimensions: dimension_keys
+                    };
+
+                    var self = this;
+                    $http.post(apiUrl, request)
+                        .success(function (data) {
+                            self.list = data;
+                        });
+                }
+            });
+
+            return new SampleQuestions();
+        }
+    ]);
 
 })();

@@ -1,5 +1,5 @@
 {% extends '_layouts/base.html' %}
-{% load staticfiles %}
+{% load staticfiles djangular_tags %}
 
 {% block page_title %}SparQs{% endblock %}
 
@@ -35,7 +35,10 @@
 {% block bootstrapping %}
 {{ block.super }}
 <script>
-    angular.module('SparQs.controllers')
+    angular.module('ng.django.urls')
+        .constant('patterns', {% load_djng_urls %});
+
+    angular.module('SparQs.services')
         .constant('token_images', {
             'primary': "{% static 'images/part2_red.png' %}",
             'secondary': "{% static 'images/part2_blue.png' %}"
@@ -69,17 +72,17 @@
                         <div class="group-members">
                             <div ng-repeat="dimension in group.dimensions"
                                  class='dimension'
-                                 ng-class="get_dimension_class(dimension)">
+                                 ng-class="dimension.token_class()">
                                 <div class="dimension-placeholder"
                                      data-drop="true"
-                                     ng-model="dimension.token"
+                                     ng-model="dimension.token_holder"
                                      jqyoui-droppable="{onDrop: 'onTokenDimensionDrop'}"
                                      data-jqyoui-options="{accept: '.token'}">
 
                                     <div class="token"
-                                         ng-class="get_token_class(dimension.token)"
-                                         ng-model="dimension.token"
-                                         ng-hide="!dimension.token.name"
+                                         ng-class="dimension.token_class()"
+                                         ng-model="dimension.token_holder"
+                                         ng-hide="!dimension.token()"
                                          data-drag="true"
                                          jqyoui-draggable="{placeholder: true}"
                                          data-jqyoui-options="{revert: 'invalid'}">
@@ -94,15 +97,15 @@
                     </div>
                 </div>
                 <div id="token-tray">
-                    <div ng-repeat="token in tokenTray"
+                    <div ng-repeat="token_holder in tokenTray"
                          class="token-tray-zone"
                          data-drop="true"
                          ng-model="tokenTray"
                          jqyoui-droppable="{index: {$ $index $}, containment:'position', onDrop: 'onTokenTrayDrop'}"
                          data-jqyoui-options="{accept: '.token'}">
 
-                        <div class="token" ng-class="get_token_class(token)"
-                             ng-show="token.name"
+                        <div class="token" ng-class="token_holder.token.token_class()"
+                             ng-show="token_holder.token"
                              data-drag="true"
                              ng-model="tokenTray"
                              jqyoui-draggable="{index: {$ $index $}, placeholder: true}"
@@ -121,7 +124,7 @@
                  ng-controller="SparQs.controllers.SampleQuestionController">
                 <div class="heading">From the literature...</div>
                 <ul class="questions-list heading-body">
-                    <li ng-repeat="question in sample_questions.questions">
+                    <li ng-repeat="question in questions.questions">
                         <span ng-bind="question.text"></span> <br/>
                         Dimensions: <span ng-repeat="dimension in question.dimensions">
                         <span ng-class="get_dimension_class(dimension)"><span ng-bind="dimension"></span> </span>

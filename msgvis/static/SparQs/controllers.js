@@ -14,17 +14,9 @@
     var dimension_one = "time";
     var dimension_two = "hashtags";
 
-    var DimensionController = function ($scope, Dimensions, token_images) {
+    var DimensionController = function ($scope, Dimensions, Tokens) {
 
         /* Rendering helpers, these are basically filters */
-        $scope.get_dimension_class = function (dimension) {
-            if (dimension.has_token()) {
-                return "selected-" + dimension.token.name;
-            } else {
-                return "";
-            }
-
-        };
         $scope.get_filter_class = function (dimension) {
             if (dimension.has_filter()) {
                 return "filter-active";
@@ -33,24 +25,15 @@
             }
         };
 
-        $scope.get_token_class = function (token) {
-            return "token-" + token.name;
-        };
-
-
         /* Models */
         $scope.dimensions = Dimensions;
 
-        $scope.tokenTray = [
-            {
-                name: 'primary',
-                image: token_images['primary']
-            },
-            {
-                name: 'secondary',
-                image: token_images['secondary']
-            }
-        ];
+        //The token tray is a list of token placeholders, which may contain tokens.
+        $scope.tokenTray = Tokens.map(function(token) {
+            return {
+                token: token
+            };
+        });
 
 
         $scope.onTokenTrayDrop = function() {
@@ -63,7 +46,7 @@
 
     };
 
-    DimensionController.$inject = ['$scope', 'SparQs.services.Dimensions', 'token_images'];
+    DimensionController.$inject = ['$scope', 'SparQs.services.Dimensions', 'SparQs.services.Tokens'];
     module.controller('SparQs.controllers.DimensionController', DimensionController);
 
 
@@ -98,31 +81,17 @@
     ExampleMessageController.$inject = ['$scope', '$http'];
     module.controller('SparQs.controllers.ExampleMessageController', ExampleMessageController);
 
-    var SampleQuestionController = function ($scope, $http) {
-
-        dimension_one = "time";
-        dimension_two = "hashtags";
-
-        $scope.get_dimension_class = function (dimension_key) {
-            console.log(dimension_key);
-            if ($scope.dimension_one == dimension_key) return "first-dimension";
-            else if ($scope.dimension_two == dimension_key) return "second-dimension";
-            else return "";
-
-        };
+    var SampleQuestionController = function ($scope, Selection, SampleQuestions) {
 
         $scope.get_sample_questions = function (request) {
-            $http.post('/api/questions/', request)
-                .success(function (data) {
-                    $scope.sample_questions = data;
-                });
+            $scope.questions.load(Selection.dimensions);
         };
 
-        $scope.get_sample_questions({
-            "dimensions": ["hashtags", "time"]
-        });
+        $scope.selection = Selection;
+        $scope.questions = SampleQuestions;
+        $scope.questions.load(Selection.dimensions);
 
     };
-    SampleQuestionController.$inject = ['$scope', '$http'];
+    SampleQuestionController.$inject = ['$scope', 'SparQs.services.Selection', 'SparQs.services.SampleQuestions'];
     module.controller('SparQs.controllers.SampleQuestionController', SampleQuestionController);
 })();
