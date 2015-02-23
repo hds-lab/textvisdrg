@@ -77,20 +77,21 @@
         };
 
         $scope.get_example_messages({
+            "dataset": 1,
             "dimensions": ["time", "hashtags"],
             "filters": [
                 {
                     "dimension": "time",
                     "min_time": "2015-02-02T01:19:08Z",
-                    "max_time": "2015-02-02T01:19:09Z"
+                    "max_time": "2015-03-02T01:19:09Z"
                 }
             ],
-            "focus": [
-                {
-                    "dimension": "time",
-                    "value": "2015-02-02T01:19:09Z"
-                }
-            ]
+            //"focus": [
+            //    {
+            //        "dimension": "time",
+            //        "value": "2015-02-02T01:19:09Z"
+            //    }
+            //]
         });
 
     };
