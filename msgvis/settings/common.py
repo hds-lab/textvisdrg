@@ -334,7 +334,7 @@ COMPRESS_PRECOMPILERS = (
     ('text/coffeescript', BIN_COFFEE_COMMAND),
 
     # this adds the CssAbsoluteFilter to the less filter
-    ('text/less', BIN_LESSC_COMMAND),
+    ('text/less', 'msgvis.precompilers.LessFilter'),
 )
 
 COMPRESS_ROOT = STATIC_ROOT
