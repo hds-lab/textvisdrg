@@ -336,4 +336,43 @@
         }
     ]);
 
+    //A service for loading datatables.
+    module.factory('SparQs.services.DataTables', [
+        '$http', 'djangoUrl',
+        function dataTablesFactory($http, djangoUrl) {
+
+            var apiUrl = djangoUrl.reverse('data-table');
+
+            var DataTables = function () {
+                this.rows = [];
+            };
+
+            angular.extend(DataTables.prototype, {
+                load: function (dataset, dimensions, filters) {
+                    if (!dimensions.length) {
+                        return;
+                    }
+
+                    var dimension_keys = dimensions.map(function (d) {
+                        return d.key
+                    });
+
+                    var request = {
+                        dataset: dataset,
+                        filters: filters,
+                        dimensions: dimension_keys
+                    };
+
+                    var self = this;
+                    $http.post(apiUrl, request)
+                        .success(function (data) {
+                            self.rows = data.result;
+                        });
+                }
+            });
+
+            return new DataTables();
+        }
+    ]);
+
 })();

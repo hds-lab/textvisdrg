@@ -2,7 +2,6 @@
     'use strict';
 
 
-    
     var module = angular.module('SparQs.controllers', [
         'SparQs.services'
     ]);
@@ -11,7 +10,7 @@
     module.constant('SparQs.bootstrap', {
         dataset: 1
     });
-    
+
     module.config(function ($interpolateProvider) {
         $interpolateProvider.startSymbol('{$');
         $interpolateProvider.endSymbol('$}');
@@ -27,7 +26,7 @@
                 return "";
             }
         };
-        
+
         //Hierarchy of dimensions
         $scope.dimension_groups = [
             {
@@ -81,14 +80,14 @@
         ];
 
         //The token tray is a list of token placeholders, which may contain tokens.
-        $scope.tokenTray = Tokens.map(function(token) {
+        $scope.tokenTray = Tokens.map(function (token) {
             return {
                 token: token
             };
         });
 
 
-        $scope.onTokenTrayDrop = function() {
+        $scope.onTokenTrayDrop = function () {
             console.log("Dropped on tray");
         };
 
@@ -98,14 +97,17 @@
 
     };
 
-    DimensionController.$inject = ['$scope', 'SparQs.services.Dimensions', 'SparQs.services.Tokens'];
+    DimensionController.$inject = [
+        '$scope',
+        'SparQs.services.Dimensions',
+        'SparQs.services.Tokens'];
     module.controller('SparQs.controllers.DimensionController', DimensionController);
 
 
     var ExampleMessageController = function ($scope, ExampleMessages, Selection, bootstrap) {
 
         var dataset = bootstrap.dataset;
-        
+
         $scope.messages = ExampleMessages;
 
         $scope.get_example_messages = function () {
@@ -119,7 +121,7 @@
     };
     ExampleMessageController.$inject = [
         '$scope',
-        'SparQs.services.ExampleMessages', 
+        'SparQs.services.ExampleMessages',
         'SparQs.services.Selection',
         'SparQs.bootstrap'
     ];
@@ -127,7 +129,6 @@
 
     var SampleQuestionController = function ($scope, Selection, SampleQuestions) {
 
-        $scope.selection = Selection;
         $scope.questions = SampleQuestions;
 
         $scope.get_sample_questions = function () {
@@ -137,6 +138,33 @@
         $scope.get_sample_questions();
     };
 
-    SampleQuestionController.$inject = ['$scope', 'SparQs.services.Selection', 'SparQs.services.SampleQuestions'];
+    SampleQuestionController.$inject = [
+        '$scope',
+        'SparQs.services.Selection',
+        'SparQs.services.SampleQuestions'
+    ];
     module.controller('SparQs.controllers.SampleQuestionController', SampleQuestionController);
+
+    var VisualizationController = function ($scope, Selection, DataTables, bootstrap) {
+
+        var dataset = bootstrap.dataset;
+
+        $scope.datatable = DataTables;
+
+        $scope.get_data_table = function () {
+            var dimensions = Selection.dimensions();
+            var filters = Selection.filters();
+            DataTables.load(dataset, dimensions, filters);
+        };
+
+        $scope.get_data_table();
+    };
+
+    VisualizationController.$inject = [
+        '$scope',
+        'SparQs.services.Selection',
+        'SparQs.services.DataTables',
+        'SparQs.bootstrap'
+    ];
+    module.controller('SparQs.controllers.VisualizationController', VisualizationController);
 })();
