@@ -16,7 +16,7 @@
         $interpolateProvider.endSymbol('$}');
     });
 
-    var DimensionController = function ($scope, Dimensions, Tokens) {
+    var DimensionController = function ($scope, Dimensions, Tokens, Selection) {
 
         /* Rendering helpers, these are basically filters */
         $scope.get_filter_class = function (dimension) {
@@ -92,12 +92,12 @@
 
         $scope.onTokenTrayDrop = function () {
             console.log("Dropped on tray");
-            //$timeout(dimensionSelectionChanged);
+            Selection.changed('dimensions');
         };
 
         $scope.onTokenDimensionDrop = function () {
             console.log("Dropped on dimension");
-            //$timeout(dimensionSelectionChanged);
+            Selection.changed('dimensions');
         };
 
     };
@@ -105,7 +105,8 @@
     DimensionController.$inject = [
         '$scope',
         'SparQs.services.Dimensions',
-        'SparQs.services.Tokens'];
+        'SparQs.services.Tokens',
+        'SparQs.services.Selection'];
     module.controller('SparQs.controllers.DimensionController', DimensionController);
 
 
@@ -122,7 +123,9 @@
         };
 
         $scope.get_example_messages();
-        
+
+        Selection.changed('filters,focus', $scope, $scope.get_example_messages);
+        /*
         $scope.$watch('selection.filters()', function() {
             $scope.get_example_messages();
         }, true);
@@ -130,6 +133,7 @@
         $scope.$watch('selection.focus()', function() {
             $scope.get_example_messages();
         }, true);
+        */
     };
     ExampleMessageController.$inject = [
         '$scope',
@@ -150,9 +154,11 @@
 
         $scope.get_sample_questions();
         
-        $scope.$watch('selection.dimensions()', function() {
-            $scope.get_sample_questions();
-        }, true);
+        Selection.changed('dimensions', $scope, $scope.get_sample_questions);
+        
+        //$scope.$watch('selection.dimensions()', function() {
+        //    $scope.get_sample_questions();
+        //}, true);
     };
 
     SampleQuestionController.$inject = [
@@ -177,13 +183,15 @@
 
         $scope.get_data_table();
 
-        $scope.$watch('selection.dimensions()', function() {
-            $scope.get_data_table();
-        }, true);
-
-        $scope.$watch('selection.filters()', function() {
-            $scope.get_data_table();
-        }, true);
+        Selection.changed('dimensions,filters', $scope, $scope.get_data_table);
+        
+        //$scope.$watch('selection.dimensions()', function() {
+        //    $scope.get_data_table();
+        //}, true);
+        //
+        //$scope.$watch('selection.filters()', function() {
+        //    $scope.get_data_table();
+        //}, true);
     };
 
     VisualizationController.$inject = [

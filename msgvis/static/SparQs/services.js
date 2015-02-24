@@ -207,8 +207,9 @@
     //A service for summarizing the state of the current selection,
     //including selected dimensions, filters, and focus.
     module.factory('SparQs.services.Selection', [
+        '$rootScope',
         'SparQs.services.Dimensions',
-        function selectionFactory(Dimensions) {
+        function selectionFactory($rootScope, Dimensions) {
 
             var test_filters = [
                 {
@@ -230,6 +231,8 @@
 
             };
 
+            var changedEvent = 'SparQs.services.Selection.changed';
+            
             angular.extend(Selection.prototype, {
                 dimensions: function () {
                     var with_token = Dimensions.get_with_token();
@@ -245,6 +248,24 @@
                 },
                 focus: function () {
                     return test_focus;
+                },
+                changed: function(eventType, scope, callback) {
+                    // Register for one or more events:
+                    //   Selection.changed('dimensions,filters', $scope, $scope.callback_fn);
+                    // Trigger one or more events:
+                    //   Selection.changed('dimensions,focus');
+                    
+                    eventType.split(',').forEach(function(eventName) {
+                        eventName = changedEvent + '[' + eventName + ']';
+                        if (!scope) {
+                            //Trigger the event
+                            $rootScope.$emit(eventName);
+                        } else {
+                            //Register new listener
+                            var unbind = $rootScope.$on(eventName, callback);
+                            scope.$on('$destroy', unbind);
+                        }
+                    });
                 }
             });
 
