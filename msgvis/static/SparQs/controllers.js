@@ -86,13 +86,18 @@
             };
         });
 
+        //function dimensionSelectionChanged() {
+        //    
+        //}
 
         $scope.onTokenTrayDrop = function () {
             console.log("Dropped on tray");
+            //$timeout(dimensionSelectionChanged);
         };
 
         $scope.onTokenDimensionDrop = function () {
             console.log("Dropped on dimension");
+            //$timeout(dimensionSelectionChanged);
         };
 
     };
@@ -117,7 +122,14 @@
         };
 
         $scope.get_example_messages();
+        
+        $scope.$watch('selection.filters()', function() {
+            $scope.get_example_messages();
+        }, true);
 
+        $scope.$watch('selection.focus()', function() {
+            $scope.get_example_messages();
+        }, true);
     };
     ExampleMessageController.$inject = [
         '$scope',
@@ -130,12 +142,17 @@
     var SampleQuestionController = function ($scope, Selection, SampleQuestions) {
 
         $scope.questions = SampleQuestions;
-
+        $scope.selection = Selection;
+        
         $scope.get_sample_questions = function () {
             SampleQuestions.load(Selection.dimensions());
         };
 
         $scope.get_sample_questions();
+        
+        $scope.$watch('selection.dimensions()', function() {
+            $scope.get_sample_questions();
+        }, true);
     };
 
     SampleQuestionController.$inject = [
@@ -150,7 +167,8 @@
         var dataset = bootstrap.dataset;
 
         $scope.datatable = DataTables;
-
+        $scope.selection = Selection;
+        
         $scope.get_data_table = function () {
             var dimensions = Selection.dimensions();
             var filters = Selection.filters();
@@ -158,6 +176,14 @@
         };
 
         $scope.get_data_table();
+
+        $scope.$watch('selection.dimensions()', function() {
+            $scope.get_data_table();
+        }, true);
+
+        $scope.$watch('selection.filters()', function() {
+            $scope.get_data_table();
+        }, true);
     };
 
     VisualizationController.$inject = [
