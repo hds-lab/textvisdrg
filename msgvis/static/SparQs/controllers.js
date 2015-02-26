@@ -18,15 +18,6 @@
 
     var DimensionController = function ($scope, Dimensions, Filtering, Tokens, Selection) {
 
-        /* Rendering helpers, these are basically filters */
-        $scope.get_filter_class = function (dimension) {
-            if (dimension.has_filter()) {
-                return "filter-active";
-            } else {
-                return "";
-            }
-        };
-
         //Hierarchy of dimensions
         $scope.dimension_groups = [
             {
@@ -199,13 +190,29 @@
     module.controller('SparQs.controllers.VisualizationController', VisualizationController);
 
     //Extends DimensionsController
-    var FilterController = function ($scope, Filtering) {
+    var FilterController = function ($scope, Filtering, Selection) {
         $scope.filtering = Filtering;
+
+        $scope.saveFilter = function() {
+            if ($scope.filtering.dimension.filter.dirty) {
+                Selection.changed('filters');
+                $scope.filtering.dimension.filter.saved();
+            }
+        };
+
+        $scope.resetFilter = function() {
+            if (!$scope.filtering.dimension.filter.is_empty()) {
+                $scope.filtering.dimension.filter.reset()
+                Selection.changed('filters');
+                $scope.filtering.dimension.filter.saved();
+            }
+        };
     };
 
     FilterController.$inject = [
         '$scope',
-        'SparQs.services.Filtering'
+        'SparQs.services.Filtering',
+        'SparQs.services.Selection'
     ];
     module.controller('SparQs.controllers.FilterController', FilterController);
 })();

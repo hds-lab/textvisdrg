@@ -277,6 +277,18 @@ body {
             &:active {
                 .opacity(1);
             }
+
+            .transition(linear 0.2s);
+            .transition-property(transform opacity);
+        }
+
+        &.filter-applied .dimension-filter {
+            .opacity(1);
+        }
+
+        &.filtering-open .dimension-filter {
+            .opacity(1);
+            transform: rotate(-90deg);
         }
 
         &.token-primary {
@@ -360,6 +372,7 @@ body {
     }
 }
 
+@filter-popup-width: 250px;
 #filter-popup {
     position: absolute;
     left: @left-col-width + 1px;
@@ -368,9 +381,8 @@ body {
 
     background: black;
     border: 1px solid #666;
-    width: 250px;
+    width: @filter-popup-width;
     overflow: hidden;
-    white-space: nowrap;
     opacity: 1;
 
     h3 {
@@ -378,10 +390,23 @@ body {
         padding: 6px 8px;
         margin: 0;
         background: #666;
+        width: @filter-popup-width - 2;
+
+        position: relative;
+
+        .close {
+            position: absolute;
+            top: 3px;
+            right: 7px;
+            font-size: 23px;
+            color: #FFF;
+            text-shadow: 0 1px 0 #000;
+        }
     }
 
     .filter-body {
-        margin: 8px;
+        padding: 8px;
+        width: @filter-popup-width - 2;
     }
 
     .transition(linear 0.3s);
@@ -392,4 +417,39 @@ body {
         opacity: 0;
     }
 
+    .description {
+        font-size: 12px;
+        color: #ddd;
+    }
+
+    .form-group {
+        text-align: center;
+        margin: 0;
+
+        &.form-buttons {
+            margin-top: 6px;
+        }
+    }
+
+    .form-error {
+        font-style: italic;
+    }
+
+    .form-control {
+        display: inline-block;
+        text-align: center;
+        margin: 5px;
+        width: 80px;
+        border-radius: 2px;
+        padding: 3px 6px;
+        font-size: 12px;
+        height: auto;
+        color: #333;
+    }
+
+    .btn {
+        width: 60px;
+        margin: 5px;
+        padding: 4px 10px;
+    }
 }

@@ -28,6 +28,7 @@
 <script src="{% static 'SparQs/SparQs.js' %}"></script>
 <script src="{% static 'SparQs/controllers.js' %}"></script>
 <script src="{% static 'SparQs/services.js' %}"></script>
+<script src="{% static 'SparQs/services/dimensions_service.js' %}"></script>
 {% endblock %}
 
 {% block navigation_bar %}
@@ -74,7 +75,7 @@
                             <div class="group-members">
                                 <div ng-repeat="dimension in group.dimensions"
                                      class='dimension'
-                                     ng-class="dimension.token_class()">
+                                     ng-class="dimension.token_class() + ' ' + dimension.filter_class()">
                                     <div class="dimension-placeholder"
                                          data-drop="true"
                                          ng-model="dimension.token_holder"
@@ -93,7 +94,7 @@
                                     </div>
                                     <span class="dimension-name" ng-bind="dimension.name"></span>
 
-                                    <div class="dimension-filter" ng-class="get_filter_class(dimension)"
+                                    <div class="dimension-filter"
                                          ng-click="filtering.toggleFilter(dimension, $event)"></div>
                                 </div>
                             </div>
@@ -161,9 +162,39 @@
          ng-controller="SparQs.controllers.FilterController"
          ng-style="{top:filtering.offset.top}">
         <div ng-class="'filter-' + dimension.type">
-            <h3>Filter "{$ filtering.dimension.name $}"</h3>
+            <h3>
+                Filter on {$ filtering.dimension.name $}
+                <button type="button" class="close"
+                    ng-click="filtering.toggleFilter()">
+                    <span>&times;</span>
+                </button>
+            </h3>
             <div class="filter-body">
-                <p>Hello world</p>
+                <form ng-submit="saveFilter()">
+                    <p class="description">{$ filtering.dimension.description $}</p>
+                    <p class="form-group" ng-show="filtering.dimension.is_quantitative()">
+                        <input type="text" class="filter-min form-control"
+                               ng-model="filtering.dimension.filter.min"
+                               ng-model-options="{ getterSetter: true }"
+                               placeholder="min"/>
+                        <input type="text" class="filter-max form-control"
+                               ng-model="filtering.dimension.filter.max"
+                               ng-model-options="{ getterSetter: true }"
+                               placeholder="max"/>
+                    </p>
+                    <p class="form-error" ng-show="!filtering.dimension.is_quantitative()">
+                        Not yet implemented! <br/> Only quantitative filters.
+                    </p>
+                    <p class="form-group form-buttons">
+                        <button type="submit" class="btn btn-sm btn-primary apply-button"
+                                ng-disabled="!filtering.dimension.filter.dirty"
+                                ng-click="saveFilter()">Update</button>
+                        <button type="button" class="btn btn-sm btn-default clear-button"
+                                ng-disabled="filtering.dimension.filter.is_empty()"
+                                ng-click="resetFilter()">Clear</button>
+                    </p>
+
+                </form>
             </div>
         </div>
     </div>
