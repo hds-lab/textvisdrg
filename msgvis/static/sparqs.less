@@ -373,6 +373,8 @@ body {
 }
 
 @filter-popup-width: 250px;
+@filter-body-width: @filter-popup-width - 2;
+@filter-histogram-width: @filter-body-width - 16;
 #filter-popup {
     position: absolute;
     left: @left-col-width + 1px;
@@ -406,7 +408,7 @@ body {
 
     .filter-body {
         padding: 8px;
-        width: @filter-popup-width - 2;
+        width: @filter-body-width;
     }
 
     .transition(linear 0.3s);
@@ -451,5 +453,23 @@ body {
         width: 60px;
         margin: 5px;
         padding: 4px 10px;
+    }
+}
+
+quant-histogram {
+    width: @filter-histogram-width;
+    height: 75px;
+    position: relative;
+    display: block;
+
+    > svg {
+        width: 100%;
+        height: 100%;
+
+        font: 10px sans-serif;
+    }
+
+    rect.bar {
+        fill: steelblue;
     }
 }

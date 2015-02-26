@@ -4,10 +4,13 @@
 (function () {
     'use strict';
 
+    angular.module('SparQs.bootstrap', []);
+
     // Declare app level module which depends on other modules
     var app = angular
         .module('SparQs', [
             'SparQs.controllers',
+            'SparQs.charts',
             'ngCookies',
             'ngDragDrop',
             'ngAnimate'

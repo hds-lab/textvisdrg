@@ -6,11 +6,6 @@
         'SparQs.services'
     ]);
 
-    //Hard coded dataset id for now
-    module.constant('SparQs.bootstrap', {
-        dataset: 1
-    });
-
     module.config(function ($interpolateProvider) {
         $interpolateProvider.startSymbol('{$');
         $interpolateProvider.endSymbol('$}');
@@ -87,7 +82,17 @@
             Selection.changed('dimensions');
         };
 
-        $scope.filtering = Filtering
+        $scope.openFilter = function(dimension, $event) {
+            var offset;
+            if ($event) {
+                var $el = $($event.target).parents('.dimension');
+                if ($el) {
+                    offset = $el.offset();
+                }
+            }
+
+            Filtering.toggle(dimension, offset);
+        }
     };
 
     DimensionController.$inject = [
@@ -99,34 +104,24 @@
     module.controller('SparQs.controllers.DimensionController', DimensionController);
 
 
-    var ExampleMessageController = function ($scope, ExampleMessages, Selection, bootstrap) {
-
-        var dataset = bootstrap.dataset;
+    var ExampleMessageController = function ($scope, ExampleMessages, Selection, Dataset) {
 
         $scope.messages = ExampleMessages;
 
         $scope.get_example_messages = function () {
             var filters = Selection.filters();
             var focus = Selection.focus();
-            ExampleMessages.load(dataset, filters, focus);
+            ExampleMessages.load(Dataset.id, filters, focus);
         };
 
         Selection.changed('filters,focus', $scope, $scope.get_example_messages);
-        /*
-         $scope.$watch('selection.filters()', function() {
-         $scope.get_example_messages();
-         }, true);
 
-         $scope.$watch('selection.focus()', function() {
-         $scope.get_example_messages();
-         }, true);
-         */
     };
     ExampleMessageController.$inject = [
         '$scope',
         'SparQs.services.ExampleMessages',
         'SparQs.services.Selection',
-        'SparQs.bootstrap'
+        'SparQs.services.Dataset'
     ];
     module.controller('SparQs.controllers.ExampleMessageController', ExampleMessageController);
 
@@ -155,9 +150,7 @@
     ];
     module.controller('SparQs.controllers.SampleQuestionController', SampleQuestionController);
 
-    var VisualizationController = function ($scope, Selection, DataTables, bootstrap) {
-
-        var dataset = bootstrap.dataset;
+    var VisualizationController = function ($scope, Selection, DataTables, Dataset) {
 
         $scope.datatable = DataTables;
         $scope.selection = Selection;
@@ -165,27 +158,20 @@
         $scope.get_data_table = function () {
             var dimensions = Selection.dimensions();
             var filters = Selection.filters();
-            DataTables.load(dataset, dimensions, filters);
+            DataTables.load(Dataset.id, dimensions, filters);
         };
 
         $scope.get_data_table();
 
         Selection.changed('dimensions,filters', $scope, $scope.get_data_table);
 
-        //$scope.$watch('selection.dimensions()', function() {
-        //    $scope.get_data_table();
-        //}, true);
-        //
-        //$scope.$watch('selection.filters()', function() {
-        //    $scope.get_data_table();
-        //}, true);
     };
 
     VisualizationController.$inject = [
         '$scope',
         'SparQs.services.Selection',
         'SparQs.services.DataTables',
-        'SparQs.bootstrap'
+        'SparQs.services.Dataset'
     ];
     module.controller('SparQs.controllers.VisualizationController', VisualizationController);
 
@@ -193,16 +179,20 @@
     var FilterController = function ($scope, Filtering, Selection) {
         $scope.filtering = Filtering;
 
-        $scope.saveFilter = function() {
+        $scope.closeFilter = function() {
+            Filtering.toggle();
+        };
+
+        $scope.saveFilter = function () {
             if ($scope.filtering.dimension.filter.dirty) {
                 Selection.changed('filters');
                 $scope.filtering.dimension.filter.saved();
             }
         };
 
-        $scope.resetFilter = function() {
+        $scope.resetFilter = function () {
             if (!$scope.filtering.dimension.filter.is_empty()) {
-                $scope.filtering.dimension.filter.reset()
+                $scope.filtering.dimension.filter.reset();
                 Selection.changed('filters');
                 $scope.filtering.dimension.filter.saved();
             }
