@@ -16,7 +16,7 @@
         $interpolateProvider.endSymbol('$}');
     });
 
-    var DimensionController = function ($scope, Dimensions, Tokens, Selection) {
+    var DimensionController = function ($scope, Dimensions, Filtering, Tokens, Selection) {
 
         /* Rendering helpers, these are basically filters */
         $scope.get_filter_class = function (dimension) {
@@ -86,10 +86,6 @@
             };
         });
 
-        //function dimensionSelectionChanged() {
-        //    
-        //}
-
         $scope.onTokenTrayDrop = function () {
             console.log("Dropped on tray");
             Selection.changed('dimensions');
@@ -100,11 +96,13 @@
             Selection.changed('dimensions');
         };
 
+        $scope.filtering = Filtering
     };
 
     DimensionController.$inject = [
         '$scope',
         'SparQs.services.Dimensions',
+        'SparQs.services.Filtering',
         'SparQs.services.Tokens',
         'SparQs.services.Selection'];
     module.controller('SparQs.controllers.DimensionController', DimensionController);
@@ -122,18 +120,16 @@
             ExampleMessages.load(dataset, filters, focus);
         };
 
-        $scope.get_example_messages();
-
         Selection.changed('filters,focus', $scope, $scope.get_example_messages);
         /*
-        $scope.$watch('selection.filters()', function() {
-            $scope.get_example_messages();
-        }, true);
+         $scope.$watch('selection.filters()', function() {
+         $scope.get_example_messages();
+         }, true);
 
-        $scope.$watch('selection.focus()', function() {
-            $scope.get_example_messages();
-        }, true);
-        */
+         $scope.$watch('selection.focus()', function() {
+         $scope.get_example_messages();
+         }, true);
+         */
     };
     ExampleMessageController.$inject = [
         '$scope',
@@ -147,15 +143,15 @@
 
         $scope.questions = SampleQuestions;
         $scope.selection = Selection;
-        
+
         $scope.get_sample_questions = function () {
             SampleQuestions.load(Selection.dimensions());
         };
 
         $scope.get_sample_questions();
-        
+
         Selection.changed('dimensions', $scope, $scope.get_sample_questions);
-        
+
         //$scope.$watch('selection.dimensions()', function() {
         //    $scope.get_sample_questions();
         //}, true);
@@ -174,7 +170,7 @@
 
         $scope.datatable = DataTables;
         $scope.selection = Selection;
-        
+
         $scope.get_data_table = function () {
             var dimensions = Selection.dimensions();
             var filters = Selection.filters();
@@ -184,7 +180,7 @@
         $scope.get_data_table();
 
         Selection.changed('dimensions,filters', $scope, $scope.get_data_table);
-        
+
         //$scope.$watch('selection.dimensions()', function() {
         //    $scope.get_data_table();
         //}, true);
@@ -201,4 +197,15 @@
         'SparQs.bootstrap'
     ];
     module.controller('SparQs.controllers.VisualizationController', VisualizationController);
+
+    //Extends DimensionsController
+    var FilterController = function ($scope, Filtering) {
+        $scope.filtering = Filtering;
+    };
+
+    FilterController.$inject = [
+        '$scope',
+        'SparQs.services.Filtering'
+    ];
+    module.controller('SparQs.controllers.FilterController', FilterController);
 })();

@@ -9,7 +9,8 @@
         .module('SparQs', [
             'SparQs.controllers',
             'ngCookies',
-            'ngDragDrop'
+            'ngDragDrop',
+            'ngAnimate'
         ]);
 
     //Fix CSRF

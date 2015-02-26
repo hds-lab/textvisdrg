@@ -204,6 +204,41 @@
         }
     ]);
 
+    //A service for managing the filter popups
+    module.factory('SparQs.services.Filtering', [
+        '$rootScope',
+        'SparQs.services.Dimensions',
+        function filteringFactory($rootScope, Dimensions) {
+            var Filtering = function () {
+                this.dimension = undefined;
+            };
+
+            angular.extend(Filtering.prototype, {
+                toggleFilter: function(dimension, $event) {
+                    if (this.dimension == dimension) {
+                        dimension.filtering = false;
+                        this.dimension = undefined;
+                    } else {
+                        if (this.dimension) {
+                            this.dimension.filtering = false;
+                        }
+                        this.dimension = dimension;
+                        dimension.filtering = true;
+                    }
+
+                    if ($event) {
+                        var $el = $($event.target).parents('.dimension');
+                        if ($el) {
+                            this.offset = $el.offset();
+                        }
+                    }
+                }
+            });
+
+            return new Filtering();
+        }
+    ]);
+
     //A service for summarizing the state of the current selection,
     //including selected dimensions, filters, and focus.
     module.factory('SparQs.services.Selection', [
