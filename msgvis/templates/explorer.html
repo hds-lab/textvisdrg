@@ -14,6 +14,7 @@
 <script src="{% static 'bower/angular-cookies/angular-cookies.js' %}"></script>
 <script src="{% static 'bower/angular-route/angular-route.js' %}"></script>
 <script src="{% static 'bower/angular-resource/angular-resource.js' %}"></script>
+<script src="{% static 'bower/angular-animate/angular-animate.js' %}"></script>
 
 <script src="{% static 'bower/jquery-ui/ui/core.js' %}"></script>
 <script src="{% static 'bower/jquery-ui/ui/widget.js' %}"></script>
@@ -27,6 +28,7 @@
 <script src="{% static 'SparQs/SparQs.js' %}"></script>
 <script src="{% static 'SparQs/controllers.js' %}"></script>
 <script src="{% static 'SparQs/services.js' %}"></script>
+<script src="{% static 'SparQs/services/dimensions_service.js' %}"></script>
 {% endblock %}
 
 {% block navigation_bar %}
@@ -48,107 +50,151 @@
 
 {% block content %}
 <div ng-app="SparQs" id="application" class="row col">
-    <div id="titleWrap" class="row clearfix">
-        <div class="logo">
-            <img src="{% static 'images/part1_logo.png' %}"/>
+    <div id="app-wrapper" class="row col">
+        <div id="titleWrap" class="row clearfix">
+            <div class="logo">
+                <img src="{% static 'images/part1_logo.png' %}"/>
+            </div>
+            <div class="logo-titles">
+                <div class="title">SparQs</div>
+                <div class="subtitle">Inspiring exploration in social media data</div>
+            </div>
         </div>
-        <div class="logo-titles">
-            <div class="title">SparQs</div>
-            <div class="subtitle">Inspiring exploration in social media data</div>
-        </div>
-    </div>
-    <div id="content" class="row">
-        <div id="left" class="col">
-            {% verbatim %}
-            <div id="dimensions" class="app-panel row"
-                 ng-controller="SparQs.controllers.DimensionController">
-                <div id="dimension-groups">
-                    <div ng-repeat="group in dimension_groups"
-                         class="dimension-group"
-                         id="group-{$ group.group_name $}">
-                        <div class="group-name">
-                            <span ng-bind="group.group_name"></span>
-                        </div>
-                        <div class="group-members">
-                            <div ng-repeat="dimension in group.dimensions"
-                                 class='dimension'
-                                 ng-class="dimension.token_class()">
-                                <div class="dimension-placeholder"
-                                     data-drop="true"
-                                     ng-model="dimension.token_holder"
-                                     jqyoui-droppable="{onDrop: 'onTokenDimensionDrop'}"
-                                     data-jqyoui-options="{accept: '.token'}">
-
-                                    <div class="token"
-                                         ng-class="dimension.token_class()"
+        <div id="content" class="row ng-cloak" ng-cloak>
+            <div id="left" class="col">
+                {% verbatim %}
+                <div id="dimensions" class="app-panel row"
+                     ng-controller="SparQs.controllers.DimensionController">
+                    <div id="dimension-groups">
+                        <div ng-repeat="group in dimension_groups"
+                             class="dimension-group"
+                             id="group-{$ group.group_name $}">
+                            <div class="group-name">
+                                <span ng-bind="group.group_name"></span>
+                            </div>
+                            <div class="group-members">
+                                <div ng-repeat="dimension in group.dimensions"
+                                     class='dimension'
+                                     ng-class="dimension.token_class() + ' ' + dimension.filter_class()">
+                                    <div class="dimension-placeholder"
+                                         data-drop="true"
                                          ng-model="dimension.token_holder"
-                                         ng-hide="!dimension.token()"
-                                         data-drag="true"
-                                         jqyoui-draggable="{placeholder: true}"
-                                         data-jqyoui-options="{revert: 'invalid'}">
+                                         jqyoui-droppable="{onDrop: 'onTokenDimensionDrop'}"
+                                         data-jqyoui-options="{accept: '.token'}">
+
+                                        <div class="token"
+                                             ng-class="dimension.token_class()"
+                                             ng-model="dimension.token_holder"
+                                             ng-hide="!dimension.token()"
+                                             data-drag="true"
+                                             jqyoui-draggable="{placeholder: true}"
+                                             data-jqyoui-options="{revert: 'invalid'}">
+                                        </div>
+
                                     </div>
+                                    <span class="dimension-name" ng-bind="dimension.name"></span>
 
+                                    <div class="dimension-filter"
+                                         ng-click="filtering.toggleFilter(dimension, $event)"></div>
                                 </div>
-                                <span class="dimension-name" ng-bind="dimension.name"></span>
-
-                                <div class="dimension-filter" ng-class="get_filter_class(dimension)"></div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div id="token-tray">
-                    <div ng-repeat="token_holder in tokenTray"
-                         class="token-tray-zone"
-                         data-drop="true"
-                         ng-model="tokenTray"
-                         jqyoui-droppable="{index: {$ $index $}, containment:'position', onDrop: 'onTokenTrayDrop'}"
-                         data-jqyoui-options="{accept: '.token'}">
-
-                        <div class="token" ng-class="token_holder.token.token_class()"
-                             ng-show="token_holder.token"
-                             data-drag="true"
+                    <div id="token-tray">
+                        <div ng-repeat="token_holder in tokenTray"
+                             class="token-tray-zone"
+                             data-drop="true"
                              ng-model="tokenTray"
-                             jqyoui-draggable="{index: {$ $index $}, placeholder: true}"
-                             data-jqyoui-options="{revert: 'invalid'}"></div>
+                             jqyoui-droppable="{index: {$ $index $}, containment:'position', onDrop: 'onTokenTrayDrop'}"
+                             data-jqyoui-options="{accept: '.token'}">
+
+                            <div class="token" ng-class="token_holder.token.token_class()"
+                                 ng-show="token_holder.token"
+                                 data-drag="true"
+                                 ng-model="tokenTray"
+                                 jqyoui-draggable="{index: {$ $index $}, placeholder: true}"
+                                 data-jqyoui-options="{revert: 'invalid'}"></div>
+                        </div>
                     </div>
                 </div>
+                {% endverbatim %}
             </div>
-            {% endverbatim %}
-        </div>
-        <div id="middle" class="col">
-            <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
-                <div class="heading">Visualization</div>
-                <div id="viz-content" class="heading-body">
-                    <pre ng-bind="datatable.rows|json"></pre>
+            <div id="middle" class="col">
+                <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
+                    <div class="heading">Visualization</div>
+                    <div id="viz-content" class="heading-body">
+                        <pre ng-bind="datatable.rows|json"></pre>
+                    </div>
+                </div>
+                <div id="questions" class="row app-panel"
+                     ng-controller="SparQs.controllers.SampleQuestionController">
+                    <div class="heading">From the literature...</div>
+                    <ul class="questions-list heading-body">
+                        <li ng-repeat="question in questions.list">
+                            <span ng-bind="question.text"></span> <br/>
+                            Dimensions: <span ng-repeat="dimension in question.dimensions">
+                                <span ng-class="dimension.token_class()" ng-bind="dimension.name"></span>
+                            </span>
+                        </li>
+                    </ul>
                 </div>
             </div>
-            <div id="questions" class="row app-panel"
-                 ng-controller="SparQs.controllers.SampleQuestionController">
-                <div class="heading">From the literature...</div>
-                <ul class="questions-list heading-body">
-                    <li ng-repeat="question in questions.list">
-                        <span ng-bind="question.text"></span> <br/>
-                        Dimensions: <span ng-repeat="dimension in question.dimensions">
-                            <span ng-class="dimension.token_class()" ng-bind="dimension.name"></span>
-                        </span>
-                    </li>
-                </ul>
-
+            <div id="right" class="col">
+                <div id="messages" class="row app-panel" ng-controller="SparQs.controllers.ExampleMessageController">
+                    <div class="heading">Example Messages</div>
+                    <ul class="message-list heading-body">
+                        <li ng-repeat="message in messages.list">
+                            <div class="text"><span ng-bind="message.text"></span></div>
+                            <div class="meta">
+                                <span ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
+                                by
+                                <span ng-bind="message.sender.full_name"></span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
-        <div id="right" class="col">
-            <div id="messages" class="row app-panel" ng-controller="SparQs.controllers.ExampleMessageController">
-                <div class="heading">Example Messages</div>
-                <ul class="message-list heading-body">
-                    <li ng-repeat="message in messages.list">
-                        <div class="text"><span ng-bind="message.text"></span></div>
-                        <div class="meta">
-                            <span ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
-                            by
-                            <span ng-bind="message.sender.full_name"></span>
-                        </div>
-                    </li>
-                </ul>
+    </div>
+    <div id="filter-popup"
+         class="ng-cloak" ng-cloak
+         ng-show="filtering.dimension"
+         ng-controller="SparQs.controllers.FilterController"
+         ng-style="{top:filtering.offset.top}">
+        <div ng-class="'filter-' + dimension.type">
+            <h3>
+                Filter on {$ filtering.dimension.name $}
+                <button type="button" class="close"
+                    ng-click="filtering.toggleFilter()">
+                    <span>&times;</span>
+                </button>
+            </h3>
+            <div class="filter-body">
+                <form ng-submit="saveFilter()">
+                    <p class="description">{$ filtering.dimension.description $}</p>
+                    <p class="form-group" ng-show="filtering.dimension.is_quantitative()">
+                        <input type="text" class="filter-min form-control"
+                               ng-model="filtering.dimension.filter.min"
+                               ng-model-options="{ getterSetter: true }"
+                               placeholder="min"/>
+                        <input type="text" class="filter-max form-control"
+                               ng-model="filtering.dimension.filter.max"
+                               ng-model-options="{ getterSetter: true }"
+                               placeholder="max"/>
+                    </p>
+                    <p class="form-error" ng-show="!filtering.dimension.is_quantitative()">
+                        Not yet implemented! <br/> Only quantitative filters.
+                    </p>
+                    <p class="form-group form-buttons">
+                        <button type="submit" class="btn btn-sm btn-primary apply-button"
+                                ng-disabled="!filtering.dimension.filter.dirty"
+                                ng-click="saveFilter()">Update</button>
+                        <button type="button" class="btn btn-sm btn-default clear-button"
+                                ng-disabled="filtering.dimension.filter.is_empty()"
+                                ng-click="resetFilter()">Clear</button>
+                    </p>
+
+                </form>
             </div>
         </div>
     </div>

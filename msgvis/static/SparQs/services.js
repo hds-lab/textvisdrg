@@ -33,174 +33,38 @@
         }
     ]);
 
-    //The collection of dimennsions.
-    //Dimension objects have some extra functionality added.
-    module.factory('SparQs.services.Dimensions', [
-        function () {
-
-            // A simple model class for dimensions
-            var Dimension = function (data) {
-                angular.extend(this, data);
-
-                this.token_holder = {};
-                this.filter = undefined;
+    //A service for managing the filter popups
+    module.factory('SparQs.services.Filtering', [
+        '$rootScope',
+        'SparQs.services.Dimensions',
+        function filteringFactory($rootScope, Dimensions) {
+            var Filtering = function () {
+                this.dimension = undefined;
             };
 
-            angular.extend(Dimension.prototype, {
-                token: function () {
-                    // Get the token on this dimension, or null.
-                    return this.token_holder.token;
-                },
-                token_class: function () {
-                    var token = this.token();
-                    return token ? token.token_class() : "";
-                },
-                has_filter: function () {
-                    return this.filter;
+            angular.extend(Filtering.prototype, {
+                toggleFilter: function (dimension, $event) {
+                    if (this.dimension == dimension || !dimension) {
+                        this.dimension.filtering = false;
+                        this.dimension = undefined;
+                    } else {
+                        if (this.dimension) {
+                            this.dimension.filtering = false;
+                        }
+                        this.dimension = dimension;
+                        dimension.filtering = true;
+                    }
+
+                    if ($event) {
+                        var $el = $($event.target).parents('.dimension');
+                        if ($el) {
+                            this.offset = $el.offset();
+                        }
+                    }
                 }
             });
 
-            //The actual dimension service class
-            var Dimensions = function (list) {
-                this.by_key = {};
-                var self = this;
-
-                //Instantiate Dimensions
-                this.list = list.map(function (dimdata) {
-                    var dim = new Dimension(dimdata);
-                    self.by_key[dim.key] = dim;
-                    return dim;
-                });
-            };
-
-            angular.extend(Dimensions.prototype, {
-                get_by_key: function (key) {
-                    return this.by_key[key];
-                },
-                get_with_token: function () {
-                    return this.list.filter(function (dim) {
-                        return dim.token();
-                    });
-                }
-            });
-
-            return new Dimensions([
-                {
-                    "key": "time",
-                    "name": "Time",
-                    "type": "TimeDimension"
-                },
-                {
-                    "key": "timezone",
-                    "name": "Timezone",
-                    "type": "CategoricalDimension"
-                },
-                {
-                    "key": "topics",
-                    "name": "Topics",
-                    "type": "CategoricalDimension"
-                },
-                {
-                    "key": "keywords",
-                    "name": "Keywords",
-                    "type": "CategoricalDimension"
-                },
-                {
-                    "key": "hashtags",
-                    "name": "Hashtags",
-                    "type": "CategoricalDimension"
-                },
-                {
-                    "key": "contains_hashtag",
-                    "name": "Contains a hashtag",
-                    "type": "CategoricalDimension"
-                },
-                {
-                    "key": "urls",
-                    "name": "Urls",
-                    "type": "CategoricalDimension"
-                },
-                {
-                    "key": "contains_url",
-                    "name": "Contains a url",
-                    "type": "CategoricalDimension"
-                },
-                {
-                    "key": "contains_media",
-                    "name": "Contains a photo",
-                    "type": "CategoricalDimension"
-                },
-                {
-                    "key": "language",
-                    "name": "Language",
-                    "type": "CategoricalDimension"
-                },
-                {
-                    "key": "sentiment",
-                    "name": "Sentiment",
-                    "type": "CategoricalDimension"
-                },
-                {
-                    "key": "type",
-                    "name": "Message Type",
-                    "type": "CategoricalDimension"
-                },
-                {
-                    "key": "replies",
-                    "name": "Num. Replies",
-                    "type": "QuantitativeDimension"
-                },
-                {
-                    "key": "shares",
-                    "name": "Num. Shares",
-                    "type": "QuantitativeDimension"
-                },
-                {
-                    "key": "mentions",
-                    "name": "Mentions",
-                    "type": "CategoricalDimension"
-                },
-                {
-                    "key": "contains_mention",
-                    "name": "Contains a mention",
-                    "type": "CategoricalDimension"
-                },
-                {
-                    "key": "sender_name",
-                    "name": "Author name",
-                    "type": "CategoricalDimension"
-                },
-                {
-                    "key": "sender_message_count",
-                    "name": "Num. Messages",
-                    "type": "QuantitativeDimension"
-                },
-                {
-                    "key": "sender_reply_count",
-                    "name": "Num. Replies",
-                    "type": "QuantitativeDimension"
-                },
-                {
-                    "key": "sender_mention_count",
-                    "name": "Num. Mentions",
-                    "type": "QuantitativeDimension"
-                },
-                {
-                    "key": "sender_share_count",
-                    "name": "Num. Shares",
-                    "type": "QuantitativeDimension"
-                },
-                {
-                    "key": "sender_friend_count",
-                    "name": "Num. Friends",
-                    "type": "QuantitativeDimension"
-                },
-                {
-                    "key": "sender_follower_count",
-                    "name": "Num. Followers",
-                    "type": "QuantitativeDimension"
-                }
-            ]);
+            return new Filtering();
         }
     ]);
 
@@ -210,14 +74,6 @@
         '$rootScope',
         'SparQs.services.Dimensions',
         function selectionFactory($rootScope, Dimensions) {
-
-            var test_filters = [
-                {
-                    "dimension": "time",
-                    "min_time": "2015-02-02T01:19:08Z",
-                    "max_time": "2015-03-02T01:19:09Z"
-                }
-            ];
 
             var test_focus = [
                 //{
@@ -232,7 +88,7 @@
             };
 
             var changedEvent = 'SparQs.services.Selection.changed';
-            
+
             angular.extend(Selection.prototype, {
                 dimensions: function () {
                     var with_token = Dimensions.get_with_token();
@@ -244,18 +100,23 @@
                     return with_token;
                 },
                 filters: function () {
-                    return test_filters;
+                    var with_filter = Dimensions.get_with_filters();
+
+                    //Prepare filter data
+                    return with_filter.map(function (dim) {
+                        return dim.serialize_filter();
+                    })
                 },
                 focus: function () {
                     return test_focus;
                 },
-                changed: function(eventType, scope, callback) {
+                changed: function (eventType, scope, callback) {
                     // Register for one or more events:
                     //   Selection.changed('dimensions,filters', $scope, $scope.callback_fn);
                     // Trigger one or more events:
                     //   Selection.changed('dimensions,focus');
-                    
-                    eventType.split(',').forEach(function(eventName) {
+
+                    eventType.split(',').forEach(function (eventName) {
                         eventName = changedEvent + '[' + eventName + ']';
                         if (!scope) {
                             //Trigger the event
@@ -307,7 +168,7 @@
                     var self = this;
                     $http.post(apiUrl, request)
                         .success(function (data) {
-                            self.list = data.questions.map(function(qdata) {
+                            self.list = data.questions.map(function (qdata) {
                                 return new Question(qdata);
                             });
                         });
@@ -346,7 +207,7 @@
                     var self = this;
                     $http.post(apiUrl, request)
                         .success(function (data) {
-                            self.list = data.messages.map(function(msgdata) {
+                            self.list = data.messages.map(function (msgdata) {
                                 return new Message(msgdata);
                             });
                         });

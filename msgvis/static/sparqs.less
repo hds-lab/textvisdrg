@@ -2,6 +2,13 @@
 
 @section-margin: 5px;
 
+.background-gradient() {
+    background: -webkit-linear-gradient(right, rgb(1, 16, 40), #000); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(left, rgb(1, 16, 40), #000); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(left, rgb(1, 16, 40), #000); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(to left, rgb(1, 16, 40), #000); /* Standard syntax */
+}
+
 /* Full page application */
 // http://blog.stevensanderson.com/2011/10/05/full-height-app-layouts-a-css-trick-to-make-it-easier/
 body { margin: 0 }
@@ -28,6 +35,10 @@ body {
 }
 
 #application {
+
+}
+
+#app-wrapper {
     left: @section-margin;
     top: @section-margin;
     right: @section-margin;
@@ -233,10 +244,7 @@ body {
         }
 
         font-size: 12pt;
-        background: -webkit-linear-gradient(left, rgb(1, 16, 40), #000); /* For Safari 5.1 to 6.0 */
-        background: -o-linear-gradient(right, rgb(1, 16, 40), #000); /* For Opera 11.1 to 12.0 */
-        background: -moz-linear-gradient(right, rgb(1, 16, 40), #000); /* For Firefox 3.6 to 15 */
-        background: linear-gradient(to right, rgb(1, 16, 40), #000); /* Standard syntax */
+        .background-gradient();
 
         color: #999;
 
@@ -269,6 +277,18 @@ body {
             &:active {
                 .opacity(1);
             }
+
+            .transition(linear 0.2s);
+            .transition-property(transform opacity);
+        }
+
+        &.filter-applied .dimension-filter {
+            .opacity(1);
+        }
+
+        &.filtering-open .dimension-filter {
+            .opacity(1);
+            transform: rotate(-90deg);
         }
 
         &.token-primary {
@@ -292,10 +312,6 @@ body {
             margin: 5px;
         }
     }
-
-
-
-
 }
 
 @questions-row-height: 170px;
@@ -305,10 +321,7 @@ body {
     top: 0;
     bottom: @questions-row-height + @section-margin;
 
-    background: -webkit-linear-gradient(top, rgb(1, 16, 40), #000); /* For Safari 5.1 to 6.0 */
-    background: -o-linear-gradient(bottom, rgb(1, 16, 40), #000); /* For Opera 11.1 to 12.0 */
-    background: -moz-linear-gradient(bottom, rgb(1, 16, 40), #000); /* For Firefox 3.6 to 15 */
-    background: linear-gradient(to bottom, rgb(1, 16, 40), #000); /* Standard syntax */
+    .background-gradient();
 }
 
 /* research questions */
@@ -336,18 +349,13 @@ body {
 
 /* example messages */
 
-
-
 #messages {
     top: 0;
     bottom: 0;
 
     overflow-y: auto;
 
-    background: -webkit-linear-gradient(right, rgb(1, 16, 40), #000); /* For Safari 5.1 to 6.0 */
-    background: -o-linear-gradient(left, rgb(1, 16, 40), #000); /* For Opera 11.1 to 12.0 */
-    background: -moz-linear-gradient(left, rgb(1, 16, 40), #000); /* For Firefox 3.6 to 15 */
-    background: linear-gradient(to left, rgb(1, 16, 40), #000); /* Standard syntax */
+    .background-gradient();
 
     .message-list {
         padding-left: 15px;
@@ -364,3 +372,84 @@ body {
     }
 }
 
+@filter-popup-width: 250px;
+#filter-popup {
+    position: absolute;
+    left: @left-col-width + 1px;
+
+    z-index: 1000;
+
+    background: black;
+    border: 1px solid #666;
+    width: @filter-popup-width;
+    overflow: hidden;
+    opacity: 1;
+
+    h3 {
+        font-size: 18px;
+        padding: 6px 8px;
+        margin: 0;
+        background: #666;
+        width: @filter-popup-width - 2;
+
+        position: relative;
+
+        .close {
+            position: absolute;
+            top: 3px;
+            right: 7px;
+            font-size: 23px;
+            color: #FFF;
+            text-shadow: 0 1px 0 #000;
+        }
+    }
+
+    .filter-body {
+        padding: 8px;
+        width: @filter-popup-width - 2;
+    }
+
+    .transition(linear 0.3s);
+    .transition-property(width opacity top);
+
+    &.ng-hide {
+        width: 0;
+        opacity: 0;
+    }
+
+    .description {
+        font-size: 12px;
+        color: #ddd;
+    }
+
+    .form-group {
+        text-align: center;
+        margin: 0;
+
+        &.form-buttons {
+            margin-top: 6px;
+        }
+    }
+
+    .form-error {
+        font-style: italic;
+    }
+
+    .form-control {
+        display: inline-block;
+        text-align: center;
+        margin: 5px;
+        width: 80px;
+        border-radius: 2px;
+        padding: 3px 6px;
+        font-size: 12px;
+        height: auto;
+        color: #333;
+    }
+
+    .btn {
+        width: 60px;
+        margin: 5px;
+        padding: 4px 10px;
+    }
+}
