@@ -3,13 +3,14 @@ from django.core.urlresolvers import reverse
 from rest_framework import status
 
 from django.utils import timezone as tz
+from django.db.models import query
 
 from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.questions import models as questions_models
 from msgvis.apps.dimensions import models as dimensions_models
 import mock
 
-from msgvis.apps.api.tests import api_time_format
+from msgvis.apps.api.tests import api_time_format, django_time_format
 
 
 class DimensionDistributionViewTest(APITestCase):
@@ -301,3 +302,14 @@ class DataTableViewTest(APITestCase):
 
         # It should have then given the filtered queryset to the data table
         table_instance.render.assert_called_once_with(filtered_queryset)
+        
+        # It should have called filter with some args
+        self.assertEquals(dimension.filter.call_count, 1)
+        filter_args, filter_kwargs = dimension.filter.call_args
+        self.assertEquals(len(filter_args), 1)
+        self.assertIsInstance(filter_args[0], query.QuerySet)
+        self.assertEquals(filter_kwargs, {
+            'dimension': dimension,
+            'min_time': django_time_format(data['filters'][0]['min_time']),
+            'max_time': django_time_format(data['filters'][0]['max_time'])
+        })

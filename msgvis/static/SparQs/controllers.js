@@ -1,30 +1,24 @@
 (function () {
     'use strict';
 
+
     var module = angular.module('SparQs.controllers', [
         'SparQs.services'
     ]);
+
+    //Hard coded dataset id for now
+    module.constant('SparQs.bootstrap', {
+        dataset: 1
+    });
 
     module.config(function ($interpolateProvider) {
         $interpolateProvider.startSymbol('{$');
         $interpolateProvider.endSymbol('$}');
     });
 
-
-    var dimension_one = "time";
-    var dimension_two = "hashtags";
-
-    var DimensionController = function ($scope, Dimensions, token_images) {
+    var DimensionController = function ($scope, Dimensions, Tokens, Selection) {
 
         /* Rendering helpers, these are basically filters */
-        $scope.get_dimension_class = function (dimension) {
-            if (dimension.has_token()) {
-                return "selected-" + dimension.token.name;
-            } else {
-                return "";
-            }
-
-        };
         $scope.get_filter_class = function (dimension) {
             if (dimension.has_filter()) {
                 return "filter-active";
@@ -33,96 +27,178 @@
             }
         };
 
-        $scope.get_token_class = function (token) {
-            return "token-" + token.name;
-        };
-
-
-        /* Models */
-        $scope.dimensions = Dimensions;
-
-        $scope.tokenTray = [
+        //Hierarchy of dimensions
+        $scope.dimension_groups = [
             {
-                name: 'primary',
-                image: token_images['primary']
+                "group_name": "Time",
+                "dimensions": [
+                    Dimensions.get_by_key('time'),
+                    Dimensions.get_by_key('timezone')
+                ]
             },
             {
-                name: 'secondary',
-                image: token_images['secondary']
+                "group_name": "Contents",
+                "dimensions": [
+                    Dimensions.get_by_key('topics'),
+                    Dimensions.get_by_key('keywords'),
+                    Dimensions.get_by_key('hashtags'),
+                    Dimensions.get_by_key('contains_hashtag'),
+                    Dimensions.get_by_key('urls'),
+                    Dimensions.get_by_key('contains_url'),
+                    Dimensions.get_by_key('contains_media')
+                ]
+            },
+            {
+                "group_name": "Meta",
+                "dimensions": [
+                    Dimensions.get_by_key('language'),
+                    Dimensions.get_by_key('sentiment')
+                ]
+            },
+            {
+                "group_name": "Interaction",
+                "dimensions": [
+                    Dimensions.get_by_key('type'),
+                    Dimensions.get_by_key('replies'),
+                    Dimensions.get_by_key('shares'),
+                    Dimensions.get_by_key('mentions'),
+                    Dimensions.get_by_key('contains_mention')
+                ]
+            },
+            {
+                "group_name": "Author",
+                "dimensions": [
+                    Dimensions.get_by_key('sender_name'),
+                    Dimensions.get_by_key('sender_message_count'),
+                    Dimensions.get_by_key('sender_reply_count'),
+                    Dimensions.get_by_key('sender_mention_count'),
+                    Dimensions.get_by_key('sender_share_count'),
+                    Dimensions.get_by_key('sender_friend_count'),
+                    Dimensions.get_by_key('sender_follower_count')
+                ]
             }
         ];
 
+        //The token tray is a list of token placeholders, which may contain tokens.
+        $scope.tokenTray = Tokens.map(function (token) {
+            return {
+                token: token
+            };
+        });
 
-        $scope.onTokenTrayDrop = function() {
+        //function dimensionSelectionChanged() {
+        //    
+        //}
+
+        $scope.onTokenTrayDrop = function () {
             console.log("Dropped on tray");
+            Selection.changed('dimensions');
         };
 
         $scope.onTokenDimensionDrop = function () {
             console.log("Dropped on dimension");
+            Selection.changed('dimensions');
         };
 
     };
 
-    DimensionController.$inject = ['$scope', 'SparQs.services.Dimensions', 'token_images'];
+    DimensionController.$inject = [
+        '$scope',
+        'SparQs.services.Dimensions',
+        'SparQs.services.Tokens',
+        'SparQs.services.Selection'];
     module.controller('SparQs.controllers.DimensionController', DimensionController);
 
 
-    var ExampleMessageController = function ($scope, $http) {
+    var ExampleMessageController = function ($scope, ExampleMessages, Selection, bootstrap) {
 
-        $scope.get_example_messages = function (request) {
-            $http.post('/api/message/', request)
-                .success(function (data) {
-                    $scope.example_messages = data;
-                });
+        var dataset = bootstrap.dataset;
+
+        $scope.messages = ExampleMessages;
+
+        $scope.get_example_messages = function () {
+            var filters = Selection.filters();
+            var focus = Selection.focus();
+            ExampleMessages.load(dataset, filters, focus);
         };
 
-        $scope.get_example_messages({
-            "dataset": 1,
-            "dimensions": ["time", "hashtags"],
-            "filters": [
-                {
-                    "dimension": "time",
-                    "min_time": "2015-02-02T01:19:08Z",
-                    "max_time": "2015-03-02T01:19:09Z"
-                }
-            ],
-            //"focus": [
-            //    {
-            //        "dimension": "time",
-            //        "value": "2015-02-02T01:19:09Z"
-            //    }
-            //]
-        });
+        $scope.get_example_messages();
 
+        Selection.changed('filters,focus', $scope, $scope.get_example_messages);
+        /*
+        $scope.$watch('selection.filters()', function() {
+            $scope.get_example_messages();
+        }, true);
+
+        $scope.$watch('selection.focus()', function() {
+            $scope.get_example_messages();
+        }, true);
+        */
     };
-    ExampleMessageController.$inject = ['$scope', '$http'];
+    ExampleMessageController.$inject = [
+        '$scope',
+        'SparQs.services.ExampleMessages',
+        'SparQs.services.Selection',
+        'SparQs.bootstrap'
+    ];
     module.controller('SparQs.controllers.ExampleMessageController', ExampleMessageController);
 
-    var SampleQuestionController = function ($scope, $http) {
+    var SampleQuestionController = function ($scope, Selection, SampleQuestions) {
 
-        dimension_one = "time";
-        dimension_two = "hashtags";
-
-        $scope.get_dimension_class = function (dimension_key) {
-            console.log(dimension_key);
-            if ($scope.dimension_one == dimension_key) return "first-dimension";
-            else if ($scope.dimension_two == dimension_key) return "second-dimension";
-            else return "";
-
+        $scope.questions = SampleQuestions;
+        $scope.selection = Selection;
+        
+        $scope.get_sample_questions = function () {
+            SampleQuestions.load(Selection.dimensions());
         };
 
-        $scope.get_sample_questions = function (request) {
-            $http.post('/api/questions/', request)
-                .success(function (data) {
-                    $scope.sample_questions = data;
-                });
-        };
-
-        $scope.get_sample_questions({
-            "dimensions": ["hashtags", "time"]
-        });
-
+        $scope.get_sample_questions();
+        
+        Selection.changed('dimensions', $scope, $scope.get_sample_questions);
+        
+        //$scope.$watch('selection.dimensions()', function() {
+        //    $scope.get_sample_questions();
+        //}, true);
     };
-    SampleQuestionController.$inject = ['$scope', '$http'];
+
+    SampleQuestionController.$inject = [
+        '$scope',
+        'SparQs.services.Selection',
+        'SparQs.services.SampleQuestions'
+    ];
     module.controller('SparQs.controllers.SampleQuestionController', SampleQuestionController);
+
+    var VisualizationController = function ($scope, Selection, DataTables, bootstrap) {
+
+        var dataset = bootstrap.dataset;
+
+        $scope.datatable = DataTables;
+        $scope.selection = Selection;
+        
+        $scope.get_data_table = function () {
+            var dimensions = Selection.dimensions();
+            var filters = Selection.filters();
+            DataTables.load(dataset, dimensions, filters);
+        };
+
+        $scope.get_data_table();
+
+        Selection.changed('dimensions,filters', $scope, $scope.get_data_table);
+        
+        //$scope.$watch('selection.dimensions()', function() {
+        //    $scope.get_data_table();
+        //}, true);
+        //
+        //$scope.$watch('selection.filters()', function() {
+        //    $scope.get_data_table();
+        //}, true);
+    };
+
+    VisualizationController.$inject = [
+        '$scope',
+        'SparQs.services.Selection',
+        'SparQs.services.DataTables',
+        'SparQs.bootstrap'
+    ];
+    module.controller('SparQs.controllers.VisualizationController', VisualizationController);
 })();

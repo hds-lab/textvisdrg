@@ -1,5 +1,5 @@
 {% extends '_layouts/base.html' %}
-{% load staticfiles %}
+{% load staticfiles djangular_tags %}
 
 {% block page_title %}SparQs{% endblock %}
 
@@ -35,7 +35,10 @@
 {% block bootstrapping %}
 {{ block.super }}
 <script>
-    angular.module('SparQs.controllers')
+    angular.module('ng.django.urls')
+        .constant('patterns', {% load_djng_urls %});
+
+    angular.module('SparQs.services')
         .constant('token_images', {
             'primary': "{% static 'images/part2_red.png' %}",
             'secondary': "{% static 'images/part2_blue.png' %}"
@@ -60,7 +63,7 @@
             <div id="dimensions" class="app-panel row"
                  ng-controller="SparQs.controllers.DimensionController">
                 <div id="dimension-groups">
-                    <div ng-repeat="group in dimensions.groups"
+                    <div ng-repeat="group in dimension_groups"
                          class="dimension-group"
                          id="group-{$ group.group_name $}">
                         <div class="group-name">
@@ -69,17 +72,17 @@
                         <div class="group-members">
                             <div ng-repeat="dimension in group.dimensions"
                                  class='dimension'
-                                 ng-class="get_dimension_class(dimension)">
+                                 ng-class="dimension.token_class()">
                                 <div class="dimension-placeholder"
                                      data-drop="true"
-                                     ng-model="dimension.token"
+                                     ng-model="dimension.token_holder"
                                      jqyoui-droppable="{onDrop: 'onTokenDimensionDrop'}"
                                      data-jqyoui-options="{accept: '.token'}">
 
                                     <div class="token"
-                                         ng-class="get_token_class(dimension.token)"
-                                         ng-model="dimension.token"
-                                         ng-hide="!dimension.token.name"
+                                         ng-class="dimension.token_class()"
+                                         ng-model="dimension.token_holder"
+                                         ng-hide="!dimension.token()"
                                          data-drag="true"
                                          jqyoui-draggable="{placeholder: true}"
                                          data-jqyoui-options="{revert: 'invalid'}">
@@ -94,15 +97,15 @@
                     </div>
                 </div>
                 <div id="token-tray">
-                    <div ng-repeat="token in tokenTray"
+                    <div ng-repeat="token_holder in tokenTray"
                          class="token-tray-zone"
                          data-drop="true"
                          ng-model="tokenTray"
                          jqyoui-droppable="{index: {$ $index $}, containment:'position', onDrop: 'onTokenTrayDrop'}"
                          data-jqyoui-options="{accept: '.token'}">
 
-                        <div class="token" ng-class="get_token_class(token)"
-                             ng-show="token.name"
+                        <div class="token" ng-class="token_holder.token.token_class()"
+                             ng-show="token_holder.token"
                              data-drag="true"
                              ng-model="tokenTray"
                              jqyoui-draggable="{index: {$ $index $}, placeholder: true}"
@@ -113,19 +116,21 @@
             {% endverbatim %}
         </div>
         <div id="middle" class="col">
-            <div id="viz" class="row app-panel">
+            <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
                 <div class="heading">Visualization</div>
-                <div id="viz-content" class="heading-body"></div>
+                <div id="viz-content" class="heading-body">
+                    <pre ng-bind="datatable.rows|json"></pre>
+                </div>
             </div>
             <div id="questions" class="row app-panel"
                  ng-controller="SparQs.controllers.SampleQuestionController">
                 <div class="heading">From the literature...</div>
                 <ul class="questions-list heading-body">
-                    <li ng-repeat="question in sample_questions.questions">
+                    <li ng-repeat="question in questions.list">
                         <span ng-bind="question.text"></span> <br/>
                         Dimensions: <span ng-repeat="dimension in question.dimensions">
-                        <span ng-class="get_dimension_class(dimension)"><span ng-bind="dimension"></span> </span>
-                    </span>
+                            <span ng-class="dimension.token_class()" ng-bind="dimension.name"></span>
+                        </span>
                     </li>
                 </ul>
 
@@ -135,10 +140,13 @@
             <div id="messages" class="row app-panel" ng-controller="SparQs.controllers.ExampleMessageController">
                 <div class="heading">Example Messages</div>
                 <ul class="message-list heading-body">
-                    <li ng-repeat="message in example_messages.messages">
+                    <li ng-repeat="message in messages.list">
                         <div class="text"><span ng-bind="message.text"></span></div>
-                        <div class="meta"><span ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span> by
-                            <span ng-bind="message.sender.full_name"></span></div>
+                        <div class="meta">
+                            <span ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
+                            by
+                            <span ng-bind="message.sender.full_name"></span>
+                        </div>
                     </li>
                 </ul>
             </div>
