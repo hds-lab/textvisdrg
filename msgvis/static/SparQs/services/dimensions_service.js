@@ -9,7 +9,8 @@
     //The collection of dimensions.
     //Dimension objects have some extra functionality added.
     module.factory('SparQs.services.Dimensions', [
-        function () {
+        'SparQs.services.DimensionDistributions',
+        function (DimensionDistributions) {
 
             var filterProps = [
                 'min',
@@ -102,6 +103,7 @@
                 this.filter = new Filter(this.filter);
                 this.filtering = false; //true if currently being filtered
                 this.description = [this.name, this.name, this.name].join(', ') + '!';
+                this.distribution = undefined;
             };
 
             angular.extend(Dimension.prototype, {
@@ -125,8 +127,27 @@
                 },
                 serialize_filter: function () {
                     return angular.extend({
-                        dimension: this.key,
+                        dimension: this.key
                     }, this.filter.data);
+                },
+                set_filtering: function(filtering) {
+                    if (this.filtering != filtering) {
+                        this.filtering = filtering;
+
+                        if (filtering) {
+                            this.load_distribution()
+                        }
+                    }
+                },
+                load_distribution: function (dataset) {
+                    if (!this._loading && !this.distribution) {
+                        this._loading = true;
+                        DimensionDistributions.load(this);
+                    }
+                },
+                set_distribution: function(distribution) {
+                    this._loading = false;
+                    this.distribution = distribution;
                 }
             });
 

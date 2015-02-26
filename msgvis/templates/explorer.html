@@ -25,10 +25,13 @@
 
 <script src="{% static 'djangular/js/django-angular.js' %}"></script>
 
+<script src="{% static 'bower/d3/d3.js' %}"></script>
+
 <script src="{% static 'SparQs/SparQs.js' %}"></script>
 <script src="{% static 'SparQs/controllers.js' %}"></script>
 <script src="{% static 'SparQs/services.js' %}"></script>
 <script src="{% static 'SparQs/services/dimensions_service.js' %}"></script>
+<script src="{% static 'SparQs/charts.js' %}"></script>
 {% endblock %}
 
 {% block navigation_bar %}
@@ -39,6 +42,9 @@
 <script>
     angular.module('ng.django.urls')
         .constant('patterns', {% load_djng_urls %});
+
+    angular.module('SparQs.bootstrap')
+        .constant('SparQs.bootstrap.dataset', 1);
 
     angular.module('SparQs.services')
         .constant('token_images', {
@@ -95,7 +101,7 @@
                                     <span class="dimension-name" ng-bind="dimension.name"></span>
 
                                     <div class="dimension-filter"
-                                         ng-click="filtering.toggleFilter(dimension, $event)"></div>
+                                         ng-click="openFilter(dimension, $event)"></div>
                                 </div>
                             </div>
                         </div>
@@ -158,14 +164,14 @@
     </div>
     <div id="filter-popup"
          class="ng-cloak" ng-cloak
-         ng-show="filtering.dimension"
+         ng-show="filtering.dimension.filtering"
          ng-controller="SparQs.controllers.FilterController"
          ng-style="{top:filtering.offset.top}">
         <div ng-class="'filter-' + dimension.type">
             <h3>
                 Filter on {$ filtering.dimension.name $}
                 <button type="button" class="close"
-                    ng-click="filtering.toggleFilter()">
+                    ng-click="closeFilter()">
                     <span>&times;</span>
                 </button>
             </h3>
@@ -173,6 +179,13 @@
                 <form ng-submit="saveFilter()">
                     <p class="description">{$ filtering.dimension.description $}</p>
                     <p class="form-group" ng-show="filtering.dimension.is_quantitative()">
+
+                        <quant-histogram
+                            visible="filtering.dimension.filtering"
+                            distribution="filtering.dimension.distribution"
+                            chart-x="value" chart-y="count">
+                        </quant-histogram>
+
                         <input type="text" class="filter-min form-control"
                                ng-model="filtering.dimension.filter.min"
                                ng-model-options="{ getterSetter: true }"

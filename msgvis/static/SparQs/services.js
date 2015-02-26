@@ -1,7 +1,57 @@
 (function () {
     'use strict';
 
-    var module = angular.module('SparQs.services', ['ng.django.urls']);
+    var module = angular.module('SparQs.services', [
+        'ng.django.urls',
+        'SparQs.bootstrap'
+    ]);
+
+    module.factory('SparQs.services.Dataset', [
+        'SparQs.bootstrap.dataset',
+        function(datasetId) {
+            return {
+                id: datasetId
+            };
+        }
+    ]);
+
+    //A service for loading dimension distributions.
+    module.factory('SparQs.services.DimensionDistributions', [
+        '$http', 'djangoUrl', 'SparQs.services.Dataset',
+        function dimensionDistributionsFactory($http, djangoUrl, Dataset) {
+
+            var Distribution = function(data) {
+                angular.extend(this, data);
+            };
+
+            angular.extend(Distribution.prototype, {
+
+            });
+
+
+            var apiUrl = djangoUrl.reverse('dimension-distribution');
+
+            var DimensionDistributions = function () {
+            };
+
+            angular.extend(DimensionDistributions.prototype, {
+                load: function (dimension) {
+                    var request = {
+                        dataset: Dataset.id,
+                        dimension: dimension.key
+                    };
+
+                    var self = this;
+                    return $http.post(apiUrl, request)
+                        .success(function (data) {
+                            dimension.set_distribution(data.distribution);
+                        });
+                }
+            });
+
+            return new DimensionDistributions();
+        }
+    ]);
 
     //The collection of tokens.
     module.factory('SparQs.services.Tokens', [
@@ -43,23 +93,29 @@
             };
 
             angular.extend(Filtering.prototype, {
-                toggleFilter: function (dimension, $event) {
-                    if (this.dimension == dimension || !dimension) {
-                        this.dimension.filtering = false;
-                        this.dimension = undefined;
-                    } else {
-                        if (this.dimension) {
-                            this.dimension.filtering = false;
-                        }
-                        this.dimension = dimension;
-                        dimension.filtering = true;
+                _start: function(dimension, offset) {
+                    dimension.set_filtering(true);
+                    this.dimension = dimension;
+                    this.offset = offset;
+                },
+                _stop: function() {
+                    if (this.dimension) {
+                        this.dimension.set_filtering(false);
                     }
+                },
+                toggle: function (dimension, offset) {
+                    if (dimension) {
+                        if (dimension.filtering) {
+                            this._stop();
+                        } else {
+                            if (this.dimension && this.dimension.filtering) {
+                                this._stop();
+                            }
 
-                    if ($event) {
-                        var $el = $($event.target).parents('.dimension');
-                        if ($el) {
-                            this.offset = $el.offset();
+                            this._start(dimension, offset);
                         }
+                    } else {
+                        this._stop();
                     }
                 }
             });
