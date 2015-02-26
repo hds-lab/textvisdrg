@@ -1,10 +1,10 @@
 from django.db import models
 from django.conf import settings
-from django.apps import apps as django_apps
+import textblob
+
 from fields import PositiveBigIntegerField
 from msgvis.apps.corpus.models import Message
 
-import textblob
 
 # Create your models here.
 

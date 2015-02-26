@@ -1,11 +1,8 @@
-from django.conf import settings
-from models import Dictionary, MessageWord, Word, MessageTopic
-from django.apps import apps as django_apps
-from msgvis.apps.corpus.models import Message, Dataset
-
-import nltk
-
 import logging
+
+from models import Dictionary, MessageWord, Word, MessageTopic
+from msgvis.apps.corpus.models import Dataset
+
 
 logger = logging.getLogger(__name__)
 
@@ -114,8 +111,15 @@ class Tokenizer(object):
 
 
 class WordTokenizer(Tokenizer):
+
+    def __init__(self, texts=None, stoplist=None):
+        super(WordTokenizer, self).__init__(texts, stoplist)
+
+        import nltk
+        self._tokenize = nltk.word_tokenize
+
     def split(self, text):
-        return nltk.word_tokenize(text)
+        return self._tokenize(text)
 
 
 class TaskContext(object):

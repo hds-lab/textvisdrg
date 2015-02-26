@@ -30,7 +30,3 @@ django-angular
 
 # TextBlob
 textblob
-
-# topics
-gensim
-nltk

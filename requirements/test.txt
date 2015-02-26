@@ -1,5 +1,7 @@
 -r base.txt
 
+-r nlp.txt
+
 # Documentation
 Sphinx
 sphinx_rtd_theme
