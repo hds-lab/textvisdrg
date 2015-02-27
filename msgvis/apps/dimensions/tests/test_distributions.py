@@ -34,7 +34,7 @@ class CategoricalDimensionsRegistryTest(DistributionTestCaseMixins, TestCase):
         # Calculate the categorical distribution over the field name
         result = dimension.get_distribution(dataset.message_set.all())
 
-        self.assertDistributionsEqual(result, language_code_distribution)
+        self.assertDistributionsEqual(result['counts'], language_code_distribution)
 
     def test_many_related_model_distribution(self):
         """
@@ -57,7 +57,7 @@ class CategoricalDimensionsRegistryTest(DistributionTestCaseMixins, TestCase):
 
         # Calculate the categorical distribution over the field name
         result = dimension.get_distribution(dataset.message_set.all())
-        self.assertDistributionsEqual(result, hashtag_text_distribution)
+        self.assertDistributionsEqual(result['counts'], hashtag_text_distribution)
 
     def test_boolean_distribution(self):
         """
@@ -75,7 +75,7 @@ class CategoricalDimensionsRegistryTest(DistributionTestCaseMixins, TestCase):
 
         dimension = registry.get_dimension('contains_url')
         result = dimension.get_distribution(dataset.message_set.all())
-        self.assertDistributionsEqual(result, bool_distribution)
+        self.assertDistributionsEqual(result['counts'], bool_distribution)
 
     def test_boolean_distribution_with_zeros(self):
         """
@@ -94,7 +94,7 @@ class CategoricalDimensionsRegistryTest(DistributionTestCaseMixins, TestCase):
 
         dimension = registry.get_dimension('contains_url')
         result = dimension.get_distribution(dataset.message_set.all())
-        self.assertDistributionsEqual(result, bool_distribution)
+        self.assertDistributionsEqual(result['counts'], bool_distribution)
 
     def test_empty_boolean_distribution(self):
         """
@@ -111,7 +111,7 @@ class CategoricalDimensionsRegistryTest(DistributionTestCaseMixins, TestCase):
 
         dimension = registry.get_dimension('contains_url')
         result = dimension.get_distribution(dataset.message_set.all())
-        self.assertDistributionsEqual(result, bool_distribution)
+        self.assertDistributionsEqual(result['counts'], bool_distribution)
 
 
 class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
@@ -131,7 +131,14 @@ class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
         dimension = registry.get_dimension('shares')
         result = dimension.get_distribution(dataset.message_set.all())
 
-        self.assertDistributionsEqual(result, shared_count_distribution)
+        self.assertDistributionsEqual(result['counts'], shared_count_distribution)
+
+        self.assertEquals(result['bin_size'], 1)
+        self.assertEquals(result['bins'], 50)
+        self.assertEquals(result['min_val'], 0)
+        self.assertEquals(result['max_val'], 11)
+        self.assertEquals(result['min_bin'], 0)
+        self.assertEquals(result['max_bin'], 11)
 
     def test_wide_count_distribution(self):
         """
@@ -153,10 +160,13 @@ class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
         dimension = registry.get_dimension('shares')
         result = dimension.get_distribution(dataset.message_set.all(), bins=5)
 
-        self.assertEquals(result.bin_size, 20)
-        self.assertEquals(result.min_val, 1)
-        self.assertEquals(result.max_val, 101)
-        self.assertDistributionsEqual(result, binned_distribution)
+        self.assertEquals(result['bin_size'], 20)
+        self.assertEquals(result['bins'], 5)
+        self.assertEquals(result['min_val'], 1)
+        self.assertEquals(result['max_val'], 101)
+        self.assertEquals(result['min_bin'], 0)
+        self.assertEquals(result['max_bin'], 100)
+        self.assertDistributionsEqual(result['counts'], binned_distribution)
 
 
     def test_narrow_count_distribution(self):
@@ -174,9 +184,12 @@ class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
         dimension = registry.get_dimension('shares')
         result = dimension.get_distribution(dataset.message_set.all(), bins=50)
 
-        self.assertEquals(result.bin_size, 1)
-        self.assertEquals(result.min_val, 1)
-        self.assertEquals(result.max_val, 3)
+        self.assertEquals(result['bin_size'], 1)
+        self.assertEquals(result['bins'], 50)
+        self.assertEquals(result['min_val'], 1)
+        self.assertEquals(result['max_val'], 3)
+        self.assertEquals(result['min_bin'], 1)
+        self.assertEquals(result['max_bin'], 3)
         self.assertDistributionsEqual(result, shared_count_distribution)
 
 
@@ -222,7 +235,7 @@ class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
         Checks that the distribution of a time field can be calculated correctly.
         """
 
-        times = self.generate_times(self.base_time, 'minutes', [2, 5, 10, 12, 1])
+        times = list(self.generate_times(self.base_time, 'minutes', [2, 5, 10, 12, 1]))
         time_distribution = self.get_distribution(times)
 
         dataset = self.generate_messages_for_distribution(
@@ -233,9 +246,15 @@ class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
         dimension = registry.get_dimension('time')
         result = dimension.get_distribution(dataset, bins=2000)
 
-        self.fix_datetimes(result)
+        self.fix_datetimes(result['counts'])
+        self.assertDistributionsEqual(result['counts'], time_distribution)
 
-        self.assertDistributionsEqual(result, time_distribution)
+        self.assertEquals(result['bin_size'], 20)
+        self.assertEquals(result['bins'], 2000)
+        self.assertEquals(result['min_val'], times[0])
+        self.assertEquals(result['max_val'], times[len(times) - 1])
+        self.assertEquals(result['min_bin'], times[0])
+        self.assertEquals(result['max_bin'], times[len(times) - 1])
 
     def test_wide_time_distribution(self):
         """
@@ -264,12 +283,15 @@ class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
         dimension = registry.get_dimension('time')
         result = dimension.get_distribution(dataset, bins=4)
 
-        self.fix_datetimes(result)
+        self.fix_datetimes(result['counts'])
+        self.assertDistributionsEqual(result['counts'], binned_distribution)
 
-        self.assertEquals(result.bin_size, 24 * 60 * 60)  # 24 hour bins
-        self.assertEquals(result.min_val, times[0])
-        self.assertEquals(result.max_val, times[1])
-        self.assertDistributionsEqual(result, binned_distribution)
+        self.assertEquals(result['bin_size'], 24 * 60 * 60)
+        self.assertEquals(result['bins'], 4)
+        self.assertEquals(result['min_val'], times[0])
+        self.assertEquals(result['max_val'], times[len(times) - 1])
+        self.assertEquals(result['min_bin'], day1)
+        self.assertEquals(result['max_bin'], day2)
 
     def run_time_bin_test(self, delta, desired_bins, expected_bin_size):
         """Run a generic time bin test."""

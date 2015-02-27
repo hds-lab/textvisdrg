@@ -204,7 +204,7 @@ class SampleQuestionSerializer(serializers.Serializer):
 class DimensionDistributionSerializer(serializers.Serializer):
     dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
     dimension = DimensionKeySerializer()
-    distribution = serializers.ListField(child=serializers.DictField(), required=False, read_only=True)
+    distribution = serializers.DictField(required=False, read_only=True)
 
 
 class DataTableSerializer(serializers.Serializer):

@@ -240,6 +240,9 @@ class DimensionDistributionView(APIView):
     In order to display helpful information for filtering, the distribution
     of a dimension may be queried using this API endpoint.
 
+    For categorical dimensions, the distribution dictionary
+    will not contains all the binning metadata.
+
     **Request:** ``POST /api/dimension``
 
     **Format:** (requests should not include the ``distribution`` key)
@@ -249,24 +252,32 @@ class DimensionDistributionView(APIView):
         {
           "dataset": 2,
           "dimension": "time",
-          "distribution": [
-            {
-              "count": 5000,
-              "value": "some_time"
-            },
-            {
-              "count": 1000,
-              "value": "some_time"
-            },
-            {
-              "count": 500,
-              "value": "some_time"
-            },
-            {
-              "count": 50,
-              "value": "some_time"
-            }
-          ]
+          "distribution":
+            "bins": 23,
+            "bin_size": "secondsval",
+            "min_bin": "some_time",
+            "max_bin": "some_time",
+            "min_val": "actual_time_val",
+            "max_val": "actual_time_val",
+            "counts": [
+                {
+                  "count": 5000,
+                  "value": "some_time"
+                },
+                {
+                  "count": 1000,
+                  "value": "some_time"
+                },
+                {
+                  "count": 500,
+                  "value": "some_time"
+                },
+                {
+                  "count": 50,
+                  "value": "some_time"
+                }
+            ]
+          }
         }
     """
 
