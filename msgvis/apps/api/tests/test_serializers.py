@@ -244,11 +244,19 @@ class DimensionDistributionSerializerTest(TestCase):
 
 
     def test_dimension_distribution_serialization(self):
-        distribution = [
-            dict(value=2, count=5),
-            dict(value=56, count=23),
-            dict(value='asdf', count=53),
-        ]
+        distribution = {
+            'counts': [
+                dict(value=2, count=5),
+                dict(value=56, count=23),
+                dict(value='asdf', count=53),
+            ],
+            'bins': 50,
+            'bin_size': 250,
+            'min_val': 2,
+            'max_val': 56,
+            'min_bin': 52,
+            'max_bin': 526
+        }
 
         self.deserialized_representation['distribution'] = distribution
         self.serialized_representation['distribution'] = distribution

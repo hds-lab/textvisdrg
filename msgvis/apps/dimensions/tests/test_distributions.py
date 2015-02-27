@@ -184,19 +184,20 @@ class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
         dimension = registry.get_dimension('shares')
         result = dimension.get_distribution(dataset.message_set.all(), bins=50)
 
+        self.assertDistributionsEqual(result['counts'], shared_count_distribution)
+
         self.assertEquals(result['bin_size'], 1)
         self.assertEquals(result['bins'], 50)
         self.assertEquals(result['min_val'], 1)
         self.assertEquals(result['max_val'], 3)
         self.assertEquals(result['min_bin'], 1)
         self.assertEquals(result['max_bin'], 3)
-        self.assertDistributionsEqual(result, shared_count_distribution)
 
 
 class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
     def setUp(self):
         # Get an arbitrary time to work with
-        self.base_time = tz.datetime(2012, 5, 2, 20, 10, 2, 42)
+        self.base_time = tz.datetime(2012, 5, 2, 20, 10, 2, 0)
 
         if settings.USE_TZ:
             self.base_time = self.base_time.replace(tzinfo=tz.utc)
@@ -249,7 +250,7 @@ class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
         self.fix_datetimes(result['counts'])
         self.assertDistributionsEqual(result['counts'], time_distribution)
 
-        self.assertEquals(result['bin_size'], 20)
+        self.assertEquals(result['bin_size'], 1)
         self.assertEquals(result['bins'], 2000)
         self.assertEquals(result['min_val'], times[0])
         self.assertEquals(result['max_val'], times[len(times) - 1])
@@ -346,7 +347,7 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
 
         # Calculate the categorical distribution over the field name
         result = dimension.get_distribution(dataset.message_set.all())
-        self.assertDistributionsEqual(result, author_name_distribution)
+        self.assertDistributionsEqual(result['counts'], author_name_distribution)
 
     def test_author_count_distribution(self):
         """Can count messages for different author message_counts"""
@@ -357,7 +358,7 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
 
         dimension = registry.get_dimension('sender_message_count')
         result = dimension.get_distribution(dataset)
-        self.assertDistributionsEqual(result, author_count_distribution)
+        self.assertDistributionsEqual(result['counts'], author_count_distribution)
 
     def test_author_count_distribution_with_duplicates(self):
         """Multiple authors with the same message_count."""
@@ -368,7 +369,7 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
 
         dimension = registry.get_dimension('sender_message_count')
         result = dimension.get_distribution(dataset)
-        self.assertDistributionsEqual(result, author_count_distribution)
+        self.assertDistributionsEqual(result['counts'], author_count_distribution)
 
 
     def test_wide_author_count_distribution(self):
@@ -388,10 +389,14 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
         dimension = registry.get_dimension('sender_message_count')
         result = dimension.get_distribution(dataset, bins=2)
 
-        self.assertEquals(result.bin_size, 1000)
-        self.assertEquals(result.min_val, 5)
-        self.assertEquals(result.max_val, 2005)
-        self.assertDistributionsEqual(result, binned_distribution)
+        self.assertDistributionsEqual(result['counts'], binned_distribution)
+
+        self.assertEquals(result['bin_size'], 1000)
+        self.assertEquals(result['bins'], 2)
+        self.assertEquals(result['min_val'], 5)
+        self.assertEquals(result['max_val'], 2005)
+        self.assertEquals(result['min_bin'], 0)
+        self.assertEquals(result['max_bin'], 2000)
 
 
     def test_narrow_author_count_distribution(self):
@@ -408,7 +413,11 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
         dimension = registry.get_dimension('sender_message_count')
         result = dimension.get_distribution(dataset.message_set.all(), bins=50)
 
-        self.assertEquals(result.bin_size, 1)
-        self.assertEquals(result.min_val, 5)
-        self.assertEquals(result.max_val, 7)
-        self.assertDistributionsEqual(result, author_count_distribution)
+        self.assertDistributionsEqual(result['counts'], author_count_distribution)
+
+        self.assertEquals(result['bin_size'], 1)
+        self.assertEquals(result['bins'], 50)
+        self.assertEquals(result['min_val'], 5)
+        self.assertEquals(result['max_val'], 7)
+        self.assertEquals(result['min_bin'], 5)
+        self.assertEquals(result['max_bin'], 7)

@@ -67,7 +67,7 @@ class CategoricalDimensionTest(TestCase):
         with mock.patch.object(dimension, 'group_by', group_by), \
              mock.patch('django.db.models.Count', Count):
             result = dimension.get_distribution(queryset)
-            self.assertEquals(result, grouped_queryset.annotate.return_value)
+            self.assertEquals(result['counts'], grouped_queryset.annotate.return_value)
 
         # We should be grouping with the key field aliased to value
         group_by.assert_called_once_with(queryset, grouping_key='value')
