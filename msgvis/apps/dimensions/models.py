@@ -512,7 +512,7 @@ class DimensionKey(models.Model):
     Dimension names for research questions.
     """
 
-    key = models.CharField(max_length=20, unique=True)
+    key = models.CharField(max_length=32, unique=True)
     """The id of the dimension"""
 
     def __unicode__(self):

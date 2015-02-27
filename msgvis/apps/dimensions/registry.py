@@ -214,7 +214,7 @@ register(models.RelatedQuantitativeDimension(
 register(models.RelatedQuantitativeDimension(
     key='sender_follower_count',
     name='Num. Followers',
-    description="The number of people who have ocnnected to the author",
+    description="The number of people who have connected to the author",
     field_name='sender__follower_count',
 ))
 # END SENDER DIMENSIONS

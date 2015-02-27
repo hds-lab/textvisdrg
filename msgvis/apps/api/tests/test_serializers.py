@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.utils.timezone import now, timedelta
+from msgvis.apps.dimensions.models import DimensionKey
 
 from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.dimensions import registry as dimensions
@@ -154,8 +155,8 @@ class QuestionSerializerTest(TestCase):
                                                           title="An article title",
                                                           venue="VENUE 2001", )
 
-        d1 = questions_models.Question.get_dimension_key_model("hashtags")
-        d2 = questions_models.Question.get_dimension_key_model("time")
+        d1, created = DimensionKey.objects.get_or_create(key="hashtags")
+        d2, created = DimensionKey.objects.get_or_create(key="time")
 
         self.question = questions_models.Question.objects.create(source=article,
                                                                  text="What is your favorite color?", )
