@@ -181,8 +181,7 @@
                     <p class="form-group" ng-show="filtering.dimension.is_quantitative()">
 
                         <quant-histogram
-                            visible="filtering.dimension.filtering"
-                            distribution="filtering.dimension.distribution"
+                            dimension="filtering.dimension"
                             chart-x="value" chart-y="count">
                         </quant-histogram>
 

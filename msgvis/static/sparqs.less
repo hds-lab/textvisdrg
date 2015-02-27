@@ -467,9 +467,35 @@ quant-histogram {
         height: 100%;
 
         font: 10px sans-serif;
+
+        shape-rendering: crispEdges;
     }
 
     rect.bar {
         fill: steelblue;
     }
+
+    .x.axis {
+        .tick line {
+            stroke: white;
+            stroke-width: 1;
+        }
+        path.domain {
+            stroke: white;
+            stroke-width: 1;
+        }
+    }
+
+    .y.axis {
+        line, path {
+            display: none;
+        }
+    }
+
+    .axis {
+        text {
+            fill: white;
+        }
+    }
+
 }
