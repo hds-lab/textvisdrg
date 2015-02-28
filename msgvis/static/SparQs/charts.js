@@ -14,22 +14,15 @@
             bins: 0
         };
 
-        function link(scope, $element, attrs) {
+        var QuantHistogram = function($element, attrs, onBrushed) {
 
             var yProp = attrs.chartY || 'y';
             var xProp = attrs.chartX || 'x';
+            var $d3_element = d3.select($element[0]);
 
             var xScale = d3.scale.ordinal();
             var xLinearScale = d3.scale.linear();
             var yScale = d3.scale.linear();
-
-            var getX = function (d) {
-                return d[xProp];
-            };
-
-            var getY = function (d) {
-                return d[yProp];
-            };
 
             var xAxis = d3.svg.axis()
                 .scale(xLinearScale)
@@ -41,7 +34,13 @@
                 .orient('left')
                 .ticks(2);
 
-            var $d3_element = d3.select($element[0]);
+            var brush = d3.svg.brush()
+                .x(xLinearScale)
+                .on("brush", function() {
+                    var selection = currentExtent();
+                    onBrushed(selection[0], selection[1]);
+                });
+
             var svg = $d3_element.append("svg");
 
             var chart = svg
@@ -53,26 +52,18 @@
             var yAxisGroup = chart.append('g')
                 .attr('class', 'y axis');
 
-            var elementSize = function () {
-                return {
-                    width: $element.innerWidth(),
-                    height: $element.innerHeight()
-                }
-            };
+            var barsGroup = chart.append('g')
+                .attr('class', 'bars');
 
-            // Watch for visibility changes
-            scope.$watch('dimension.filtering', function (newVals, oldVals) {
-                if (newVals) return scope.render();
-            }, false);
+            var brushGroup = chart.append("g")
+                .attr("class", "x brush");
 
-            // Watch for data changes (just reference, not object equals)
-            scope.$watch('dimension.distribution', function (newVals, oldVals) {
-                return scope.render();
-            }, false);
 
-            scope.updateScaleDomains = function(distribution) {
+            var updateScaleDomains = function(distribution) {
 
-                var yExtent = d3.extent(distribution.counts, getY);
+                var yExtent = d3.extent(distribution.counts, function(d) {
+                    return d[yProp];
+                });
                 yScale.domain([0, yExtent[1]]);
 
                 var xDomain = d3.range(
@@ -98,60 +89,67 @@
                 }
 
                 xScale.domain(xDomain);
-                xLinearScale.domain([xDomain[0], xDomain[xDomain.length - 1]]);
+                xLinearScale.domain([xDomain[0] - 1, xDomain[xDomain.length - 1] + 1]);
             };
 
-            scope.getMargin = function() {
-                var margin = {
+
+            var size = {
+                height: undefined,
+                width: undefined,
+                margin: {
                     top: 5,
                     right: 5,
                     bottom: 20,
                     left: 30
-                };
+                }
+            };
 
+            var updateSize = function() {
                 //The top y-axis label might stick out
                 var format = yAxis.tickFormat() || yScale.tickFormat(yAxis.ticks());
                 var maxYVal = format(yScale.domain()[1]);
-                margin.left = 10 + 7 * maxYVal.length;
+                size.margin.left = 10 + 7 * maxYVal.length;
 
                 //The right-most x-axis label tends to stick out
                 format = xAxis.tickFormat() || xLinearScale.tickFormat(xAxis.ticks());
                 var maxXVal = format(xLinearScale.domain()[1]);
-                margin.right = 0.5 * 7 * maxXVal.length;
+                size.margin.right = 0.5 * 7 * maxXVal.length;
 
-                return margin;
+                var elementSize = {
+                    width: $element.innerWidth(),
+                    height: $element.innerHeight()
+                };
+
+                size.width = elementSize.width - size.margin.right - size.margin.left;
+                size.height = elementSize.height - size.margin.top - size.margin.bottom;
             };
 
-            scope.render = function () {
-                if (!scope.dimension || !scope.dimension.is_quantitative()) {
+            this.render = function (dimension) {
+                if (!dimension || !dimension.is_quantitative()) {
                     return;
                 }
 
-                var distribution = scope.dimension.distribution || default_distribution;
+                var distribution = dimension.distribution || default_distribution;
 
-                scope.updateScaleDomains(distribution);
-                var margin = scope.getMargin();
-
-                var size = elementSize();
-                var graphWidth = size.width - margin.right - margin.left;
-                var graphHeight = size.height - margin.top - margin.bottom;
+                updateScaleDomains(distribution);
+                updateSize();
 
                 //Shift the chart
-                chart.attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
+                chart.attr('transform', 'translate(' + size.margin.left + ',' + size.margin.top + ')');
 
                 //Update the scale ranges
-                yScale.range([graphHeight, 0]);
-                xScale.rangeRoundBands([0, graphWidth], 0, 0.1);
-                xLinearScale.range([0, graphWidth]);
+                yScale.range([size.height, 0]);
+                xScale.rangeRoundBands([0, size.width], 0, 0.1);
+                xLinearScale.range([0, size.width]);
 
                 //Update the axes
                 xAxisGroup
-                    .attr("transform", "translate(0," + graphHeight + ")")
+                    .attr("transform", "translate(0," + size.height + ")")
                     .call(xAxis);
                 yAxisGroup.call(yAxis);
 
                 //Draw some bars
-                var bars = chart.selectAll('rect.bar')
+                var bars = barsGroup.selectAll('rect.bar')
                     .data(distribution.counts);
 
                 bars.exit()
@@ -163,16 +161,107 @@
                     .attr('height', 0);
 
                 bars.attr('x', function (d) {
-                        return xScale(d[xProp]);
-                    })
+                    return xScale(d[xProp]);
+                })
                     .attr('y', function (d) {
                         return yScale(d[yProp]);
                     })
                     .attr('width', xScale.rangeBand())
                     .attr("height", function (d) {
-                        return graphHeight - yScale(d[yProp]);
+                        return size.height - yScale(d[yProp]);
                     });
+
+                //Draw the brush
+                redrawBrush();
             };
+
+            function currentExtent() {
+                return brush.empty() ? xLinearScale.domain() : brush.extent();
+            }
+
+            function redrawBrush() {
+                brushGroup
+                    .call(brush)
+                    .selectAll("rect")
+                    .attr("y", 0)
+                    .attr("height", size.height);
+
+                var handles = brushGroup.selectAll('.resize')
+                    .selectAll('.handle')
+                    .data([1]);
+
+                handles.enter()
+                    .append('rect')
+                    .attr('class', 'handle')
+                    .attr('x', -3)
+                    .attr('width', 6)
+                    .attr('rx', 2)
+                    .attr('ry', 2);
+
+                handles
+                    .attr('y', size.height / 3)
+                    .attr('height', size.height / 3);
+
+                //brushg.selectAll(".resize").append("path")
+                //    .attr("transform", "translate(0," +  height / 2 + ")")
+                //    .attr("d", arc);
+            }
+
+            //The directive calls these when the bindings change
+            this.setBrushExtent = function(min, max) {
+                if (min === undefined && max === undefined) {
+                    brush.clear();
+                    redrawBrush();
+                    return;
+                }
+
+                var extent = currentExtent();
+                if (extent[0] !== min || extent[1] !== max) {
+                    extent[0] = min;
+                    extent[1] = max;
+                    brush.extent(extent);
+                    redrawBrush();
+                }
+
+            };
+        };
+
+        function link(scope, $element, attrs) {
+            if (!scope._histogram) {
+
+                var onBrushed = function(min, max) {
+                    if (scope.dimension && scope.dimension.filter) {
+                        scope.dimension.filter.min(min);
+                        scope.dimension.filter.max(max);
+                    }
+
+                    if (scope.onBrushed) {
+                        scope.onBrushed(min, max);
+                    }
+                };
+
+                var hist = scope._histogram = new QuantHistogram($element, attrs, onBrushed);
+
+                // Watch for visibility changes
+                scope.$watch('dimension.filtering', function (newVals, oldVals) {
+                    if (newVals) return hist.render(scope.dimension);
+                }, false);
+
+                // Watch for data changes (just reference, not object equals)
+                scope.$watch('dimension.distribution', function (newVals, oldVals) {
+                    return hist.render(scope.dimension);
+                }, false);
+
+                // Watch for filter changes
+                scope.$watch('dimension.filter.data', function(newVal, oldVal) {
+                    if (newVal) {
+                        hist.setBrushExtent(newVal.min, newVal.max);
+                    }
+                }, true);
+
+            } else {
+                throw("What is this madness");
+            }
         }
 
         return {
@@ -182,7 +271,8 @@
 
             //Directive's inner scope
             scope: {
-                dimension: '=dimension'
+                dimension: '=dimension',
+                onBrushed: '=onBrushed'
             },
             link: link
         };
