@@ -15,6 +15,7 @@
 <script src="{% static 'bower/angular-route/angular-route.js' %}"></script>
 <script src="{% static 'bower/angular-resource/angular-resource.js' %}"></script>
 <script src="{% static 'bower/angular-animate/angular-animate.js' %}"></script>
+<script src="{% static 'bower/angular-sanitize/angular-sanitize.js' %}"></script>
 
 <script src="{% static 'bower/jquery-ui/ui/core.js' %}"></script>
 <script src="{% static 'bower/jquery-ui/ui/widget.js' %}"></script>
@@ -137,10 +138,10 @@
                     <div class="heading">From the literature...</div>
                     <ul class="questions-list heading-body">
                         <li ng-repeat="question in questions.list">
-                            <span ng-bind="question.text"></span> <br/>
-                            Dimensions: <span ng-repeat="dimension in question.dimensions">
+                            <span ng-bind-html="question.text"></span>
+                            <!--Dimensions: <span ng-repeat="dimension in question.dimensions">
                                 <span ng-class="dimension.token_class()" ng-bind="dimension.name"></span>
-                            </span>
+                            </span>-->
                         </li>
                     </ul>
                 </div>

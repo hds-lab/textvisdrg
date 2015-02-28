@@ -3,7 +3,8 @@
 
     var module = angular.module('SparQs.services', [
         'ng.django.urls',
-        'SparQs.bootstrap'
+        'SparQs.bootstrap',
+        'ngSanitize'
     ]);
 
     module.factory('SparQs.services.Dataset', [
@@ -192,10 +193,62 @@
 
     //A service for loading sample questions.
     module.factory('SparQs.services.SampleQuestions', [
-        '$http', 'djangoUrl', 'SparQs.services.Dimensions',
-        function sampleQuestionsFactory($http, djangoUrl, Dimensions) {
+        '$http', '$sce', 'djangoUrl', 'SparQs.services.Dimensions',
+        function sampleQuestionsFactory($http, $sce, djangoUrl, Dimensions) {
 
             var apiUrl = djangoUrl.reverse('research-questions');
+
+            var replace_dim_labels = function(text, dims){
+                var chunks = [];
+                var chunk_str = "";
+                var chunk_mode = 0;
+                var dim_list = [];
+                for ( var i = 0 ; i < text.length ; i++ ){
+                    if (text[i] != '\\' && text[i] != '\/'){
+                        chunk_str += text[i];
+                    }
+                    else{
+                        if ( chunk_mode == 0 ){
+                            for ( var j = chunk_str.length - 1 ; j >= 0 ; j-- ){
+                                if ( !isNaN(+chunk_str[j]) && 1 <= +chunk_str[j] && +chunk_str[j] <= dims.length  ){
+                                    dim_list.push(dims[+chunk_str[j] - 1]);
+                                }
+                                else{
+                                    chunk_str = chunk_str.substr(0, j + 1);
+                                    chunks.push(chunk_str);
+                                    chunk_str = "";
+                                    break;
+                                }
+                            }
+                            chunk_mode = 1;
+                        }
+                        else{
+                            var str_with_dims = "<span class='";
+                            for ( var j = 0 ; j < dim_list.length ; j++ ){
+                                if ( j > 0 ) str_with_dims += " ";
+                                try {
+                                    str_with_dims += dim_list[j].key;
+                                }
+                                catch(err) {
+                                    debugger;
+                                }
+
+                            }
+                            str_with_dims += "'>"
+                            str_with_dims += chunk_str;
+                            str_with_dims += "<\/span>";
+                            chunks.push(str_with_dims);
+                            chunk_str = "";
+                            dim_list = [];
+                            chunk_mode = 0;
+                        }
+
+                    }
+                }
+                if (chunk_str.length > 0)
+                    chunks.push(chunk_str);
+                return chunks.join('');
+            };
 
             //A model class for sample questions
             var Question = function (data) {
@@ -205,6 +258,8 @@
                 this.dimensions = this.dimensions.map(function (dimkey) {
                     return Dimensions.get_by_key(dimkey);
                 });
+
+                this.text = $sce.trustAsHtml(replace_dim_labels(this.text, this.dimensions));
             };
 
             var SampleQuestions = function () {
