@@ -181,7 +181,7 @@ class QuestionSerializer(serializers.ModelSerializer):
     """
 
     source = ArticleSerializer(read_only=True)
-    dimensions = serializers.SlugRelatedField(many=True, read_only=True, slug_field='key')
+    dimensions = serializers.SlugRelatedField(many=True, read_only=True, slug_field='key', source="ordered_dimensions")
 
     class Meta:
         model = questions_models.Question

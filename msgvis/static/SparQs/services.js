@@ -210,29 +210,27 @@
                     }
                     else{
                         if ( chunk_mode == 0 ){
-                            for ( var j = chunk_str.length - 1 ; j >= 0 ; j-- ){
+                            var j;
+                            for ( j = chunk_str.length - 1 ; j >= 0 ; j-- ){
                                 if ( !isNaN(+chunk_str[j]) && 1 <= +chunk_str[j] && +chunk_str[j] <= dims.length  ){
                                     dim_list.push(dims[+chunk_str[j] - 1]);
                                 }
                                 else{
-                                    chunk_str = chunk_str.substr(0, j + 1);
-                                    chunks.push(chunk_str);
-                                    chunk_str = "";
                                     break;
                                 }
                             }
+                            chunk_str = chunk_str.substr(0, j + 1);
+                            chunks.push(chunk_str);
+                            chunk_str = "";
                             chunk_mode = 1;
                         }
                         else{
                             var str_with_dims = "<span class='question-dim ";
                             for ( var j = 0 ; j < dim_list.length ; j++ ){
+                                if ( typeof (dim_list[j]) === "undefined"  ) continue;
                                 if ( j > 0 ) str_with_dims += " ";
-                                try {
-                                    str_with_dims += dim_list[j].key;
-                                }
-                                catch(err) {
-                                    debugger;
-                                }
+                                str_with_dims += dim_list[j].key;
+
 
                             }
                             str_with_dims += "'>"

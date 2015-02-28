@@ -1,10 +1,6 @@
 from django.db import models
 from msgvis.apps.dimensions.models import DimensionKey
 
-from msgvis.apps.dimensions import registry
-
-from django.db.models import Q
-
 
 class Article(models.Model):
     """
@@ -57,17 +53,43 @@ class Question(models.Model):
         """
         Given dimensions, return sample research questions.
         """
-
+        final_questions = []
         questions = cls.objects.all()
-        for dimension in dimension_list:
-            questions = questions.filter(dimensions__key=dimension)
-        exclude_dimensions = ['location', 'codes', 'age', 'gender', 'media']
-        for ed in exclude_dimensions:
-            questions = questions.exclude(dimensions__key=ed)
+        total_questions_count = 6
 
-        if questions.count() == 0:
+        if len(dimension_list) == 1:
+            questions = questions.filter(dimensions__key=dimension_list[0])
+            final_questions.extend(questions[:total_questions_count])
+
+        elif len(dimension_list) == 2:
+
+            questions = questions.filter(dimensions__key=dimension_list[0])
+            questions = questions.filter(dimensions__key=dimension_list[1])
+            count = int(total_questions_count / 2)
+            final_questions.extend(questions[:count])
+
             questions = cls.objects.all()
-            """Consider the case that no dimension in the existing questions matches"""
-            #TODO: may need a better way to handle this
+            questions = questions.filter(dimensions__key=dimension_list[0])
+            questions = questions.exclude(dimensions__key=dimension_list[1])
+            count = int((total_questions_count - len(final_questions)) / 2)
+            final_questions.extend(questions[:count])
 
-        return questions[:10]
+            questions = cls.objects.all()
+            questions = questions.filter(dimensions__key=dimension_list[1])
+            questions = questions.exclude(dimensions__key=dimension_list[0])
+            count = total_questions_count - len(final_questions)
+            final_questions.extend(questions[:count])
+
+        if len(final_questions) == 0:
+            questions = cls.objects.all()
+            final_questions.extend(questions[:total_questions_count])
+            """Consider the case that no dimension in the existing questions matches"""
+
+
+        return final_questions
+
+    @property
+    def ordered_dimensions(self):
+        dimensions = self.dimensions.all()
+        dimensions = dimensions.order_by('questions_question_dimensions.id')
+        return dimensions
