@@ -24,16 +24,16 @@ class GetSampleQuestionTest(TestCase):
     def test_no_dimensions(self):
         """When you don't request any dimensions it returns all the questions"""
         questions = Question.get_sample_questions()
-        self.assertEquals(questions.count(), 3)
+        self.assertEquals(len(questions), 3)
     def test_one_dimension(self):
         """With a dimension that matches one question"""
         questions = Question.get_sample_questions('hashtags')
-        self.assertEquals(questions.count(), 1)
+        self.assertEquals(len(questions), 1)
     def test_one_dimension_multi_match(self):
         """Try matching a dimension with multiple questions"""
         questions = Question.get_sample_questions('language')
-        self.assertEquals(questions.count(), 2)
+        self.assertEquals(len(questions), 2)
     def test_multiple_dimensions(self):
         """Match against multiple dimensions"""
         questions = Question.get_sample_questions('language', 'urls')
-        self.assertEquals(questions.count(), 1)
+        self.assertEquals(len(questions), 2)
