@@ -4,7 +4,7 @@
 
     var module = angular.module('SparQs.charts', []);
 
-    module.directive('quantHistogram', function ($parse) {
+    module.directive('quantHistogram', function () {
 
         var default_distribution = {
             counts: [],
@@ -276,5 +276,51 @@
             },
             link: link
         };
+    });
+
+    module.directive('sparqsVis', function () {
+
+        var SparQsVis = function($element, attrs, onBrushed) {
+            var pre = $('<pre>').appendTo($element);
+
+            this.render = function(dataTable) {
+                if (!dataTable) {
+                    return;
+                }
+                pre.html(JSON.stringify(dataTable.rows, undefined, 3));
+            };
+        };
+
+        function link(scope, $element, attrs) {
+            if (!scope._sparqsVis) {
+
+                var onClicked = function() {
+                    if (scope.onClicked) {
+                        scope.onClicked();
+                    }
+                };
+
+                var vis = scope._sparqsVis = new SparQsVis($element, attrs, onClicked);
+
+                // Watch for changes to the datatable
+                scope.$watch('dataTable.rows', function (newVals, oldVals) {
+                    return vis.render(scope.dataTable);
+                }, false);
+
+            } else {
+                throw("What is this madness");
+            }
+        }
+
+        return {
+            restrict: 'E',
+            replace: false,
+
+            scope: {
+                dataTable: '=visDataTable',
+                onClicked: '=onClicked'
+            },
+            link: link
+        }
     });
 })();

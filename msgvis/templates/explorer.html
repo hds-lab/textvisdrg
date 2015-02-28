@@ -130,7 +130,10 @@
                 <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
                     <div class="heading">Visualization</div>
                     <div id="viz-content" class="heading-body">
-                        <pre ng-bind="datatable.rows|json"></pre>
+                        <sparqs-vis vis-data-table="datatable"
+                                        on-clicked="onVisClicked">
+
+                        </sparqs-vis>
                     </div>
                 </div>
                 <div id="questions" class="row app-panel"
