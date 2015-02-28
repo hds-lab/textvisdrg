@@ -1,4 +1,5 @@
 from django.db import models
+from msgvis.apps.dimensions.models import DimensionKey
 
 from msgvis.apps.dimensions import registry
 
@@ -43,12 +44,10 @@ class Question(models.Model):
     dimensions = models.ManyToManyField("dimensions.DimensionKey")
     """A set of dimensions related to the question."""
 
-    @staticmethod
-    def get_dimension_key_model(key):
-        return registry.get_dimension(key).get_key_model()
 
     def add_dimension(self, key):
-        self.dimensions.add(self.get_dimension_key_model(key))
+        dimension_key, created = DimensionKey.objects.get_or_create(key=key)
+        self.dimensions.add(dimension_key)
 
     def __unicode__(self):
         return self.text

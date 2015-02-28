@@ -5,6 +5,7 @@ from urlparse import urlparse
 import json
 from datetime import datetime
 from email.utils import parsedate
+from msgvis.apps.questions.models import Article, Question
 from msgvis.apps.corpus.models import *
 from msgvis.apps.enhance.models import set_message_sentiment
 
@@ -80,5 +81,29 @@ def create_an_instance_from_json(json_str, dataset_obj):
     tweet.save()
 
     set_message_sentiment(tweet)
+
+    return True
+
+def load_research_questions_from_json(json_str):
+    """
+    Load research questions from json string
+    """
+
+    questions = json.loads(json_str)
+    for q in questions:
+        #import pdb
+        #pdb.set_trace()
+        source = q['source']
+        article, created = Article.objects.get_or_create(title=source['title'],
+                                                         defaults={'authors': source['authors'],
+                                                                   'year': source['year'],
+                                                                   'venue': source['venue'],
+                                                                   'link': source['link']})
+        question = Question(source=article, text=q['text'])
+        question.save()
+        for dim in q['dimensions']:
+            question.add_dimension(dim)
+        question.save()
+
 
     return True
