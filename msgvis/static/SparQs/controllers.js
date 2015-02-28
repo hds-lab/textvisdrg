@@ -136,13 +136,13 @@
         };
 
         $scope.$watch('questions.list', function(){
-              $timeout(function() {
+            $timeout(function() {
                 $('.question-dim.token-primary').removeClass('token-primary');
-                        $('.question-dim.token-secondary').removeClass('token-secondary');
-                        var dims = $scope.selection.dimensions();
-                        dims.forEach(function(dim) {
-                            $('.question-dim.' + dim.key).addClass(dim.token_class());
-                        });
+                $('.question-dim.token-secondary').removeClass('token-secondary');
+                var dims = $scope.selection.dimensions();
+                dims.forEach(function(dim) {
+                    $('.question-dim.' + dim.key).addClass(dim.token_class());
+                });
             }, 0);
 
         });
