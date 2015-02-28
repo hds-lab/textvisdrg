@@ -136,6 +136,12 @@
         };
 
         $scope.$watch('questions.list', function(){
+            //When the question list changes, we are going to manually (jQuery)
+            //update the token classes so that they end up the right color.
+            //.question-dim are the dimension tags inside the research questions.
+            //The .token-primary and .toke-secondary tags indicate which .question-dim
+            //should be colored which way.
+            //The timeout ensures that this runs *after* the new questions have been rendered.
             $timeout(function() {
                 $('.question-dim.token-primary').removeClass('token-primary');
                 $('.question-dim.token-secondary').removeClass('token-secondary');
