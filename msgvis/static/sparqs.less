@@ -11,13 +11,38 @@
 
 /* Full page application */
 // http://blog.stevensanderson.com/2011/10/05/full-height-app-layouts-a-css-trick-to-make-it-easier/
-body { margin: 0 }
-.row, .col { overflow: hidden; position: absolute; margin: 0; padding: 0}
-.row { left: 0; right: 0; }
-.col { top: 0; bottom: 0; }
-.scroll-x { overflow-x: auto; }
-.scroll-y { overflow-y: auto; }
-.scroll-x, .scroll-y { -webkit-overflow-scrolling: touch; }
+body {
+    margin: 0
+}
+
+.row, .col {
+    overflow: hidden;
+    position: absolute;
+    margin: 0;
+    padding: 0
+}
+
+.row {
+    left: 0;
+    right: 0;
+}
+
+.col {
+    top: 0;
+    bottom: 0;
+}
+
+.scroll-x {
+    overflow-x: auto;
+}
+
+.scroll-y {
+    overflow-y: auto;
+}
+
+.scroll-x, .scroll-y {
+    -webkit-overflow-scrolling: touch;
+}
 
 html, body {
     margin: 0;
@@ -146,7 +171,6 @@ body {
         &:last-child {
             border-bottom-width: 0;
         }
-
 
         .group-name {
             height: @dimension-group-name-height;
@@ -504,10 +528,20 @@ quant-histogram {
             fill-opacity: .125;
         }
 
-        .resize .handle {
-            pointer-events: none;
-            fill: #fff;
-            shape-rendering: auto;
+        .resize {
+            .handle {
+                pointer-events: none;
+                fill: #fff;
+                fill-opacity: 0.5;
+                shape-rendering: auto;
+            }
+
+            &:hover, &:active {
+                .handle {
+                    fill-opacity: 1;
+                }
+            }
         }
+
     }
 }
