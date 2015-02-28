@@ -83,6 +83,9 @@
                                 <div ng-repeat="dimension in group.dimensions"
                                      class='dimension'
                                      ng-class="dimension.token_class() + ' ' + dimension.filter_class()">
+
+                                    <span class="dimension-name" ng-bind="dimension.name"></span>
+
                                     <div class="dimension-placeholder"
                                          data-drop="true"
                                          ng-model="dimension.token_holder"
@@ -99,7 +102,6 @@
                                         </div>
 
                                     </div>
-                                    <span class="dimension-name" ng-bind="dimension.name"></span>
 
                                     <div class="dimension-filter"
                                          ng-click="openFilter(dimension, $event)"></div>
