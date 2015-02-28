@@ -125,14 +125,27 @@
     ];
     module.controller('SparQs.controllers.ExampleMessageController', ExampleMessageController);
 
-    var SampleQuestionController = function ($scope, Selection, SampleQuestions) {
+    var SampleQuestionController = function ($scope, $timeout, Selection, SampleQuestions) {
 
         $scope.questions = SampleQuestions;
         $scope.selection = Selection;
 
         $scope.get_sample_questions = function () {
             SampleQuestions.load(Selection.dimensions());
+
         };
+
+        $scope.$watch('questions.list', function(){
+              $timeout(function() {
+                $('.question-dim.token-primary').removeClass('token-primary');
+                        $('.question-dim.token-secondary').removeClass('token-secondary');
+                        var dims = $scope.selection.dimensions();
+                        dims.forEach(function(dim) {
+                            $('.question-dim.' + dim.key).addClass(dim.token_class());
+                        });
+            }, 0);
+
+        });
 
         $scope.get_sample_questions();
 
@@ -145,6 +158,7 @@
 
     SampleQuestionController.$inject = [
         '$scope',
+        '$timeout',
         'SparQs.services.Selection',
         'SparQs.services.SampleQuestions'
     ];

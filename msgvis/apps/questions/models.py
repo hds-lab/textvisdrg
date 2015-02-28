@@ -61,6 +61,9 @@ class Question(models.Model):
         questions = cls.objects.all()
         for dimension in dimension_list:
             questions = questions.filter(dimensions__key=dimension)
+        exclude_dimensions = ['location', 'codes', 'age', 'gender', 'media']
+        for ed in exclude_dimensions:
+            questions = questions.exclude(dimensions__key=ed)
 
         if questions.count() == 0:
             questions = cls.objects.all()
