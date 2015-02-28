@@ -184,7 +184,8 @@
                             scope.$on('$destroy', unbind);
                         }
                     });
-                }
+                },
+
             });
 
             return new Selection();
@@ -223,7 +224,7 @@
                             chunk_mode = 1;
                         }
                         else{
-                            var str_with_dims = "<span class='";
+                            var str_with_dims = "<span class='question-dim ";
                             for ( var j = 0 ; j < dim_list.length ; j++ ){
                                 if ( j > 0 ) str_with_dims += " ";
                                 try {
@@ -283,6 +284,7 @@
                                 return new Question(qdata);
                             });
                         });
+
                 }
             });
 

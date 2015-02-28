@@ -134,7 +134,7 @@
                     </div>
                 </div>
                 <div id="questions" class="row app-panel"
-                     ng-controller="SparQs.controllers.SampleQuestionController">
+                     ng-controller="SparQs.controllers.SampleQuestionController" ng-class="selection.dimensions_class()">
                     <div class="heading">From the literature...</div>
                     <ul class="questions-list heading-body">
                         <li ng-repeat="question in questions.list">
