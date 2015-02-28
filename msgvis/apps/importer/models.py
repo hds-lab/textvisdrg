@@ -91,8 +91,6 @@ def load_research_questions_from_json(json_str):
 
     questions = json.loads(json_str)
     for q in questions:
-        #import pdb
-        #pdb.set_trace()
         source = q['source']
         article, created = Article.objects.get_or_create(title=source['title'],
                                                          defaults={'authors': source['authors'],

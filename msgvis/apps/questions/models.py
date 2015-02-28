@@ -80,15 +80,11 @@ class Question(models.Model):
             count = total_questions_count - len(final_questions)
             final_questions.extend(questions[:count])
 
-        #exclude_dimensions = ['location', 'codes', 'age', 'gender', 'media']
-        #for ed in exclude_dimensions:
-        #    questions = questions.exclude(dimensions__key=ed)
-
         if len(final_questions) == 0:
             questions = cls.objects.all()
             final_questions.extend(questions[:total_questions_count])
             """Consider the case that no dimension in the existing questions matches"""
-            #TODO: may need a better way to handle this
+
 
         return final_questions
 
