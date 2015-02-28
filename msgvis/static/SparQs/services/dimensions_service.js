@@ -27,46 +27,31 @@
                 this.dirty = false; //true if has unsaved filter changes
             };
 
-            angular.extend(Filter.prototype, {
-                _getter_setter: function (prop, value) {
-                    if (arguments.length > 1) {
+            function _getter_setter(prop, format, parse) {
+                return function(value) {
+                    if (arguments.length > 0) {
 
                         if (value === '') {
                             value = undefined;
                         }
 
                         if (this.data[prop] !== value) {
-                            this.data[prop] = value;
+                            this.data[prop] = parse ? parse(value) : value;
                             this.dirty = true;
                         }
                     }
-                    return this.data[prop];
-                },
-                min: function (value) {
-                    return arguments.length ?
-                        this._getter_setter('min', value) :
-                        this._getter_setter('min');
-                },
-                max: function (value) {
-                    return arguments.length ?
-                        this._getter_setter('max', value) :
-                        this._getter_setter('max');
-                },
-                min_time: function (value) {
-                    return arguments.length ?
-                        this._getter_setter('min_time', value) :
-                        this._getter_setter('min_time');
-                },
-                max_time: function (value) {
-                    return arguments.length ?
-                        this._getter_setter('max_time', value) :
-                        this._getter_setter('maxn_time');
-                },
-                levels: function (value) {
-                    return arguments.length ?
-                        this._getter_setter('levels', value) :
-                        this._getter_setter('levels');
-                },
+
+                    var val = this.data[prop];
+                    return format ? format(val) : val;
+                }
+            }
+
+            angular.extend(Filter.prototype, {
+                min: _getter_setter('min', Math.round),
+                max: _getter_setter('max', Math.round),
+                min_time: _getter_setter('min_time'),
+                max_time: _getter_setter('max_time'),
+                levels: _getter_setter('levels'),
                 is_empty: function () {
                     if (angular.equals(this.data, {})) {
                         return true;

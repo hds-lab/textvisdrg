@@ -25,24 +25,26 @@ class DimensionDistributionViewTest(APITestCase):
         get_dimension.return_value = dimension
 
         # Fake the distribution too
-        distribution = [
-            {
-                "count": 5000,
-                "value": "cat"
-            },
-            {
-                "count": 1000,
-                "value": "catch"
-            },
-            {
-                "count": 500,
-                "value": "cathedral"
-            },
-            {
-                "count": 50,
-                "value": "cataleptic"
-            }
-        ]
+        distribution = {
+            'counts': [
+                {
+                    "count": 5000,
+                    "value": "cat"
+                },
+                {
+                    "count": 1000,
+                    "value": "catch"
+                },
+                {
+                    "count": 500,
+                    "value": "cathedral"
+                },
+                {
+                    "count": 50,
+                    "value": "cataleptic"
+                }
+            ]
+        }
         dimension.get_distribution.return_value = distribution
 
         url = reverse('dimension-distribution')

@@ -1,11 +1,11 @@
-from inspect import trace
 import operator
 import math
+from datetime import datetime
 
 from django.db import models
-from django.db.models import query
 from django.db.models import Q
 from django.conf import settings
+from django.utils import dateformat, timezone
 
 from msgvis.apps.base.models import MappedValuesQuerySet
 from msgvis.apps.corpus import models as corpus_models
@@ -138,7 +138,9 @@ class CategoricalDimension(object):
         queryset = self.group_by(queryset, grouping_key=grouping_key)
 
         # Count the messages in each group
-        return queryset.annotate(count=models.Count('id'))
+        return {
+            'counts': queryset.annotate(count=models.Count('id'))
+        }
 
     def get_grouping_expression(self, queryset, **kwargs):
         """
@@ -217,6 +219,10 @@ class QuantitativeDimension(CategoricalDimension):
                        math.floor(float(max_val - min_val) / desired_bins))
 
         return bin_size
+
+    def _bin_value(self, value, bin_size):
+        """Bin the given value"""
+        return bin_size * math.floor(value / bin_size)
 
     def _render_grouping_expression(self, bin_size):
         return self.grouping_expressions[db_vendor()].format(
@@ -345,11 +351,15 @@ class QuantitativeDimension(CategoricalDimension):
         queryset = queryset.annotate(count=models.Count('id'))
 
         # Store the bin info on the queryset
-        return add_metadata(queryset,
-                            bins=bins,
-                            bin_size=bin_size,
-                            min_val=min_val,
-                            max_val=max_val)
+        return {
+            'counts': queryset,
+            'bins': bins,
+            'bin_size': bin_size,
+            'min_val': min_val,
+            'max_val': max_val,
+            'min_bin': self._bin_value(min_val, bin_size),
+            'max_bin': self._bin_value(max_val, bin_size)
+        }
 
 
 class RelatedQuantitativeDimension(QuantitativeDimension):
@@ -499,6 +509,16 @@ class TimeDimension(QuantitativeDimension):
                 break
 
         return best_bin_millis / 1000
+
+    def _bin_value(self, value, bin_size):
+        """Bin the given value"""
+        timestamp = long(dateformat.format(value, 'U'))
+        timestamp = bin_size * math.floor(timestamp / bin_size)
+        dt = datetime.utcfromtimestamp(timestamp)
+        if settings.USE_TZ:
+            return dt.replace(tzinfo=timezone.utc)
+        else:
+            return dt
 
 
 class TextDimension(CategoricalDimension):

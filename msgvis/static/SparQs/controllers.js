@@ -184,19 +184,23 @@
         };
 
         $scope.saveFilter = function () {
-            if ($scope.filtering.dimension.filter.dirty) {
+            if (Filtering.dimension.filter.dirty) {
                 Selection.changed('filters');
-                $scope.filtering.dimension.filter.saved();
+                Filtering.dimension.filter.saved();
             }
         };
 
         $scope.resetFilter = function () {
-            if (!$scope.filtering.dimension.filter.is_empty()) {
-                $scope.filtering.dimension.filter.reset();
+            if (!Filtering.dimension.filter.is_empty()) {
+                Filtering.dimension.filter.reset();
                 Selection.changed('filters');
-                $scope.filtering.dimension.filter.saved();
+                Filtering.dimension.filter.saved();
             }
         };
+
+        $scope.onQuantitativeBrushed = function(min, max) {
+            $scope.$digest();
+        }
     };
 
     FilterController.$inject = [
