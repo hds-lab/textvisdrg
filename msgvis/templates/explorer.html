@@ -85,46 +85,36 @@
                                      ng-class="dimension.token_class() + ' ' + dimension.filter_class()">
 
                                     <span class="dimension-name" ng-bind="dimension.name"></span>
+                                    <div class="dimension-filter"
+                                         ng-click="openFilter(dimension, $event)"></div>
 
-                                    <div class="dimension-placeholder"
-                                         data-drop="true"
-                                         ng-model="dimension.token_holder"
-                                         jqyoui-droppable="{onDrop: 'onTokenDimensionDrop'}"
-                                         data-jqyoui-options="{accept: '.token'}">
+                                    <div class="dimension-placeholder">
 
-                                        <div class="token"
-                                             ng-class="dimension.token_class()"
-                                             ng-model="dimension.token_holder"
-                                             ng-hide="!dimension.token()"
-                                             data-drag="true"
-                                             jqyoui-draggable="{placeholder: true}"
-                                             data-jqyoui-options="{revert: 'invalid'}">
+                                        <div class="token token-primary"
+                                             ng-model="dimension"
+
+                                             >
                                         </div>
+
+
+                                    </div>
+                                    <div class="dimension-placeholder">
+                                         <div class="token token-secondary"
+                                             ng-model="dimension"
+
+                                             >
+                                        </div>
+
+
 
                                     </div>
 
-                                    <div class="dimension-filter"
-                                         ng-click="openFilter(dimension, $event)"></div>
+
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div id="token-tray">
-                        <div ng-repeat="token_holder in tokenTray"
-                             class="token-tray-zone"
-                             data-drop="true"
-                             ng-model="tokenTray"
-                             jqyoui-droppable="{index: {$ $index $}, containment:'position', onDrop: 'onTokenTrayDrop'}"
-                             data-jqyoui-options="{accept: '.token'}">
 
-                            <div class="token" ng-class="token_holder.token.token_class()"
-                                 ng-show="token_holder.token"
-                                 data-drag="true"
-                                 ng-model="tokenTray"
-                                 jqyoui-draggable="{index: {$ $index $}, placeholder: true}"
-                                 data-jqyoui-options="{revert: 'invalid'}"></div>
-                        </div>
-                    </div>
                 </div>
                 {% endverbatim %}
             </div>

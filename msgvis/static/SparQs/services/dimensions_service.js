@@ -133,7 +133,11 @@
                 set_distribution: function(distribution) {
                     this._loading = false;
                     this.distribution = distribution;
+                },
+                set_as_selection: function(token) {
+                    this.token_holder = token;
                 }
+
             });
 
             //The actual dimension service class

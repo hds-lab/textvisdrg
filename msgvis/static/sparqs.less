@@ -243,11 +243,23 @@ body {
 
         &.token-primary {
             background-image: url('images/part2_red.png');
+            opacity: 0.1;
+        }
+        &.token-primary:hover {
+            opacity: 1;
+            cursor: pointer;
         }
 
         &.token-secondary {
             background-image: url('images/part2_blue.png');
+            opacity: 0.1;
         }
+        &.token-secondary:hover {
+            opacity: 1;
+            cursor: pointer;
+        }
+        .transition(linear 0.2s);
+        .transition-property(transform opacity);
     }
 
     .token-placeholder {
@@ -274,9 +286,7 @@ body {
 
         .dimension-placeholder {
             .token-placeholder();
-            position: absolute;
-            right: @token-size + 5px;
-            top: 0;
+            float: right;
         }
 
         .dimension-name {
@@ -285,9 +295,7 @@ body {
         }
 
         .dimension-filter {
-            position: absolute;
-            right: 5px;
-            top: 0;
+            float: right;
             width: @token-size;
             height: @token-size;
             background: url('images/part2_filter.png') no-repeat center;
