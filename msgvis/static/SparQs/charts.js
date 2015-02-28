@@ -280,14 +280,40 @@
 
     module.directive('sparqsVis', function () {
 
-        var SparQsVis = function($element, attrs, onBrushed) {
-            var pre = $('<pre>').appendTo($element);
+        var SparQsVis = function($element, attrs, onClicked) {
+
+            function dataClicked() {
+                onClicked();
+            }
 
             this.render = function(dataTable) {
                 if (!dataTable) {
                     return;
                 }
-                pre.html(JSON.stringify(dataTable.rows, undefined, 3));
+
+                var chart = c3.generate({
+                    bindto: $element.find('.sparqs-vis-render-target')[0],
+                    data: {
+                        json: dataTable.rows,
+                        type: 'bar',
+                        keys: {
+                            x: 'type',
+                            value: ['value']
+                        },
+                        names: {
+                            'value': 'Num. Messages'
+                        },
+                        onclick: dataClicked
+                    },
+                    axis: {
+                        x: {
+                            type: 'category'
+                        },
+                        y: {
+                            label: 'Num. Messages'
+                        }
+                    }
+                });
             };
         };
 
@@ -320,7 +346,8 @@
                 dataTable: '=visDataTable',
                 onClicked: '=onClicked'
             },
-            link: link
+            link: link,
+            template: '<div class="sparqs-vis-render-target"></div>'
         }
     });
 })();
