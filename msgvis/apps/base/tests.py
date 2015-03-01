@@ -256,16 +256,21 @@ class DistributionTestCaseMixins(object):
         # Should match the length of the distribution
         self.assertEquals(len(result), len(desired_distribution) - len(zeros))
 
-    def create_test_languages(self):
+    def create_test_languages(self, model=False):
         """Create a bunch of languages and get a list of ids."""
 
-        for val in [("en", "English"), ("jp", "Japanese"), ("fr", "French")]:
-            corpus_models.Language.objects.create(
+        ids = []
+        for val in [("en", "English"), ("jp", "Japanese"), ("fr", "French"), ("es", "Spanish")]:
+            lang = corpus_models.Language.objects.create(
                 code=val[0],
                 name=val[1]
             )
-
-        return corpus_models.Language.objects.values_list('id', flat=True).distinct()
+            if model:
+                ids.append(lang)
+            else:
+                ids.append(lang.id)
+            
+        return ids
 
     def create_test_hashtags(self, num_hashtags=5):
         """Create a bunch of hashtags and get a list of ids."""

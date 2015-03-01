@@ -138,23 +138,20 @@ class CategoricalDimension(object):
 
         if hasattr(self, 'domain'):
             return self.domain
-        else:
-            distribution = self._get_distribution(queryset, grouping_key='value')
-            distribution = distribution.order_by('-count')
-            return [row['value'] for row in distribution]
-
-
-    def _get_distribution(self, queryset, grouping_key='value', **kwargs):
-        """Get the distribution of the dimension within the dataset."""
 
         # Type checking
         queryset = find_messages(queryset)
 
         # Use 'values' to group the queryset
-        queryset = self.group_by(queryset, grouping_key=grouping_key)
+        queryset = self.group_by(queryset, grouping_key='value')
 
         # Count the messages in each group
-        return queryset.annotate(count=models.Count('id'))
+        queryset = queryset.annotate(count=models.Count('id'))
+
+        queryset = queryset.order_by('-count')
+        
+        return [row['value'] for row in queryset]
+
 
     def get_grouping_expression(self, queryset, **kwargs):
         """
