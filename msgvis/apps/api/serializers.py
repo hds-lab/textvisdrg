@@ -206,4 +206,4 @@ class DataTableSerializer(serializers.Serializer):
     dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
     dimensions = serializers.ListField(child=DimensionKeySerializer())
     filters = serializers.ListField(child=FilterSerializer(), required=False)
-    result = serializers.ListField(child=serializers.DictField(), required=False, read_only=True)
+    result = serializers.DictField(required=False, read_only=True)

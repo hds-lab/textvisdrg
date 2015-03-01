@@ -146,7 +146,7 @@ register(models.RelatedCategoricalDimension, dict(
     key='sentiment',
     name='Sentiment',
     description='The sentiment of the message',
-    field_name='sentiment__value',
+    field_name='sentiment',
 ))
 # END META DIMENSIONS
 

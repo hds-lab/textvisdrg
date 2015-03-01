@@ -64,8 +64,8 @@ class DataTableView(APIView):
           "filters": [
             {
               "dimension": "time",
-              "min": "2010-02-25T00:23:53Z",
-              "max": "2010-02-28T00:23:53Z"
+              "min_time": "2010-02-25T00:23:53Z",
+              "max_time": "2010-02-28T00:23:53Z"
             }
           ],
           "result": [

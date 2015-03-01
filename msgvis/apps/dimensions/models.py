@@ -1,6 +1,6 @@
 import operator
 import math
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.db import models
 from django.db.models import Q
@@ -296,7 +296,6 @@ class QuantitativeDimension(CategoricalDimension):
 
             return queryset, grouping_key
 
-
     def group_by(self, queryset, grouping_key=None, bins=None, bin_size=None, **kwargs):
         """
         Return a ValuesQuerySet that has been grouped by this dimension.
@@ -338,42 +337,26 @@ class QuantitativeDimension(CategoricalDimension):
                 internal_key: grouping_key,
             })
 
-    def _get_distribution(self, queryset, grouping_key='value', bins=None, **kwargs):
-        """
-        On the given :class:`.Dataset`, calculate a binned distribution.
-        A desired number of bins may be provided.
-        The results will be keyed by grouping_key.
-        """
+    def get_domain(self, queryset, bins=None, **kwargs):
         if bins is None:
             bins = self.default_bins
 
-        # type checking
         queryset = find_messages(queryset)
 
         min_val, max_val = self.get_range(queryset)
         if min_val is None:
             return []
 
-        # Get a good bin size
         bin_size = self._get_bin_size(min_val, max_val, bins)
+        min_bin = self._bin_value(min_val, bin_size)
+        max_bin = self._bin_value(max_val, bin_size)
 
-        # Group by that bin size
-        queryset = self.group_by(queryset, grouping_key=grouping_key, bin_size=bin_size, min_val=min_val,
-                                 max_val=max_val)
+        return list(self._iter_xrange(min_bin, max_bin, bin_size))
 
-        # Count the messages in each group
-        queryset = queryset.annotate(count=models.Count('id'))
-
-        # Store the bin info on the queryset
-        return {
-            'counts': queryset,
-            'bins': bins,
-            'bin_size': bin_size,
-            'min_val': min_val,
-            'max_val': max_val,
-            'min_bin': self._bin_value(min_val, bin_size),
-            'max_bin': self._bin_value(max_val, bin_size)
-        }
+    def _iter_xrange(self, min, max, step):
+        while min <= max:
+            yield min
+            min += step
 
 
 class RelatedQuantitativeDimension(QuantitativeDimension):
@@ -526,6 +509,12 @@ class TimeDimension(QuantitativeDimension):
             return dt.replace(tzinfo=timezone.utc)
         else:
             return dt
+
+    def _iter_xrange(self, min, max, step):
+        step = timedelta(seconds=step)
+        while min <= max:
+            yield min
+            min += step
 
 
 class TextDimension(CategoricalDimension):
