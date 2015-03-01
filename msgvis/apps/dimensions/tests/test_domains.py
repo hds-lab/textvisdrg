@@ -2,6 +2,11 @@
 
 from django.test import TestCase
 
+from datetime import timedelta
+from django.utils import timezone as tz
+
+from django.conf import settings
+
 from msgvis.apps.dimensions import registry
 from msgvis.apps.base.tests import DistributionTestCaseMixins
 from msgvis.apps.corpus import models as corpus_models
@@ -69,9 +74,33 @@ class CategoricalDomainTest(DistributionTestCaseMixins, TestCase):
         dimension = registry.get_dimension('contains_url')
         result = dimension.get_domain(dataset.message_set.all())
         result = list(result)
-        result.sort()
+        self.assertEquals(len(result), 2)
+        self.assertEquals(result, dimension.domain)
 
-        expected = [False, True]
-        expected.sort()
+    def test_quantitative_domain(self):
 
-        self.assertEquals(result, expected)
+        reply_values = [1, 2001]
+        distribution = self.get_distribution(reply_values)
+        dataset = self.generate_messages_for_distribution('replied_to_count', distribution)
+        
+        dimension = registry.get_dimension('replies')
+        result = dimension.get_domain(dataset.message_set.all(), bins=10)
+        result = list(result)
+        
+        self.assertEquals(result, [0, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000, 2200])
+        
+    def test_time_domain(self):
+        base_time = tz.datetime(2012, 5, 2, 20, 10, 2, 0)
+        if settings.USE_TZ:
+            base_time = base_time.replace(tzinfo=tz.utc)
+
+        time_values = [base_time, base_time + timedelta(days=1)]
+        distribution = self.get_distribution(time_values)
+        dataset = self.generate_messages_for_distribution('time', distribution)
+        dimension = registry.get_dimension('time')
+        result = dimension.get_domain(dataset.message_set.all(), bins=24)
+        
+        self.assertEquals(len(result), 26)
+        self.assertEquals(result[0], base_time.replace(minute=0, second=0))
+        self.assertEquals(result[24], time_values[1].replace(minute=0, second=0))
+        self.assertEquals(result[25], time_values[1].replace(minute=0, second=0) + timedelta(hours=1))

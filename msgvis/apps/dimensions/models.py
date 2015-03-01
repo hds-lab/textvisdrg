@@ -149,7 +149,7 @@ class CategoricalDimension(object):
         queryset = queryset.annotate(count=models.Count('id'))
 
         queryset = queryset.order_by('-count')
-        
+
         return [row['value'] for row in queryset]
 
 
