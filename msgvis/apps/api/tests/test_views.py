@@ -188,7 +188,7 @@ class DataTableViewTest(APITestCase):
     @mock.patch('msgvis.apps.datatable.models.DataTable')
     def test_get_datatable_api(self, DataTable, DataTableSerializer):
         # Fake dimensions and filters
-        dimensions = mock.Mock()
+        dimensions = [mock.Mock()]
         filters = mock.Mock()
 
         # Fake serialization
@@ -201,7 +201,8 @@ class DataTableViewTest(APITestCase):
         }
 
         # Fake the data table
-        DataTable.generate_datatable.return_value = mock.Mock()
+        datatable = DataTable.return_value
+        datatable.generate.return_value = mock.Mock()
 
         url = reverse('data-table')
 
@@ -210,7 +211,7 @@ class DataTableViewTest(APITestCase):
             'dataset': self.dataset.id,
             "dimensions": dimensions,
             "filters": filters,
-            "result": DataTable.generate_datatable.return_value,
+            "result": datatable.generate.return_value,
         }
 
         # Fake serialized data
@@ -232,7 +233,5 @@ class DataTableViewTest(APITestCase):
         self.assertEquals(serializer.is_valid.call_count, 1)
 
         # It should have called the data table function
-        DataTable.generate_datatable.assert_called_once_with(dataset_id=self.dataset.id,
-                                                             dimensions=dimensions,
-                                                             filters=filters)
-
+        DataTable.assert_called_once_with(*dimensions)
+        datatable.generate.assert_called_once_with(self.dataset.id, filters)

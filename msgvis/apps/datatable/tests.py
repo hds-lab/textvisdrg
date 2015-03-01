@@ -536,22 +536,17 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
 class GenerateDataTableTest(DistributionTestCaseMixins, TestCase):
     """Test the combined data table generation routine"""
 
-    def test_generate_datatable(self):
-        """It should create and render a data table"""
+    def test_generate(self):
+        """It should render a data table"""
 
         dataset = self.create_empty_dataset()
 
-        init_calls = []
         render_calls = []
         class MockDataTable(models.DataTable):
-            def __init__(self, *args, **kwargs):
-                init_calls.append((args, kwargs))
-
             def render(self, *args, **kwargs):
                 render_calls.append((args, kwargs))
 
-        MockDataTable.generate_datatable(dataset.id, dimensions=['time'])
-        self.assertEquals(init_calls[0], (('time',), {}))
+        datatable = MockDataTable(primary_dimension='time')
+        datatable.generate(dataset.id)
         self.assertEquals(len(render_calls), 1)
-
 
