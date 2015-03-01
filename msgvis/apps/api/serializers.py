@@ -26,6 +26,7 @@ class DimensionKeySerializer(serializers.CharField):
     def to_representation(self, instance):
         return instance.key
 
+
 class DimensionSerializer(serializers.Serializer):
     """
     JSON representation of Dimensions for the API.
@@ -201,14 +202,8 @@ class SampleQuestionSerializer(serializers.Serializer):
     questions = serializers.ListField(child=QuestionSerializer(), required=False, read_only=True)
 
 
-class DimensionDistributionSerializer(serializers.Serializer):
-    dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
-    dimension = DimensionKeySerializer()
-    distribution = serializers.DictField(required=False, read_only=True)
-
-
 class DataTableSerializer(serializers.Serializer):
     dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
     dimensions = serializers.ListField(child=DimensionKeySerializer())
     filters = serializers.ListField(child=FilterSerializer(), required=False)
-    result = serializers.ListField(child=serializers.DictField(), required=False, read_only=True)
+    result = serializers.DictField(required=False, read_only=True)

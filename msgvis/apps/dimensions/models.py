@@ -1,6 +1,6 @@
 import operator
 import math
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.db import models
 from django.db.models import Q
@@ -46,11 +46,13 @@ class CategoricalDimension(object):
                             Related to the Message model: if you want sender name, use sender__name.
     """
 
-    def __init__(self, key, name=None, description=None, field_name=None):
+    def __init__(self, key, name=None, description=None, field_name=None, domain=None):
         self.key = key
         self.name = name
         self.description = description
         self.field_name = field_name if field_name is not None else key
+        if domain is not None:
+            self.domain = domain
 
     def _exact_filter(self, queryset, **kwargs):
         """Filtering for exact value"""
@@ -79,7 +81,7 @@ class CategoricalDimension(object):
 
         return queryset
 
-    def group_by(self, queryset, grouping_key=None, **kwargs):
+    def group_by(self, queryset, grouping_key=None, values_list=False, values_list_flat=False, **kwargs):
         """
         Return a ValuesQuerySet that has been grouped by this dimension.
         The group value will be available as grouping_key in the dictionaries.
@@ -128,7 +130,21 @@ class CategoricalDimension(object):
         """
         return queryset, expression
 
-    def get_distribution(self, queryset, grouping_key='value', **kwargs):
+    def get_domain(self, queryset, **kwargs):
+        """
+        Get the list of values of the dimension, either in natural order or
+        sorted by frequency. The values will be drawn from the queryset.
+        """
+
+        if hasattr(self, 'domain'):
+            return self.domain
+        else:
+            distribution = self._get_distribution(queryset, grouping_key='value')
+            distribution = distribution.order_by('-count')
+            return [row['value'] for row in distribution]
+
+
+    def _get_distribution(self, queryset, grouping_key='value', **kwargs):
         """Get the distribution of the dimension within the dataset."""
 
         # Type checking
@@ -138,9 +154,7 @@ class CategoricalDimension(object):
         queryset = self.group_by(queryset, grouping_key=grouping_key)
 
         # Count the messages in each group
-        return {
-            'counts': queryset.annotate(count=models.Count('id'))
-        }
+        return queryset.annotate(count=models.Count('id'))
 
     def get_grouping_expression(self, queryset, **kwargs):
         """
@@ -282,7 +296,6 @@ class QuantitativeDimension(CategoricalDimension):
 
             return queryset, grouping_key
 
-
     def group_by(self, queryset, grouping_key=None, bins=None, bin_size=None, **kwargs):
         """
         Return a ValuesQuerySet that has been grouped by this dimension.
@@ -324,42 +337,27 @@ class QuantitativeDimension(CategoricalDimension):
                 internal_key: grouping_key,
             })
 
-    def get_distribution(self, queryset, grouping_key='value', bins=None, **kwargs):
-        """
-        On the given :class:`.Dataset`, calculate a binned distribution.
-        A desired number of bins may be provided.
-        The results will be keyed by grouping_key.
-        """
+    def get_domain(self, queryset, bins=None, **kwargs):
         if bins is None:
             bins = self.default_bins
 
-        # type checking
         queryset = find_messages(queryset)
 
         min_val, max_val = self.get_range(queryset)
         if min_val is None:
             return []
 
-        # Get a good bin size
         bin_size = self._get_bin_size(min_val, max_val, bins)
+        min_bin = self._bin_value(min_val, bin_size)
+        max_bin = self._bin_value(max_val, bin_size)
 
-        # Group by that bin size
-        queryset = self.group_by(queryset, grouping_key=grouping_key, bin_size=bin_size, min_val=min_val,
-                                 max_val=max_val)
+        return list(self._iter_xrange(min_bin, max_bin, bin_size))
 
-        # Count the messages in each group
-        queryset = queryset.annotate(count=models.Count('id'))
-
-        # Store the bin info on the queryset
-        return {
-            'counts': queryset,
-            'bins': bins,
-            'bin_size': bin_size,
-            'min_val': min_val,
-            'max_val': max_val,
-            'min_bin': self._bin_value(min_val, bin_size),
-            'max_bin': self._bin_value(max_val, bin_size)
-        }
+    def _iter_xrange(self, min, max, step):
+        max = max + step # bin values are the left side of each bin so we need an extra on the right
+        while min <= max:
+            yield min
+            min += step
 
 
 class RelatedQuantitativeDimension(QuantitativeDimension):
@@ -379,26 +377,19 @@ class RelatedQuantitativeDimension(QuantitativeDimension):
 
         # e.g. (sender, username)
         self.local_field_name, self.target_field_name = self.field_name.split('__')
-
-    @property
-    def _path_info(self):
-        if not hasattr(self, '_path_info_cache'):
-            model = corpus_models.Message
-
-            # Get the django.db.models.related.PathInfo for this relation
-            path_infos = model._meta.get_field(self.local_field_name).get_path_info()
-            assert len(path_infos) == 1, "I cannot handle long path_infos!"
-
-            setattr(self, '_path_info_cache', path_infos[0])
-
-        return getattr(self, '_path_info_cache')
+        # e.g. (sender, username)
+        model = corpus_models.Message
+        # Get the django.db.models.related.PathInfo for this relation
+        path_infos = model._meta.get_field(self.local_field_name).get_path_info()
+        assert len(path_infos) == 1, "I cannot handle long path_infos!"
+        self.path_info = path_infos[0]
 
     def _get_join_condition(self):
         """
         Return a join condition like "`table1`.`field` = `table2`.`field`"
 
         """
-        pi = self._path_info
+        pi = self.path_info
         assert len(pi.target_fields) == 1, "Complex multi-field joins not supported"
         target_field = pi.target_fields[0]
 
@@ -411,7 +402,7 @@ class RelatedQuantitativeDimension(QuantitativeDimension):
 
     def _add_manual_join(self, queryset):
         """Add a join to the queryset"""
-        to_table = self._path_info.to_opts.db_table
+        to_table = self.path_info.to_opts.db_table
         return queryset.extra(
             tables=[to_table],
             where=[self._get_join_condition()]
@@ -434,7 +425,7 @@ class RelatedQuantitativeDimension(QuantitativeDimension):
             # Fall back because we're not even grouping anyway
             return super(RelatedQuantitativeDimension, self)._render_grouping_expression(bin_size)
         else:
-            to_table = self._path_info.to_opts.db_table
+            to_table = self.path_info.to_opts.db_table
             return self.grouping_expressions_joined[db_vendor()].format(
                 to_table=to_table,
                 target_field_name=self.target_field_name,
@@ -519,6 +510,13 @@ class TimeDimension(QuantitativeDimension):
             return dt.replace(tzinfo=timezone.utc)
         else:
             return dt
+
+    def _iter_xrange(self, min, max, step):
+        step = timedelta(seconds=step)
+        max = max + step # bin values are the left side of each bin so we need an extra on the right
+        while min <= max:
+            yield min
+            min += step
 
 
 class TextDimension(CategoricalDimension):

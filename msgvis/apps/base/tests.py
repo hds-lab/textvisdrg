@@ -34,6 +34,12 @@ class DistributionTestCaseMixins(object):
             distrib[value] = min_count + idx
         return distrib
 
+    def create_empty_dataset(self):
+        return corpus_models.Dataset.objects.create(
+            name="Test empty dataset",
+            description="Created by create_empty_dataset",
+        )
+
     def generate_messages_for_distribution(self, field_name, distribution, many=False, dataset=None):
         """
         Generates a bunch of messages for testing.
@@ -120,11 +126,11 @@ class DistributionTestCaseMixins(object):
             if not is_multi:
                 field_values = field_values[0]
             else:
-                field_values = tuple(field_values) # tuples are hashable
+                field_values = tuple(field_values)  # tuples are hashable
 
             # Store the result in the new distribution
             if field_values not in result:
-                result[field_values] = 0 # start a count at 0
+                result[field_values] = 0  # start a count at 0
 
             # Add the value
             result[field_values] += value

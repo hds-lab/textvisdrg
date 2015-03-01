@@ -100,3 +100,54 @@ class DataTable(object):
             else:
                 return queryset
 
+    def domain(self, dimension, queryset, filter=None, desired_bins=None):
+        """Return the sorted levels in this dimension"""
+        if filter is not None:
+            queryset = dimension.filter(queryset, **filter)
+        return dimension.get_domain(queryset, bins=desired_bins)
+
+    def generate(self, dataset, filters=None):
+        """
+        Generate a complete data table response.
+
+        This includes 'table', which provides the non-zero
+        message frequency for each combination of primary and secondary dimension values,
+        respecting the filters.
+
+        It also includes 'domains', which provides, for both
+        primary and secondary dimensions, the levels of the
+        dimension irrespective of filters (except on those actual dimensions).
+        """
+
+        queryset = dataset.message_set.all()
+
+        # Filter the data (look for filters on the primary/secondary dimensions at the same time
+        primary_filter = None
+        secondary_filter = None
+        if filters is not None:
+            for filter in filters:
+                dimension = filter['dimension']
+                queryset = dimension.filter(queryset, **filter)
+
+                if dimension == self.primary_dimension:
+                    primary_filter = filter
+                if dimension == self.secondary_dimension:
+                    secondary_filter = filter
+
+        # Render a table
+        rendered = self.render(queryset)
+
+        # Include the domains for primary and (secondary) dimensions
+        domains = {
+            self.primary_dimension.key:
+                self.domain(self.primary_dimension, dataset.message_set.all(), primary_filter)
+        }
+        if self.secondary_dimension:
+            domains[self.secondary_dimension.key] = \
+                self.domain(self.secondary_dimension, dataset.message_set.all(), secondary_filter)
+
+        return {
+            'table': rendered,
+            'domains': domains
+        }
+

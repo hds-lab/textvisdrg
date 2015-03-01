@@ -185,6 +185,10 @@
 
         Selection.changed('dimensions,filters', $scope, $scope.get_data_table);
 
+        $scope.onVisClicked = function() {
+            console.log(arguments);
+        };
+
     };
 
     VisualizationController.$inject = [

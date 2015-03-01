@@ -5,6 +5,7 @@
 
 {% block css %}
 {{ block.super }}
+<link rel="stylesheet" href="{% static 'bower/c3/c3.css' %}">
 <link rel="stylesheet" href="{% static 'sparqs.less' %}" type="text/less">
 {% endblock %}
 
@@ -26,8 +27,9 @@
 
 <script src="{% static 'djangular/js/django-angular.js' %}"></script>
 
-<script src="{% static 'bower/d3/d3.js' %}"></script>
 <script src="{% static 'bower/moment/moment.js' %}"></script>
+<script src="{% static 'bower/d3/d3.js' %}"></script>
+<script src="{% static 'bower/c3/c3.js' %}"></script>
 
 <script src="{% static 'SparQs/SparQs.js' %}"></script>
 <script src="{% static 'SparQs/controllers.js' %}"></script>
@@ -131,7 +133,10 @@
                 <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
                     <div class="heading">Visualization</div>
                     <div id="viz-content" class="heading-body">
-                        <pre ng-bind="datatable.rows|json"></pre>
+                        <sparqs-vis vis-data-table="datatable"
+                                        on-clicked="onVisClicked">
+
+                        </sparqs-vis>
                     </div>
                 </div>
                 <div id="questions" class="row app-panel"
@@ -184,7 +189,6 @@
 
                         <quant-histogram
                             dimension="filtering.dimension"
-                            chart-x="value" chart-y="count"
                             brush-min="filtering.dimension.filter.min()"
                             brush-max="filtering.dimension.filter.max()"
                             on-brushed="onQuantitativeBrushed">

@@ -21,16 +21,7 @@
         '$http', 'djangoUrl', 'SparQs.services.Dataset',
         function dimensionDistributionsFactory($http, djangoUrl, Dataset) {
 
-            var Distribution = function(data) {
-                angular.extend(this, data);
-            };
-
-            angular.extend(Distribution.prototype, {
-
-            });
-
-
-            var apiUrl = djangoUrl.reverse('dimension-distribution');
+            var apiUrl = djangoUrl.reverse('data-table');
 
             var DimensionDistributions = function () {
             };
@@ -39,13 +30,13 @@
                 load: function (dimension) {
                     var request = {
                         dataset: Dataset.id,
-                        dimension: dimension.key,
+                        dimensions: [dimension.key]
                     };
 
                     var self = this;
                     return $http.post(apiUrl, request)
                         .success(function (data) {
-                            dimension.set_distribution(data.distribution);
+                            dimension.set_distribution(data.result);
                         });
 
                 }
@@ -185,7 +176,7 @@
                             scope.$on('$destroy', unbind);
                         }
                     });
-                },
+                }
 
             });
 
@@ -338,7 +329,8 @@
             var apiUrl = djangoUrl.reverse('data-table');
 
             var DataTables = function () {
-                this.rows = [];
+                this.domains = {};
+                this.table = [];
             };
 
             angular.extend(DataTables.prototype, {
@@ -360,7 +352,8 @@
                     var self = this;
                     $http.post(apiUrl, request)
                         .success(function (data) {
-                            self.rows = data.result;
+                            self.table = data.result.table;
+                            self.domains = data.result.domains;
                         });
                 }
             });

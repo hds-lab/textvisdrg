@@ -219,59 +219,6 @@ class DimensionSerializerTest(TestCase):
         self.assertEquals(serializer.validated_data, self.deserialized_representation)
 
 
-class DimensionDistributionSerializerTest(TestCase):
-    """
-    {
-      "dataset": 2,
-      "dimension": "time",
-      "distribution": [...]
-    }
-    """
-
-    def setUp(self):
-        self.dimension = dimensions.get_dimension('time')
-        self.dataset = corpus_models.Dataset.objects.create(name="test dataset", description='description')
-
-        self.serialized_representation = {
-            'dataset': self.dataset.id,
-            'dimension': self.dimension.key,
-        }
-
-        # Should lookup exactly the same dimension
-        self.deserialized_representation = {
-            'dataset': self.dataset,
-            'dimension': self.dimension,
-        }
-
-
-    def test_dimension_distribution_serialization(self):
-        distribution = {
-            'counts': [
-                dict(value=2, count=5),
-                dict(value=56, count=23),
-                dict(value='asdf', count=53),
-            ],
-            'bins': 50,
-            'bin_size': 250,
-            'min_val': 2,
-            'max_val': 56,
-            'min_bin': 52,
-            'max_bin': 526
-        }
-
-        self.deserialized_representation['distribution'] = distribution
-        self.serialized_representation['distribution'] = distribution
-
-        serializer = serializers.DimensionDistributionSerializer(self.deserialized_representation)
-        result = serializer.data
-        self.assertDictEqual(result, self.serialized_representation)
-
-    def test_dimension_distribution_deserialization(self):
-        serializer = serializers.DimensionDistributionSerializer(data=self.serialized_representation)
-        self.assertTrue(serializer.is_valid())
-        self.assertEquals(serializer.validated_data, self.deserialized_representation)
-
-
 class QuantitativeFilterSerializerTest(TestCase):
     """
     {
@@ -430,13 +377,16 @@ class DataTableSerializerTest(TestCase):
         }
 
 
-    def test_dimension_distribution_serialization(self):
-        datatable = [
-            dict(value=2, count=5),
-            dict(value=56, count=23),
-            dict(value='asdf', count=53),
-        ]
-
+    def test_datatable_serialization(self):
+        datatable = {
+            'table': [
+                dict(value=2, count=5),
+                dict(value=56, count=23),
+                dict(value='asdf', count=53),
+            ],
+            'domains': {}
+        }
+        
         self.deserialized_representation['result'] = datatable
         self.serialized_representation['result'] = datatable
 
@@ -444,7 +394,7 @@ class DataTableSerializerTest(TestCase):
         result = serializer.data
         self.assertDictEqual(result, self.serialized_representation)
 
-    def test_dimension_distribution_deserialization(self):
+    def test_datatable_deserialization(self):
         serializer = serializers.DataTableSerializer(data=self.serialized_representation)
         self.assertTrue(serializer.is_valid())
         self.assertEquals(serializer.validated_data, self.deserialized_representation)

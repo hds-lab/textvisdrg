@@ -13,62 +13,6 @@ import mock
 from msgvis.apps.api.tests import api_time_format, django_time_format
 
 
-class DimensionDistributionViewTest(APITestCase):
-    def setUp(self):
-        self.dataset = corpus_models.Dataset.objects.create(name="Api test dataset")
-
-    @mock.patch('msgvis.apps.dimensions.registry.get_dimension')
-    def test_get_distribution_api(self, get_dimension):
-        # Fake the dimension internally
-        dimension = mock.Mock()
-        dimension.key = 'time'
-        get_dimension.return_value = dimension
-
-        # Fake the distribution too
-        distribution = {
-            'counts': [
-                {
-                    "count": 5000,
-                    "value": "cat"
-                },
-                {
-                    "count": 1000,
-                    "value": "catch"
-                },
-                {
-                    "count": 500,
-                    "value": "cathedral"
-                },
-                {
-                    "count": 50,
-                    "value": "cataleptic"
-                }
-            ]
-        }
-        dimension.get_distribution.return_value = distribution
-
-        url = reverse('dimension-distribution')
-        data = {
-            "dataset": self.dataset.id,
-            "dimension": dimension.key,
-        }
-
-        expected_response = {
-            "dataset": self.dataset.id,
-            "dimension": dimension.key,
-            "distribution": distribution
-        }
-
-        response = self.client.post(url, data, format='json')
-
-        self.assertEquals(response.data, expected_response)
-        self.assertEquals(response.status_code, status.HTTP_200_OK)
-
-        get_dimension.assert_called_once_with(dimension.key)
-        dimension.get_distribution.assert_called_once_with(self.dataset)
-
-
-
 class ResearchQuestionsViewTest(APITestCase):
     def setUp(self):
         self.dataset = corpus_models.Dataset.objects.create(name="Api test dataset")
@@ -168,7 +112,6 @@ class ExampleMessagesViewTest(APITestCase):
 
     @mock.patch.object(corpus_models.Dataset, 'get_example_messages')
     def test_get_example_messages_api(self, get_example_messages):
-
         # fake the actual example finding
         get_example_messages.return_value = self.sample_messages
 
@@ -218,6 +161,7 @@ class ExampleMessagesViewTest(APITestCase):
 
         self.assertEquals(get_example_messages.call_count, 1)
 
+
 class DataTableViewTest(APITestCase):
     def setUp(self):
         self.dataset = corpus_models.Dataset.objects.create(name="Api test dataset")
@@ -240,78 +184,54 @@ class DataTableViewTest(APITestCase):
             )
         ]
 
-    @mock.patch('msgvis.apps.dimensions.registry.get_dimension')
+    @mock.patch('msgvis.apps.api.serializers.DataTableSerializer')
     @mock.patch('msgvis.apps.datatable.models.DataTable')
-    def test_get_datatable_api(self, DataTable, get_dimension):
+    def test_get_datatable_api(self, DataTable, DataTableSerializer):
+        # Fake dimensions and filters
+        dimensions = [mock.Mock()]
+        filters = mock.Mock()
 
-        # Provide a fake dimension
-        dimension = get_dimension.return_value
-        dimension.key = 'time'
+        # Fake serialization
+        serializer = DataTableSerializer.return_value
+        serializer.is_valid.return_value = True
+        serializer.validated_data = {
+            'dataset': self.dataset.id,
+            'dimensions': dimensions,
+            'filters': filters,
+        }
 
-        # Fake the filtered queryset
-        filtered_queryset = dimension.filter.return_value
-
-        # Fake the data table itself
-        fake_datatable = [
-            {
-                "value": 35,
-                "time": "2010-02-25T00:23:53Z"
-            },
-            {
-                "value": 30,
-                "time": "2010-02-26T00:23:53Z"
-            },
-            {
-                "value": 25,
-                "time": "2010-02-27T00:23:53Z"
-            },
-            {
-                "value": 20,
-                "time": "2010-02-28T00:23:53Z"
-            }
-        ]
-        table_instance = DataTable.return_value
-        table_instance.render.return_value = fake_datatable
+        # Fake the data table
+        datatable = DataTable.return_value
+        datatable.generate.return_value = mock.Mock()
 
         url = reverse('data-table')
-        data = {
-            "dataset": self.dataset.id,
-            "dimensions": ['time'],
-            "filters": [
-                {
-                    "dimension": 'time',
-                    "min_time": "2010-02-25T00:23:53Z",
-                    "max_time": "2010-02-28T00:23:53Z"
-                }
-            ],
-        }
 
+        # Should be sending us back the same thing we sent in plus some extra
         expected_response = {
             'dataset': self.dataset.id,
-            "dimensions": data['dimensions'],
-            "filters": data['filters'],
-            "result": fake_datatable,
+            "dimensions": dimensions,
+            "filters": filters,
+            "result": datatable.generate.return_value,
         }
 
-        response = self.client.post(url, data, format='json')
+        # Fake serialized data
+        serializer.data = {}
 
-        # And it should have rendered appropriately
-        self.assertEquals(response.data, expected_response)
+        request_data = {}
+        response = self.client.post(url, request_data, format='json')
+
+        # it should have rendered appropriately
+        self.assertEquals(response.data, serializer.data)
         self.assertEquals(response.status_code, status.HTTP_200_OK)
 
-        # It should have constructed a datatable for the dimension
-        DataTable.assert_called_once_with(dimension)
+        # It should have constructed a serializer using the request data
+        # And also with the response data
+        DataTableSerializer.assert_any_call(data=request_data)
+        DataTableSerializer.assert_any_call(expected_response)
 
-        # It should have then given the filtered queryset to the data table
-        table_instance.render.assert_called_once_with(filtered_queryset)
-        
-        # It should have called filter with some args
-        self.assertEquals(dimension.filter.call_count, 1)
-        filter_args, filter_kwargs = dimension.filter.call_args
-        self.assertEquals(len(filter_args), 1)
-        self.assertIsInstance(filter_args[0], query.QuerySet)
-        self.assertEquals(filter_kwargs, {
-            'dimension': dimension,
-            'min_time': django_time_format(data['filters'][0]['min_time']),
-            'max_time': django_time_format(data['filters'][0]['max_time'])
-        })
+        # It should have checked for validity of input
+        self.assertEquals(serializer.is_valid.call_count, 1)
+
+        # It should have called the data table function
+        DataTable.assert_called_once_with(*dimensions)
+        datatable.generate.assert_called_once_with(self.dataset.id, filters)
