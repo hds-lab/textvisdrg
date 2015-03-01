@@ -163,14 +163,17 @@
                 var bars = barsGroup.selectAll('rect.bar')
                     .data(table);
 
+                //Remove and add bars
                 bars.exit()
                     .remove();
 
                 bars.enter()
                     .append("rect")
                     .attr('class', 'bar')
-                    .attr('height', 0)
-                    .attr('y', function (d) {
+                    .attr('height', 0);
+
+                //Update the bars
+                bars.attr('y', function (d) {
                         return yScale(d[yProp]);
                     })
                     .attr('width', xScale.rangeBand())
