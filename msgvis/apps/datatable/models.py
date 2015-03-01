@@ -100,3 +100,18 @@ class DataTable(object):
             else:
                 return queryset
 
+
+    @classmethod
+    def generate_datatable(cls, dimensions, filters=None):
+        """Generates a complete data table"""
+        queryset = corpus_models.Message.objects.all()
+
+        # Filter the data
+        if filters is not None:
+            for filter in filters:
+                dimension = filter['dimension']
+                queryset = dimension.filter(queryset, **filter)
+
+        # Render a table
+        table = cls(*dimensions)
+        result = table.render(queryset)

@@ -96,17 +96,7 @@ class DataTableView(APIView):
 
             dimensions = data['dimensions']
             filters = data.get('filters', [])
-
-            queryset = corpus_models.Message.objects.all()
-
-            # Filter the data
-            for filter in filters:
-                dimension = filter['dimension']
-                queryset = dimension.filter(queryset, **filter)
-
-            # Render a table
-            table = datatable_models.DataTable(*dimensions)
-            result = table.render(queryset)
+            result = datatable_models.DataTable.generate_datatable(dimensions=dimensions, filters=filters)
 
             # Just add the result key
             response_data = data
