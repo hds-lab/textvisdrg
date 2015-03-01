@@ -6,20 +6,10 @@
 
     module.directive('quantHistogram', function () {
 
-        var default_distribution = {
-            counts: [],
-            min_bin: 0,
-            max_bin: 0,
-            bin_size: 1,
-            bins: 0
-        };
-
         var QuantHistogram = function($element, attrs, onBrushed) {
 
-            var yProp = attrs.chartY || 'y';
-            var xProp = attrs.chartX || 'x';
             var $d3_element = d3.select($element[0]);
-
+            var yProp = 'value';
 
             var xScale = d3.scale.ordinal();
             var xLinearScale = d3.scale.linear();
@@ -62,56 +52,44 @@
                 .attr("class", "x brush");
 
 
-            var updateScaleDomains = function(distribution, isTime) {
+            var updateScaleDomains = function(table, domain, isTime) {
 
-                var yExtent = d3.extent(distribution.counts, function(d) {
+                var yExtent = d3.extent(table, function(d) {
                     return d[yProp];
                 });
 
                 yScale.domain([0, yExtent[1]]);
-                var xDomain;
+                var buffer = 1;
+                //var xDomain;
                 if ( isTime ){
-
-                    xDomain = d3.range(
-                       new Date(distribution.min_bin),
-                       new Date((new Date(distribution.max_bin)) + 1000 * distribution.bin_size), // it is exclusive on max
-                       +distribution.bin_size * 1000
-                    );
+                    //xDomain = d3.range(
+                    //   new Date(distribution.min_bin),
+                    //   new Date((new Date(distribution.max_bin)) + 1000 * distribution.bin_size), // it is exclusive on max
+                    //   +distribution.bin_size * 1000
+                    //);
                     xCurrentScale = xTimeScale;
                     xAxis.tickFormat(d3.time.format("%Y-%m-%d %H:%M:%S"));
-                    xAxis.ticks(3);
-                }else {
+                    xAxis.ticks(1);
+                    buffer = 1000;
 
-                    xDomain = d3.range(
-                        distribution.min_bin,
-                        distribution.max_bin + distribution.bin_size, // it is exclusive on max
-                        distribution.bin_size
-                    );
+                    domain = domain.map(function(timeStr) {
+                        return new Date(timeStr);
+                    });
+                }else {
                     xCurrentScale = xLinearScale;
                     xAxis.tickFormat(d3.format("d"));
                     xAxis.ticks(5);
                 }
+
                 xAxis.scale(xCurrentScale);
                 brush.x(xCurrentScale);
-                //Guaranteed to be at least one bin in the xDomain now
-                if (xDomain.length == 0) {
-                    throw("domain is empty");
+
+                xScale.domain(domain);
+                if (domain.length > 0) {
+                    xCurrentScale.domain([domain[0] - buffer, +domain[domain.length - 1] + buffer]);
+                } else {
+                    xCurrentScale.domain([0, 1]);
                 }
-
-                //If there aren't enough bins, then add some on the outside
-                while (xDomain.length < distribution.bins) {
-                    var first = xDomain[0];
-                    var last = xDomain[xDomain.length - 1];
-
-                    if (first >= 0) {
-                        xDomain.unshift(first - distribution.bin_size);
-                    }
-
-                    xDomain.push(last + distribution.bin_size);
-                }
-
-                xScale.domain(xDomain);
-                xCurrentScale.domain([xDomain[0] - 1, xDomain[xDomain.length - 1] + 1]);
             };
 
 
@@ -135,7 +113,7 @@
                 //The right-most x-axis label tends to stick out
                 format = xAxis.tickFormat() || xCurrentScale.tickFormat(xAxis.ticks());
                 if (isTime){
-                    size.margin.right = 0;
+                    size.margin.right = 5;
                 }
                 else{
                     var maxXVal = format(xCurrentScale.domain()[1]);
@@ -157,9 +135,11 @@
                     return;
                 }
 
-                var distribution = dimension.distribution || default_distribution;
+                var table = dimension.table || [];
+                var domain = dimension.domain || [];
+                var xProp = dimension.key;
 
-                updateScaleDomains(distribution, dimension.is_time());
+                updateScaleDomains(table, domain, dimension.is_time());
                 updateSize(dimension.is_time());
 
                 //Shift the chart
@@ -168,7 +148,7 @@
 
                 //Update the scale ranges
                 yScale.range([size.height, 0]);
-                xScale.rangeRoundBands([0, size.width], 0, 0.1);
+                xScale.rangeBands([0, size.width], 0, 0);
                 xCurrentScale.range([0, size.width]);
 
 
@@ -181,7 +161,7 @@
 
                 //Draw some bars
                 var bars = barsGroup.selectAll('rect.bar')
-                    .data(distribution.counts);
+                    .data(table);
 
                 bars.exit()
                     .remove();
@@ -189,12 +169,7 @@
                 bars.enter()
                     .append("rect")
                     .attr('class', 'bar')
-                    .attr('height', 0);
-
-                bars.attr('x', function (d) {
-                    if (dimension.is_time()) return xScale(+new Date(d[xProp]));
-                    else return xScale(d[xProp]);
-                })
+                    .attr('height', 0)
                     .attr('y', function (d) {
                         return yScale(d[yProp]);
                     })
@@ -202,6 +177,16 @@
                     .attr("height", function (d) {
                         return size.height - yScale(d[yProp]);
                     });
+
+                if (dimension.is_time()) {
+                    bars.attr('x', function (d) {
+                        return xScale(new Date(d[xProp]));
+                    })
+                } else {
+                    bars.attr('x', function (d) {
+                        return xScale(d[xProp]);
+                    });
+                }
 
                 //Draw the brush
                 redrawBrush();
@@ -265,9 +250,9 @@
                     if (scope.dimension && scope.dimension.filter) {
 
                        if (scope.dimension.is_time()){
-                            var format = d3.time.format("%Y-%m-%d %H:%M:%S");
-                            min = new Date(min);
-                            max = new Date(max);
+                            //var format = d3.time.format("%Y-%m-%d %H:%M:%S");
+                            //min = new Date(min);
+                            //max = new Date(max);
                             scope.dimension.filter.min_time(min);
                             scope.dimension.filter.max_time(max);
                        }else{
@@ -289,7 +274,7 @@
                 }, false);
 
                 // Watch for data changes (just reference, not object equals)
-                scope.$watch('dimension.distribution', function (newVals, oldVals) {
+                scope.$watch('dimension.table', function (newVals, oldVals) {
                     return hist.render(scope.dimension);
                 }, false);
 
@@ -297,7 +282,11 @@
                 scope.$watch('dimension.filter.data', function(newVal, oldVal) {
                     if (newVal) {
                         if (scope.dimension.is_time()){
-                            hist.setBrushExtent(newVal.min_time, newVal.max_time);
+                            if (newVal.min_time && newVal.max_time) {
+                                var min_time = new Date(newVal.min_time);
+                                var max_time = new Date(newVal.max_time);
+                                hist.setBrushExtent(min_time, max_time);
+                            }
                         }else{
                             hist.setBrushExtent(newVal.min, newVal.max);
                         }
@@ -339,7 +328,7 @@
                 var chart = c3.generate({
                     bindto: $element.find('.sparqs-vis-render-target')[0],
                     data: {
-                        json: dataTable.rows,
+                        json: dataTable.table,
                         type: 'bar',
                         keys: {
                             x: 'type',
@@ -374,7 +363,7 @@
                 var vis = scope._sparqsVis = new SparQsVis($element, attrs, onClicked);
 
                 // Watch for changes to the datatable
-                scope.$watch('dataTable.rows', function (newVals, oldVals) {
+                scope.$watch('dataTable.table', function (newVals, oldVals) {
                     return vis.render(scope.dataTable);
                 }, false);
 

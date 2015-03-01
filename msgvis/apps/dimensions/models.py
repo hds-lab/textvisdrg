@@ -354,6 +354,7 @@ class QuantitativeDimension(CategoricalDimension):
         return list(self._iter_xrange(min_bin, max_bin, bin_size))
 
     def _iter_xrange(self, min, max, step):
+        max = max + step # bin values are the left side of each bin so we need an extra on the right
         while min <= max:
             yield min
             min += step
@@ -512,6 +513,7 @@ class TimeDimension(QuantitativeDimension):
 
     def _iter_xrange(self, min, max, step):
         step = timedelta(seconds=step)
+        max = max + step # bin values are the left side of each bin so we need an extra on the right
         while min <= max:
             yield min
             min += step

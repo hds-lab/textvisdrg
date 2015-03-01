@@ -88,7 +88,8 @@
                 this.filter = new Filter(this.filter);
                 this.filtering = false; //true if currently being filtered
                 this.description = [this.name, this.name, this.name].join(', ') + '!';
-                this.distribution = undefined;
+                this.table = undefined;
+                this.domain = undefined;
             };
 
             angular.extend(Dimension.prototype, {
@@ -128,21 +129,15 @@
                     }
                 },
                 load_distribution: function (dataset) {
-                    if (!this._loading && !this.distribution) {
+                    if (!this._loading && !this.table) {
                         this._loading = true;
                         DimensionDistributions.load(this);
                     }
                 },
-                set_distribution: function(distribution) {
+                set_distribution: function(datatable) {
                     this._loading = false;
-                    this.distribution = distribution;
-                    /*if ( this.is_time() ){
-                        this.filter.min_time(new Date(distribution.min_bin));
-                        this.filter.max_time(new Date(distribution.max_bin));
-                    }else{
-                        this.filter.min(distribution.min_bin);
-                        this.filter.max(distribution.max_bin);
-                    }*/
+                    this.table = datatable.table;
+                    this.domain = datatable.domains[this.key];
                 }
             });
 
