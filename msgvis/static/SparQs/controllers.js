@@ -229,4 +229,23 @@
         'SparQs.services.Selection'
     ];
     module.controller('SparQs.controllers.FilterController', FilterController);
+
+    module.directive('datetimeFormat', function() {
+      return {
+        require: 'ngModel',
+        link: function(scope, element, attrs, ngModelController) {
+          ngModelController.$parsers.push(function(data) {
+            //convert data from view format to model format
+            return data; //converted
+          });
+
+          ngModelController.$formatters.push(function(data) {
+            //convert data from model format to view format
+              if ( typeof(data) !== "undefined" )
+                return moment(data).utc().format("YYYY-MM-DD HH:mm:ss"); //converted
+              return data;
+          });
+        }
+      }
+    });
 })();

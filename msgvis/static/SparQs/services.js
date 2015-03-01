@@ -39,7 +39,7 @@
                 load: function (dimension) {
                     var request = {
                         dataset: Dataset.id,
-                        dimension: dimension.key
+                        dimension: dimension.key,
                     };
 
                     var self = this;
@@ -47,6 +47,7 @@
                         .success(function (data) {
                             dimension.set_distribution(data.distribution);
                         });
+
                 }
             });
 

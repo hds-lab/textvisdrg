@@ -27,6 +27,7 @@
 <script src="{% static 'djangular/js/django-angular.js' %}"></script>
 
 <script src="{% static 'bower/d3/d3.js' %}"></script>
+<script src="{% static 'bower/moment/moment.js' %}"></script>
 
 <script src="{% static 'SparQs/SparQs.js' %}"></script>
 <script src="{% static 'SparQs/controllers.js' %}"></script>
@@ -179,7 +180,7 @@
             <div class="filter-body">
                 <form ng-submit="saveFilter()">
                     <p class="description">{$ filtering.dimension.description $}</p>
-                    <p class="form-group" ng-show="filtering.dimension.is_quantitative()">
+                    <p class="form-group" ng-if="filtering.dimension.is_quantitative()">
 
                         <quant-histogram
                             dimension="filtering.dimension"
@@ -189,15 +190,30 @@
                             on-brushed="onQuantitativeBrushed">
                         </quant-histogram>
 
-                        <input type="text" class="filter-min form-control"
-                               ng-model="filtering.dimension.filter.min"
-                               ng-model-options="{ getterSetter: true }"
-                               placeholder="min"/>
-                        <input type="text" class="filter-max form-control"
-                               ng-model="filtering.dimension.filter.max"
-                               ng-model-options="{ getterSetter: true }"
-                               placeholder="max"/>
+                        <div ng-if="filtering.dimension.is_time()">
+                            <input type="text" class="filter-min form-control"
+                                   ng-model="filtering.dimension.filter.min_time"
+                                   ng-model-options="{ getterSetter: true }"
+                                   placeholder="min" datetime-format />
+                            <input type="text" class="filter-max form-control"
+                                   ng-model="filtering.dimension.filter.max_time"
+                                   ng-model-options="{ getterSetter: true }"
+                                   placeholder="max" datetime-format/>
+                        </div>
+                        <div ng-if="!filtering.dimension.is_time()">
+                            <input type="text" class="filter-min form-control"
+                                   ng-model="filtering.dimension.filter.min"
+                                   ng-model-options="{ getterSetter: true }"
+                                   placeholder="min"/>
+                            <input type="text" class="filter-max form-control"
+                                   ng-model="filtering.dimension.filter.max"
+                                   ng-model-options="{ getterSetter: true }"
+                                   placeholder="max"/>
+                        </div>
+
+
                     </p>
+
                     <p class="form-error" ng-show="!filtering.dimension.is_quantitative()">
                         Not yet implemented! <br/> Only quantitative filters.
                     </p>
