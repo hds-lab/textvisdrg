@@ -547,6 +547,6 @@ class GenerateDataTableTest(DistributionTestCaseMixins, TestCase):
                 render_calls.append((args, kwargs))
 
         datatable = MockDataTable(primary_dimension='time')
-        datatable.generate(dataset.id)
+        datatable.generate(dataset)
         self.assertEquals(len(render_calls), 1)
 

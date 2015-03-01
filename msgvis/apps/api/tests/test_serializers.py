@@ -378,12 +378,15 @@ class DataTableSerializerTest(TestCase):
 
 
     def test_datatable_serialization(self):
-        datatable = [
-            dict(value=2, count=5),
-            dict(value=56, count=23),
-            dict(value='asdf', count=53),
-        ]
-
+        datatable = {
+            'table': [
+                dict(value=2, count=5),
+                dict(value=56, count=23),
+                dict(value='asdf', count=53),
+            ],
+            'domains': {}
+        }
+        
         self.deserialized_representation['result'] = datatable
         self.serialized_representation['result'] = datatable
 
