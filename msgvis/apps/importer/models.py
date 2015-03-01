@@ -38,8 +38,8 @@ def create_an_instance_from_json(json_str, dataset_obj):
                                                                    'shared_count': 0,
                                                                    'mentioned_count': 0,
                                                                    'friend_count': tweet_data['user']['friends_count'],
-                                                                   'follower_count': tweet_data['user'][
-                                                                       'followers_count']}
+                                                                   'follower_count': tweet_data['user']['followers_count'],
+                                                                   'message_count': tweet_data['user']['statuses_count']}
     )
 
     if tweet_data.get('retweeted_status') is not None:
