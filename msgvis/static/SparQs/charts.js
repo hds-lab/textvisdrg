@@ -20,12 +20,15 @@
             var xProp = attrs.chartX || 'x';
             var $d3_element = d3.select($element[0]);
 
+
             var xScale = d3.scale.ordinal();
             var xLinearScale = d3.scale.linear();
-            var yScale = d3.scale.linear();
+            var xTimeScale = d3.time.scale();
+            var xCurrentScale = xLinearScale;
 
+            var yScale = d3.scale.linear();
             var xAxis = d3.svg.axis()
-                .scale(xLinearScale)
+                .scale(xCurrentScale)
                 .orient('bottom')
                 .ticks(5);
 
@@ -35,7 +38,7 @@
                 .ticks(2);
 
             var brush = d3.svg.brush()
-                .x(xLinearScale)
+                .x(xCurrentScale)
                 .on("brush", function() {
                     var selection = currentExtent();
                     onBrushed(selection[0], selection[1]);
@@ -59,18 +62,37 @@
                 .attr("class", "x brush");
 
 
-            var updateScaleDomains = function(distribution) {
+            var updateScaleDomains = function(distribution, isTime) {
 
                 var yExtent = d3.extent(distribution.counts, function(d) {
                     return d[yProp];
                 });
-                yScale.domain([0, yExtent[1]]);
 
-                var xDomain = d3.range(
-                    distribution.min_bin,
-                    distribution.max_bin + distribution.bin_size, // it is exclusive on max
-                    distribution.bin_size
-                );
+                yScale.domain([0, yExtent[1]]);
+                var xDomain;
+                if ( isTime ){
+
+                    xDomain = d3.range(
+                       new Date(distribution.min_bin),
+                       new Date((new Date(distribution.max_bin)) + 1000 * distribution.bin_size), // it is exclusive on max
+                       +distribution.bin_size * 1000
+                    );
+                    xCurrentScale = xTimeScale;
+                    xAxis.tickFormat(d3.time.format("%Y-%m-%d %H:%M:%S"));
+                    xAxis.ticks(3);
+                }else {
+
+                    xDomain = d3.range(
+                        distribution.min_bin,
+                        distribution.max_bin + distribution.bin_size, // it is exclusive on max
+                        distribution.bin_size
+                    );
+                    xCurrentScale = xLinearScale;
+                    xAxis.tickFormat(d3.format("d"));
+                    xAxis.ticks(5);
+                }
+                xAxis.scale(xCurrentScale);
+                brush.x(xCurrentScale);
                 //Guaranteed to be at least one bin in the xDomain now
                 if (xDomain.length == 0) {
                     throw("domain is empty");
@@ -89,7 +111,7 @@
                 }
 
                 xScale.domain(xDomain);
-                xLinearScale.domain([xDomain[0] - 1, xDomain[xDomain.length - 1] + 1]);
+                xCurrentScale.domain([xDomain[0] - 1, xDomain[xDomain.length - 1] + 1]);
             };
 
 
@@ -104,16 +126,22 @@
                 }
             };
 
-            var updateSize = function() {
+            var updateSize = function(isTime) {
                 //The top y-axis label might stick out
                 var format = yAxis.tickFormat() || yScale.tickFormat(yAxis.ticks());
                 var maxYVal = format(yScale.domain()[1]);
                 size.margin.left = 10 + 7 * maxYVal.length;
 
                 //The right-most x-axis label tends to stick out
-                format = xAxis.tickFormat() || xLinearScale.tickFormat(xAxis.ticks());
-                var maxXVal = format(xLinearScale.domain()[1]);
-                size.margin.right = 0.5 * 7 * maxXVal.length;
+                format = xAxis.tickFormat() || xCurrentScale.tickFormat(xAxis.ticks());
+                if (isTime){
+                    size.margin.right = 0;
+                }
+                else{
+                    var maxXVal = format(xCurrentScale.domain()[1]);
+                    size.margin.right = 0.5 * 7 * maxXVal.length;
+                }
+
 
                 var elementSize = {
                     width: $element.innerWidth(),
@@ -125,27 +153,30 @@
             };
 
             this.render = function (dimension) {
-                if (!dimension || !dimension.is_quantitative()) {
+                if (!dimension || (!dimension.is_quantitative() && !dimension.is_time())) {
                     return;
                 }
 
                 var distribution = dimension.distribution || default_distribution;
 
-                updateScaleDomains(distribution);
-                updateSize();
+                updateScaleDomains(distribution, dimension.is_time());
+                updateSize(dimension.is_time());
 
                 //Shift the chart
                 chart.attr('transform', 'translate(' + size.margin.left + ',' + size.margin.top + ')');
 
+
                 //Update the scale ranges
                 yScale.range([size.height, 0]);
                 xScale.rangeRoundBands([0, size.width], 0, 0.1);
-                xLinearScale.range([0, size.width]);
+                xCurrentScale.range([0, size.width]);
+
 
                 //Update the axes
                 xAxisGroup
                     .attr("transform", "translate(0," + size.height + ")")
                     .call(xAxis);
+
                 yAxisGroup.call(yAxis);
 
                 //Draw some bars
@@ -161,7 +192,8 @@
                     .attr('height', 0);
 
                 bars.attr('x', function (d) {
-                    return xScale(d[xProp]);
+                    if (dimension.is_time()) return xScale(+new Date(d[xProp]));
+                    else return xScale(d[xProp]);
                 })
                     .attr('y', function (d) {
                         return yScale(d[yProp]);
@@ -176,7 +208,7 @@
             };
 
             function currentExtent() {
-                return brush.empty() ? xLinearScale.domain() : brush.extent();
+                return brush.empty() ? xCurrentScale.domain() : brush.extent();
             }
 
             function redrawBrush() {
@@ -231,8 +263,17 @@
 
                 var onBrushed = function(min, max) {
                     if (scope.dimension && scope.dimension.filter) {
-                        scope.dimension.filter.min(min);
-                        scope.dimension.filter.max(max);
+
+                       if (scope.dimension.is_time()){
+                            var format = d3.time.format("%Y-%m-%d %H:%M:%S");
+                            min = new Date(min);
+                            max = new Date(max);
+                            scope.dimension.filter.min_time(min);
+                            scope.dimension.filter.max_time(max);
+                       }else{
+                            scope.dimension.filter.min(min);
+                            scope.dimension.filter.max(max);
+                       }
                     }
 
                     if (scope.onBrushed) {
@@ -255,7 +296,11 @@
                 // Watch for filter changes
                 scope.$watch('dimension.filter.data', function(newVal, oldVal) {
                     if (newVal) {
-                        hist.setBrushExtent(newVal.min, newVal.max);
+                        if (scope.dimension.is_time()){
+                            hist.setBrushExtent(newVal.min_time, newVal.max_time);
+                        }else{
+                            hist.setBrushExtent(newVal.min, newVal.max);
+                        }
                     }
                 }, true);
 
@@ -277,4 +322,5 @@
             link: link
         };
     });
+
 })();

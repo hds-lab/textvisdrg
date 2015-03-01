@@ -108,7 +108,10 @@
                     return cls;
                 },
                 is_quantitative: function () {
-                    return this.type == 'QuantitativeDimension';
+                    return this.type == 'QuantitativeDimension' || this.is_time();
+                },
+                is_time: function () {
+                    return this.type == 'TimeDimension';
                 },
                 serialize_filter: function () {
                     return angular.extend({
@@ -133,6 +136,13 @@
                 set_distribution: function(distribution) {
                     this._loading = false;
                     this.distribution = distribution;
+                    /*if ( this.is_time() ){
+                        this.filter.min_time(new Date(distribution.min_bin));
+                        this.filter.max_time(new Date(distribution.max_bin));
+                    }else{
+                        this.filter.min(distribution.min_bin);
+                        this.filter.max(distribution.max_bin);
+                    }*/
                 }
             });
 
