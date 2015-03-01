@@ -184,7 +184,7 @@
                             scope.$on('$destroy', unbind);
                         }
                     });
-                },
+                }
 
             });
 

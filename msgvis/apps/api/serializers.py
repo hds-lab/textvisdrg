@@ -26,6 +26,7 @@ class DimensionKeySerializer(serializers.CharField):
     def to_representation(self, instance):
         return instance.key
 
+
 class DimensionSerializer(serializers.Serializer):
     """
     JSON representation of Dimensions for the API.

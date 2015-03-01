@@ -219,7 +219,6 @@ class DimensionSerializerTest(TestCase):
         self.assertEquals(serializer.validated_data, self.deserialized_representation)
 
 
-
 class QuantitativeFilterSerializerTest(TestCase):
     """
     {
