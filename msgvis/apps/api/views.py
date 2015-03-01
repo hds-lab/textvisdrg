@@ -10,8 +10,6 @@ The view classes below define the API endpoints.
 +-----------------------------------------------------------------+-----------------+-------------------------------------------------+
 | :class:`Get Research Questions <ResearchQuestionsView>`         | /api/questions  | Get RQs related to dimensions/filters           |
 +-----------------------------------------------------------------+-----------------+-------------------------------------------------+
-| :class:`Get Dimension Distribution <DimensionDistributionView>` | /api/dimension  | Get distribution of a dimension                 |
-+-----------------------------------------------------------------+-----------------+-------------------------------------------------+
 | Message Context                                                 | /api/context    | Get context for a message                       |
 +-----------------------------------------------------------------+-----------------+-------------------------------------------------+
 | Snapshots                                                       | /api/snapshots  | Save a visualization snapshot                   |
@@ -230,72 +228,6 @@ class ResearchQuestionsView(APIView):
             }
 
             output = serializers.SampleQuestionSerializer(response_data)
-            return Response(output.data, status=status.HTTP_200_OK)
-
-        return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class DimensionDistributionView(APIView):
-    """
-    In order to display helpful information for filtering, the distribution
-    of a dimension may be queried using this API endpoint.
-
-    For categorical dimensions, the distribution dictionary
-    will not contains all the binning metadata.
-
-    **Request:** ``POST /api/dimension``
-
-    **Format:** (requests should not include the ``distribution`` key)
-
-    ::
-
-        {
-          "dataset": 2,
-          "dimension": "time",
-          "distribution":
-            "bins": 23,
-            "bin_size": "secondsval",
-            "min_bin": "some_time",
-            "max_bin": "some_time",
-            "min_val": "actual_time_val",
-            "max_val": "actual_time_val",
-            "counts": [
-                {
-                  "count": 5000,
-                  "value": "some_time"
-                },
-                {
-                  "count": 1000,
-                  "value": "some_time"
-                },
-                {
-                  "count": 500,
-                  "value": "some_time"
-                },
-                {
-                  "count": 50,
-                  "value": "some_time"
-                }
-            ]
-          }
-        }
-    """
-
-    def post(self, request, format=None):
-        input = serializers.DimensionDistributionSerializer(data=request.data)
-        if input.is_valid():
-            data = input.validated_data
-
-            dimension = data['dimension']
-            dataset = data['dataset']
-
-            response_data = {
-                'dimension': dimension,
-                'dataset': dataset,
-                'distribution': dimension.get_distribution(dataset),
-            }
-
-            output = serializers.DimensionDistributionSerializer(response_data)
             return Response(output.data, status=status.HTTP_200_OK)
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)

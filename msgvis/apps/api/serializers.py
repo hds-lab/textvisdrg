@@ -201,12 +201,6 @@ class SampleQuestionSerializer(serializers.Serializer):
     questions = serializers.ListField(child=QuestionSerializer(), required=False, read_only=True)
 
 
-class DimensionDistributionSerializer(serializers.Serializer):
-    dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
-    dimension = DimensionKeySerializer()
-    distribution = serializers.DictField(required=False, read_only=True)
-
-
 class DataTableSerializer(serializers.Serializer):
     dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
     dimensions = serializers.ListField(child=DimensionKeySerializer())

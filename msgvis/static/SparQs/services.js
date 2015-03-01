@@ -30,7 +30,7 @@
             });
 
 
-            var apiUrl = djangoUrl.reverse('dimension-distribution');
+            var apiUrl = djangoUrl.reverse('data-tables');
 
             var DimensionDistributions = function () {
             };
@@ -39,13 +39,13 @@
                 load: function (dimension) {
                     var request = {
                         dataset: Dataset.id,
-                        dimension: dimension.key
+                        dimensions: [dimension.key]
                     };
 
                     var self = this;
                     return $http.post(apiUrl, request)
                         .success(function (data) {
-                            dimension.set_distribution(data.distribution);
+                            dimension.set_distribution(data.result);
                         });
                 }
             });

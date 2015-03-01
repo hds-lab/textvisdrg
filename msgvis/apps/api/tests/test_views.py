@@ -12,63 +12,6 @@ import mock
 
 from msgvis.apps.api.tests import api_time_format, django_time_format
 
-
-class DimensionDistributionViewTest(APITestCase):
-    def setUp(self):
-        self.dataset = corpus_models.Dataset.objects.create(name="Api test dataset")
-
-    @mock.patch('msgvis.apps.dimensions.registry.get_dimension')
-    def test_get_distribution_api(self, get_dimension):
-        # Fake the dimension internally
-        dimension = mock.Mock()
-        dimension.key = 'time'
-        get_dimension.return_value = dimension
-
-        # Fake the distribution too
-        distribution = {
-            'counts': [
-                {
-                    "count": 5000,
-                    "value": "cat"
-                },
-                {
-                    "count": 1000,
-                    "value": "catch"
-                },
-                {
-                    "count": 500,
-                    "value": "cathedral"
-                },
-                {
-                    "count": 50,
-                    "value": "cataleptic"
-                }
-            ]
-        }
-        dimension.get_distribution.return_value = distribution
-
-        url = reverse('dimension-distribution')
-        data = {
-            "dataset": self.dataset.id,
-            "dimension": dimension.key,
-        }
-
-        expected_response = {
-            "dataset": self.dataset.id,
-            "dimension": dimension.key,
-            "distribution": distribution
-        }
-
-        response = self.client.post(url, data, format='json')
-
-        self.assertEquals(response.data, expected_response)
-        self.assertEquals(response.status_code, status.HTTP_200_OK)
-
-        get_dimension.assert_called_once_with(dimension.key)
-        dimension.get_distribution.assert_called_once_with(self.dataset)
-
-
-
 class ResearchQuestionsViewTest(APITestCase):
     def setUp(self):
         self.dataset = corpus_models.Dataset.objects.create(name="Api test dataset")

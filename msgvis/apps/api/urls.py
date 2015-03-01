@@ -6,8 +6,6 @@ api_root_urls = {
     'data-tables': url(r'^table/$', views.DataTableView.as_view(), name='data-table'),
     'example-messages': url(r'^message/$', views.ExampleMessagesView.as_view(), name='example-messages'),
     'research-questions': url(r'^questions/$', views.ResearchQuestionsView.as_view(), name='research-questions'),
-    'dimension-distributions': url(r'^dimension/$', views.DimensionDistributionView.as_view(),
-                                   name='dimension-distribution'),
 }
 
 urlpatterns = api_root_urls.values() + [
