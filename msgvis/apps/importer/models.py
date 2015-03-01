@@ -18,6 +18,8 @@ def create_an_instance_from_json(json_str, dataset_obj):
 
     tweet_data = json.loads(json_str)
     tweet = Message(dataset=dataset_obj)
+    if 'in_reply_to_status_id' not in tweet_data:
+        return False
     tweet.text = tweet_data['text']
     tweet.time = datetime(*(parsedate(tweet_data['created_at']))[:6], tzinfo=utc)
 
