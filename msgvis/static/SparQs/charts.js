@@ -424,20 +424,17 @@
                     } else {
                         //Grouped chart setup
                         valueKeys = domains[secondary.key];
-
-                    }
-                } else {
-                    //Modified one-axis setup for line and time series
-                    if (primary.is_quantitative()) {
-                        chartType = 'line';
-                        xAxisType = 'indexed'
-                    } else if (primary.is_time()) {
-                        chartType = 'line';
-                        xAxisType = 'timeseries';
                     }
                 }
 
-
+                //Modified one-axis setup for line and time series
+                if (primary.is_quantitative()) {
+                    chartType = 'line';
+                    xAxisType = 'indexed'
+                } else if (primary.is_time()) {
+                    chartType = 'line';
+                    xAxisType = 'timeseries';
+                }
 
                 var config = {
                     data:{
