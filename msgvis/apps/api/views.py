@@ -211,7 +211,6 @@ class ResearchQuestionsView(APIView):
         input = serializers.SampleQuestionSerializer(data=request.data)
         if input.is_valid():
             data = input.validated_data
-
             dimension_list = data["dimensions"]
             questions = questions_models.Question.get_sample_questions(*dimension_list)
 

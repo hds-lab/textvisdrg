@@ -730,7 +730,7 @@
       2,
       3
     ],
-    "text": "How much any of these 1\\themes\\ (identified by the authors) managed to capture the 2\\#ausvotes community??s\\ attention 3\\during each day\\?"
+    "text": "How much any of these 1\\themes\\ (identified by the authors) managed to capture the 2\\#ausvotes community's\\ attention 3\\during each day\\?"
   },
   "model": "questions.question",
   "pk": 9
@@ -2733,7 +2733,7 @@
       16,
       17
     ],
-    "text": "1\\How\\ do 234\\TV viewers\\ use Twitter 5678\\conventions (replies, mentions, and retweets)\\?"
+    "text": "1\\How\\ do 234\\TV viewers\\ use Twitter 567\\conventions (replies, mentions, and retweets)\\?"
   },
   "model": "questions.question",
   "pk": 149
