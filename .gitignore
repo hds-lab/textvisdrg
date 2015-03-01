@@ -63,3 +63,6 @@ target/
 /assets
 *.sqlite
 *.iml
+
+/*.zip
+

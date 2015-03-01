@@ -42,40 +42,6 @@ class MappedValuesQuerySetTest(TestCase):
 
 
 class CategoricalDimensionTest(TestCase):
-    def test_can_get_distribution(self):
-        """Just check that the Dimension.get_distribution method runs"""
-
-        dimension = models.CategoricalDimension(
-            key='contains_url',
-            name='Contains a url',
-            description='Contains a url',
-            field_name='contains_url',
-        )
-
-        queryset = mock.Mock()
-        grouped_queryset = mock.Mock()
-
-        group_by = mock.Mock()
-        group_by.return_value = grouped_queryset
-
-        grouped_queryset.annotate.return_value = 'hello!'
-
-        # Mock the Django count class
-        Count = mock.Mock()
-        Count.return_value = 5
-
-        with mock.patch.object(dimension, 'group_by', group_by), \
-             mock.patch('django.db.models.Count', Count):
-            result = dimension.get_distribution(queryset)
-            self.assertEquals(result['counts'], grouped_queryset.annotate.return_value)
-
-        # We should be grouping with the key field aliased to value
-        group_by.assert_called_once_with(queryset, grouping_key='value')
-
-        # And then we should aggregate by Count('id')
-        Count.assert_called_once_with('id')
-        grouped_queryset.annotate.assert_called_once_with(count=Count.return_value)
-
 
     def test_get_grouping_expression(self):
         """Check that the grouping expression equals the field name"""
