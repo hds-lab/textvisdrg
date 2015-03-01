@@ -232,5 +232,7 @@ class DataTableViewTest(APITestCase):
         self.assertEquals(serializer.is_valid.call_count, 1)
 
         # It should have called the data table function
-        DataTable.generate_datatable.assert_called_once_with(dimensions=dimensions, filters=filters)
+        DataTable.generate_datatable.assert_called_once_with(dataset_id=self.dataset.id,
+                                                             dimensions=dimensions,
+                                                             filters=filters)
 

@@ -94,9 +94,10 @@ class DataTableView(APIView):
         if input.is_valid():
             data = input.validated_data
 
+            dataset = data['dataset']
             dimensions = data['dimensions']
             filters = data.get('filters', [])
-            result = datatable_models.DataTable.generate_datatable(dimensions=dimensions, filters=filters)
+            result = datatable_models.DataTable.generate_datatable(dataset_id=dataset, dimensions=dimensions, filters=filters)
 
             # Just add the result key
             response_data = data

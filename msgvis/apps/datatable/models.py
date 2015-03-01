@@ -102,9 +102,10 @@ class DataTable(object):
 
 
     @classmethod
-    def generate_datatable(cls, dimensions, filters=None):
+    def generate_datatable(cls, dataset_id, dimensions, filters=None):
         """Generates a complete data table"""
-        queryset = corpus_models.Message.objects.all()
+        dataset = corpus_models.Dataset.objects.get(id=dataset_id)
+        queryset = dataset.message_set.all()
 
         # Filter the data
         if filters is not None:
@@ -114,4 +115,4 @@ class DataTable(object):
 
         # Render a table
         table = cls(*dimensions)
-        result = table.render(queryset)
+        return table.render(queryset)

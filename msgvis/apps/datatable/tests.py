@@ -531,3 +531,27 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
                                                                             'message_count')
 
         self.doDistributionTest('sender_message_count', dataset, author_count_distribution, desired_primary_bins=50)
+
+
+class GenerateDataTableTest(DistributionTestCaseMixins, TestCase):
+    """Test the combined data table generation routine"""
+
+    def test_generate_datatable(self):
+        """It should create and render a data table"""
+
+        dataset = self.create_empty_dataset()
+
+        init_calls = []
+        render_calls = []
+        class MockDataTable(models.DataTable):
+            def __init__(self, *args, **kwargs):
+                init_calls.append((args, kwargs))
+
+            def render(self, *args, **kwargs):
+                render_calls.append((args, kwargs))
+
+        MockDataTable.generate_datatable(dataset.id, dimensions=['time'])
+        self.assertEquals(init_calls[0], (('time',), {}))
+        self.assertEquals(len(render_calls), 1)
+
+
