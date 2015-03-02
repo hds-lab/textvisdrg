@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('dimensions', '0005_auto_20150227_2303'),
-        ('questions', '0003_auto_20150216_1958'),
+        ('questions', '0004_question_dimensions'),
     ]
 
     operations = [
@@ -21,13 +21,12 @@ class Migration(migrations.Migration):
                 ('question', models.ForeignKey(to='questions.Question')),
             ],
             options={
+                'ordering': ['count'],
             },
             bases=(models.Model,),
         ),
-        migrations.AddField(
+        migrations.RemoveField(
             model_name='question',
             name='dimensions',
-            field=models.ManyToManyField(to='dimensions.DimensionKey', through='questions.QuestionDimensionConnection'),
-            preserve_default=True,
         ),
     ]
