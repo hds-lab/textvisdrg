@@ -160,7 +160,8 @@ class QuestionSerializerTest(TestCase):
 
         self.question = questions_models.Question.objects.create(source=article,
                                                                  text="What is your favorite color?", )
-        self.question.dimensions = [d1, d2]
+        self.question.add_dimension(d1)
+        self.question.add_dimension(d2)
 
         article_result = serializers.ArticleSerializer(self.question.source).data
 

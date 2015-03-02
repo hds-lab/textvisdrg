@@ -37,13 +37,15 @@ class Question(models.Model):
     text = models.TextField()
     """The text of the question."""
 
-    dimensions = models.ManyToManyField("dimensions.DimensionKey")
+    dimensions = models.ManyToManyField("dimensions.DimensionKey", through="QuestionDimensionConnection")
     """A set of dimensions related to the question."""
 
 
     def add_dimension(self, key):
+        count = self.dimensions.count()
         dimension_key, created = DimensionKey.objects.get_or_create(key=key)
-        self.dimensions.add(dimension_key)
+        connection = QuestionDimensionConnection(question=self, dimension=dimension_key, count=count + 1)
+        connection.save()
 
     def __unicode__(self):
         return self.text
@@ -91,5 +93,13 @@ class Question(models.Model):
     @property
     def ordered_dimensions(self):
         dimensions = self.dimensions.all()
-        dimensions = dimensions.order_by('questions_question_dimensions.id')
+        #dimensions = dimensions.order_by('questions_question_dimensions.id')
         return dimensions
+
+class QuestionDimensionConnection(models.Model):
+    question = models.ForeignKey(Question)
+    dimension = models.ForeignKey(DimensionKey)
+    count = models.IntegerField()
+
+    class Meta:
+        ordering = ["count"]
