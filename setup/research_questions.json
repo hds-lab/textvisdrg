@@ -77,7 +77,7 @@
             "sender_share_count",
             "sender_mention_count"
         ],
-        "text":"For 123\\the major accounts\\, how many 4\\tweets\\, 5\\retweets\\ and 6\\@rep\\ were received?"
+        "text":"For 123\\the major accounts\\, how many 4\\tweets\\, 5\\retweets\\ and 6\\@replies\\ were received?"
     },
     {
         "source":{
@@ -183,7 +183,7 @@
             "hashtags",
             "topics"
         ],
-        "text":"What was the percentage of 1\\retweets\\ and 2\\replies\\ during the 345Australian general election\\?"
+        "text":"What was the percentage of 1\\retweets\\ and 2\\replies\\ during the 345\\Australian general election\\?"
     },
     {
         "source":{
