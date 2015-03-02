@@ -51,7 +51,7 @@
                 max: _getter_setter('max', Math.round),
                 min_time: _getter_setter('min_time'),
                 max_time: _getter_setter('max_time'),
-                levels: [],
+                levels: _getter_setter('levels'),
                 is_empty: function () {
                     if (angular.equals(this.data, {})) {
                         return true;
@@ -77,7 +77,6 @@
                 saved: function () {
                     this.old_data = angular.copy(this.data);
                     this.dirty = false;
-                    debugger;
                 }
             });
 
@@ -147,7 +146,7 @@
                     dimension.domain = datatable.domains[dimension.key];
                     dimension.distribution = dimension.get_distribution_in_order(dimension.table, dimension.domain);
                     if ( dimension.is_categorical() ){
-                        dimension.filter.levels = dimension.domain.slice(0);
+                        dimension.filter.levels(dimension.domain.slice(0));
                         var list = dimension.filter.levels();
                         for ( var i = 0 ; i < list.length ; i++ ){
                             if (list[i] == null)
@@ -187,11 +186,11 @@
                 },
                 change_level: function(d){
                     if (d.show == true){
-                        this.filter.levels.push(d.level);
+                        this.filter.levels().push(d.level);
                     }else{
-                        var idx = this.filter.levels.indexOf(d.level);
+                        var idx = this.filter.levels().indexOf(d.level);
                         if(idx != -1) {
-                            this.filter.levels.splice(idx, 1);
+                            this.filter.levels().splice(idx, 1);
                         }
                     }
                     this.filter.dirty = true;
