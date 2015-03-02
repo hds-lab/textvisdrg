@@ -232,12 +232,18 @@
                             <div class="search">
                                 <input type="text" />
                             </div>
+                            -->
 
                             <hr />
-                            <div>
-                                <span >Select All</span> <span>Unselected All</span>
+                            <div class="level-select-button-group">
+                                <button type=button class="level-select-button"
+                                        ng-click="filtering.dimension.filtered_all(false)"
+                                        ng-disabled="filtering.dimension.is_not_filtered()">Select All</button>
+                                <button type=button class="level-select-button"
+                                        ng-click="filtering.dimension.filtered_all(true)"
+                                        ng-disabled="filtering.dimension.is_all_filtered()">Unselected All</button>
                             </div>
-                            -->
+
 
                             <div class="dimension-levels">
                                 <div class=dimension-level ng-repeat="d in filtering.dimension.distribution">

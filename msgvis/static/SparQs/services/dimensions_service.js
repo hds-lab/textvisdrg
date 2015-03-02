@@ -195,6 +195,42 @@
                     }
                     this.filter.dirty = true;
 
+                },
+                is_all_filtered: function(){
+                    if ( typeof (this.filter.levels()) !== "undefined"){
+                        return this.is_categorical() && this.filter.levels().length == 0;
+                    }
+                    return false;
+                },
+                is_not_filtered: function(){
+                    if ( typeof (this.filter.levels()) !== "undefined"){
+                        return this.is_categorical() && this.filter.levels().length == this.domain.length;
+                    }
+                    return false;
+                },
+                filtered_all: function(flag) {
+                    var dimension = this;
+                    if (typeof (dimension.filter.levels()) !== "undefined") {
+                        if (flag == true) {
+                            dimension.filter.levels([]);
+                            dimension.distribution.forEach(function(d){
+                                d.show = false;
+                            });
+                        }
+                        else {
+                            dimension.filter.levels(dimension.domain.slice(0));
+                            var list = dimension.filter.levels();
+                            for (var i = 0; i < list.length; i++) {
+                                if (list[i] == null)
+                                    list[i] = "No " + dimension.key;
+                            }
+                            dimension.distribution.forEach(function(d){
+                                d.show = true;
+                            });
+                        }
+                        dimension.filter.dirty = true;
+                    }
+                    return false;
                 }
             });
 
