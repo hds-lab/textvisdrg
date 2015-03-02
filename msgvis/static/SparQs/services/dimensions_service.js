@@ -138,6 +138,18 @@
                         DimensionDistributions.load(this);
                     }
                 },
+                get_categorical_levels: function(){
+                    var dimension = this;
+                    if ( dimension.is_categorical() ){
+                        var list = dimension.domain.slice(0);
+                        for ( var i = 0 ; i < list.length ; i++ ){
+                            if (list[i] == null)
+                                list[i] = "No " + dimension.key;
+                        }
+                        return list;
+                    }
+                    return undefined;
+                },
                 set_distribution: function(datatable) {
                     var dimension = this;
                     
@@ -146,12 +158,7 @@
                     dimension.domain = datatable.domains[dimension.key];
                     dimension.distribution = dimension.get_distribution_in_order(dimension.table, dimension.domain);
                     if ( dimension.is_categorical() ){
-                        dimension.filter.levels(dimension.domain.slice(0));
-                        var list = dimension.filter.levels();
-                        for ( var i = 0 ; i < list.length ; i++ ){
-                            if (list[i] == null)
-                                list[i] = "No " + dimension.key;
-                        }
+                        dimension.filter.levels(dimension.get_categorical_levels());
                     }
                 },
                 get_distribution_in_order: function(table, domain) {
@@ -195,6 +202,37 @@
                     }
                     this.filter.dirty = true;
 
+                },
+                is_all_filtered: function(){
+                    if ( typeof (this.filter.levels()) !== "undefined"){
+                        return this.is_categorical() && this.filter.levels().length == 0;
+                    }
+                    return false;
+                },
+                is_not_filtered: function(){
+                    if ( typeof (this.filter.levels()) !== "undefined"){
+                        return this.is_categorical() && this.filter.levels().length == this.domain.length;
+                    }
+                    return false;
+                },
+                filtered_all: function(flag) {
+                    var dimension = this;
+                    if (typeof (dimension.filter.levels()) !== "undefined") {
+                        if (flag == true) {
+                            dimension.filter.levels([]);
+                            dimension.distribution.forEach(function(d){
+                                d.show = false;
+                            });
+                        }
+                        else {
+                            dimension.filter.levels(dimension.get_categorical_levels());
+                            dimension.distribution.forEach(function(d){
+                                d.show = true;
+                            });
+                        }
+                        dimension.filter.dirty = true;
+                    }
+                    return false;
                 }
             });
 
