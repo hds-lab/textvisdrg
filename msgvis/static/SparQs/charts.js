@@ -6,7 +6,7 @@
 
     module.directive('quantHistogram', function () {
 
-        var QuantHistogram = function($element, attrs, onBrushed) {
+        var QuantHistogram = function ($element, attrs, onBrushed) {
 
             var $d3_element = d3.select($element[0]);
             var yProp = 'value';
@@ -29,7 +29,7 @@
 
             var brush = d3.svg.brush()
                 .x(xCurrentScale)
-                .on("brush", function() {
+                .on("brush", function () {
                     var selection = currentExtent();
                     onBrushed(selection[0], selection[1]);
                 });
@@ -52,16 +52,16 @@
                 .attr("class", "x brush");
 
 
-            var updateScaleDomains = function(table, domain, isTime) {
+            var updateScaleDomains = function (table, domain, isTime) {
 
-                var yExtent = d3.extent(table, function(d) {
+                var yExtent = d3.extent(table, function (d) {
                     return d[yProp];
                 });
 
                 yScale.domain([0, yExtent[1]]);
                 var buffer = 1;
                 //var xDomain;
-                if ( isTime ){
+                if (isTime) {
                     //xDomain = d3.range(
                     //   new Date(distribution.min_bin),
                     //   new Date((new Date(distribution.max_bin)) + 1000 * distribution.bin_size), // it is exclusive on max
@@ -72,10 +72,10 @@
                     xAxis.ticks(1);
                     buffer = 1000;
 
-                    domain = domain.map(function(timeStr) {
+                    domain = domain.map(function (timeStr) {
                         return new Date(timeStr);
                     });
-                }else {
+                } else {
                     xCurrentScale = xLinearScale;
                     xAxis.tickFormat(d3.format("d"));
                     xAxis.ticks(5);
@@ -104,7 +104,7 @@
                 }
             };
 
-            var updateSize = function(isTime) {
+            var updateSize = function (isTime) {
                 //The top y-axis label might stick out
                 var format = yAxis.tickFormat() || yScale.tickFormat(yAxis.ticks());
                 var maxYVal = format(yScale.domain()[1]);
@@ -112,10 +112,10 @@
 
                 //The right-most x-axis label tends to stick out
                 format = xAxis.tickFormat() || xCurrentScale.tickFormat(xAxis.ticks());
-                if (isTime){
+                if (isTime) {
                     size.margin.right = 5;
                 }
-                else{
+                else {
                     var maxXVal = format(xCurrentScale.domain()[1]);
                     size.margin.right = 0.5 * 7 * maxXVal.length;
                 }
@@ -174,8 +174,8 @@
 
                 //Update the bars
                 bars.attr('y', function (d) {
-                        return yScale(d[yProp]);
-                    })
+                    return yScale(d[yProp]);
+                })
                     .attr('width', xScale.rangeBand())
                     .attr("height", function (d) {
                         return size.height - yScale(d[yProp]);
@@ -228,7 +228,7 @@
             }
 
             //The directive calls these when the bindings change
-            this.setBrushExtent = function(min, max) {
+            this.setBrushExtent = function (min, max) {
                 if (min === undefined && max === undefined) {
                     brush.clear();
                     redrawBrush();
@@ -249,19 +249,19 @@
         function link(scope, $element, attrs) {
             if (!scope._histogram) {
 
-                var onBrushed = function(min, max) {
+                var onBrushed = function (min, max) {
                     if (scope.dimension && scope.dimension.filter) {
 
-                       if (scope.dimension.is_time()){
+                        if (scope.dimension.is_time()) {
                             //var format = d3.time.format("%Y-%m-%d %H:%M:%S");
                             //min = new Date(min);
                             //max = new Date(max);
                             scope.dimension.filter.min_time(min);
                             scope.dimension.filter.max_time(max);
-                       }else{
+                        } else {
                             scope.dimension.filter.min(min);
                             scope.dimension.filter.max(max);
-                       }
+                        }
                     }
 
                     if (scope.onBrushed) {
@@ -282,15 +282,15 @@
                 }, false);
 
                 // Watch for filter changes
-                scope.$watch('dimension.filter.data', function(newVal, oldVal) {
+                scope.$watch('dimension.filter.data', function (newVal, oldVal) {
                     if (newVal) {
-                        if (scope.dimension.is_time()){
+                        if (scope.dimension.is_time()) {
                             if (newVal.min_time && newVal.max_time) {
                                 var min_time = new Date(newVal.min_time);
                                 var max_time = new Date(newVal.max_time);
                                 hist.setBrushExtent(min_time, max_time);
                             }
-                        }else{
+                        } else {
                             hist.setBrushExtent(newVal.min, newVal.max);
                         }
                     }
@@ -317,47 +317,289 @@
 
     module.directive('sparqsVis', function () {
 
-        var SparQsVis = function($element, attrs, onClicked) {
+        var SparQsVis = function ($element, attrs, onClicked) {
+
+            var DEFAULT_VALUE_KEY = 'value';
 
             function dataClicked() {
                 onClicked();
             }
 
-            this.render = function(dataTable) {
+            function aggregationLabel(dimension) {
+                return 'Avg. ' + dimension.name;
+            }
+
+            function weightedAverage(arr, valueKey, columnDataKey) {
+                if (arr.length == 0) return 0;
+
+                var denom = 0,
+                    sum = 0;
+
+                arr.forEach(function(row) {
+                    denom += row[valueKey];
+                    sum += row[valueKey] * row[columnDataKey];
+                });
+
+                if (denom > 0) {
+                    return sum / denom;
+                } else {
+                    return 0;
+                }
+            }
+
+            function buildFullTable(primary, secondary, table, domains) {
+                var rows;
+
+                if (primary.is_quantitative() && secondary && secondary.is_quantitative()) {
+                    //We're doing a scatter plot which is totally different
+                    // and much simpler.
+
+                    rows = table.map(function(row) {
+                        return [row[primary.key], row[secondary.key]];
+                    });
+
+                    rows.unshift([primary.key, secondary.key]);
+                    return rows;
+                }
+
+                //Otherwise let the fun begin...
+
+                //Use the primary dim values down the left always
+                var rowHeaders = domains[primary.key];
+                var columnHeaders = [DEFAULT_VALUE_KEY];
+
+                //Names inside the datatable rows
+                var rowDataKey = primary.key;
+                var columnDataKey = DEFAULT_VALUE_KEY;
+
+                //A function for aggregating cell values (used for quant secondary dimensions)
+                var columnAggregation = false;
+                if (secondary){
+                    if (!secondary.is_quantitative()) {
+                        //Use the secondary dim values across the top
+                        columnHeaders = domains[secondary.key];
+                    } else {
+                        //Leave the header alone but note we need to aggregate
+                        columnAggregation = true;
+                    }
+
+                    columnDataKey = secondary.key;
+                }
+
+                // Create a matrix of zeros
+                rows = new Array(rowHeaders.length + 1);
+
+                // Maps from domain values to row/col indices
+                var rowIndex = {};
+                var columnIndex = {};
+
+                // r is the row-index into the matrix.
+                // r-1 can be used to index into the row headers
+                // c is the column-index into the matrix.
+                // c-1 can be used to index into the column headers
+                var r, c;
+                var dimValue = function(val) {
+                    return val === null ? 'NULL' : val.toString();
+                };
+                for (r = 0; r <= rowHeaders.length; r++) {
+                    rows[r] = new Array(columnHeaders.length + 1);
+
+                    if (r == 0) {
+                        //Create the header row
+                        rows[r][0] = primary.key;
+                        for (c = 1; c <= columnHeaders.length; c++) {
+                            rows[r][c] = dimValue(columnHeaders[c - 1]);
+
+                            //Build the column index
+                            columnIndex[columnHeaders[c - 1]] = c;
+                        }
+                    } else {
+                        // Build the row index
+                        rowIndex[rowHeaders[r - 1]] = r;
+
+                        // Put the primary dimension value in place
+                        rows[r][0] = dimValue(rowHeaders[r - 1]);
+
+                        for (c = 1; c <= columnHeaders.length; c++) {
+                            // Fill the cells with zeros
+                            rows[r][c] = 0;
+
+                            // But if we're aggregating fill with an array
+                            if (columnAggregation) {
+                                rows[r][c] = [];
+                            }
+                        }
+                    }
+                }
+
+                // Now fill in the non-zeros from the table
+                table.forEach(function(row) {
+                    var value = row[DEFAULT_VALUE_KEY];
+                    var r = rowIndex[row[rowDataKey]];
+                    var c = 1;
+                    if (columnAggregation) {
+                        //We are aggregating
+                        rows[r][c].push(row);
+                    } else {
+
+                        if (secondary) {
+                            //we have secondary dimension values in the headers which means
+                            //the column index comes from the data
+                            c = columnIndex[row[columnDataKey]];
+                        }
+
+                        rows[r][c] = value;
+                    }
+                });
+
+                if (columnAggregation) {
+                    // Finish the aggregation
+                    for (r = 1; r <= rowHeaders.length; r++) {
+                        for (c = 1; c <= columnHeaders.length; c++) {
+                            rows[r][c] = weightedAverage(rows[r][c], DEFAULT_VALUE_KEY, columnDataKey);
+                        }
+                    }
+                }
+
+                ////Convert back to objects
+                //var tableOut = [];
+                //var dimValue;
+                //for (p = 0; p < primaryDomain.length; p++) {
+                //    var row = {};
+                //    dimValue = primaryDomain[p];
+                //    row[primary.key] = dimValue === null ? dimValue : dimValue.toString();
+                //    if (secondaryDomain) {
+                //        for (s = 0; s < secondaryDomain.length; s++) {
+                //            dimValue = secondaryDomain[s];
+                //            row[secondary.key] = dimValue === null ? dimValue : dimValue.toString();
+                //            row[DEFAULT_VALUE_KEY] = rows[p][s];
+                //        }
+                //    } else {
+                //        row[DEFAULT_VALUE_KEY] = rows[p];
+                //    }
+                //    tableOut.push(row);
+                //}
+
+                return rows;
+            }
+
+            function getC3Config(primary, secondary, domains) {
+                //Default setup: one-axis bar chart vs. counts
+
+                var config = {
+                    data:{
+                        type: 'bar',
+                        x: primary.key,
+                        names: {
+                            value: 'Num. Messages'
+                        },
+                        onclick: dataClicked
+                    },
+                    axis:  {
+                        x: {
+                            type: 'category',
+                            label: {
+                                text: primary.name,
+                                position: 'outer-center'
+                            }
+                        },
+                        y: {
+                            label: {
+                                text: 'Num. Messages',
+                                position: 'outer-middle'
+                            }
+                        }
+                    },
+                    legend: {
+                        show: false
+                    }
+                };
+
+                //If x is quantitative, use a line chart
+                if (primary.is_quantitative()) {
+                    config.axis.x.type = 'indexed';
+
+                    if (secondary) {
+                        config.data.type = 'spline';
+                    } else {
+                        config.data.type = 'area-spline';
+                    }
+
+                }
+
+                //Special time-specific overrides
+                if (primary.is_time()) {
+                    config.axis.x.type = 'timeseries';
+
+                    //parsing django time values
+                    config.data.xFormat = '%Y-%m-%dT%H:%M:%SZ';
+                }
+
+                if (secondary) {
+
+                    if (secondary.is_quantitative()) {
+                        if (primary.is_quantitative()) {
+                            //Nope, draw a scatter plot
+                            config.data.type = 'scatter';
+
+                            //Use the secondary dimension as the y label
+                            config.axis.y.label.text = secondary.name;
+
+                            config.axis.x.tick = {
+                                fit: false
+                            };
+                        } else {
+                            // We are using aggregated y-values
+                            config.axis.y.label.text = aggregationLabel(secondary);
+                        }
+                    } else {
+                        // The secondary dimension is categorical, so it
+                        // requires a legend to reveal the groups.
+
+                        config.legend.show = true;
+                        config.legend.position = 'inset';
+                        config.legend.inset = {
+                            anchor: 'top-right',
+                            x: 20,
+                            y: 10,
+                            step: 2
+                        };
+                    }
+                }
+
+                //if (xAxisType == 'category') {
+                //    config.axis.x.categories = domains[primary.key]
+                //}
+
+                return config;
+            }
+
+            this.render = function (dataTable) {
                 if (!dataTable) {
                     return;
                 }
 
-                var chart = c3.generate({
-                    bindto: $element.find('.sparqs-vis-render-target')[0],
-                    data: {
-                        json: dataTable.table,
-                        type: 'bar',
-                        keys: {
-                            x: 'type',
-                            value: ['value']
-                        },
-                        names: {
-                            'value': 'Num. Messages'
-                        },
-                        onclick: dataClicked
-                    },
-                    axis: {
-                        x: {
-                            type: 'category'
-                        },
-                        y: {
-                            label: 'Num. Messages'
-                        }
-                    }
-                });
+                //Get the dimensions in the data table
+                var dimensions = dataTable.dimensions;
+                var primary = dimensions[0];
+                var secondary = undefined;
+                if (dimensions.length == 2) {
+                    secondary = dimensions[1];
+                }
+                if (primary) {
+                    var table = buildFullTable(primary, secondary, dataTable.table, dataTable.domains);
+                    var config = getC3Config(primary, secondary, dataTable.domains);
+                    config.data.rows = table;
+                    config.bindto = $element.find('.sparqs-vis-render-target')[0];
+                    var chart = c3.generate(config);
+                }
             };
         };
 
         function link(scope, $element, attrs) {
             if (!scope._sparqsVis) {
 
-                var onClicked = function() {
+                var onClicked = function () {
                     if (scope.onClicked) {
                         scope.onClicked();
                     }

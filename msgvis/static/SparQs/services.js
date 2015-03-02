@@ -329,6 +329,7 @@
             var apiUrl = djangoUrl.reverse('data-table');
 
             var DataTables = function () {
+                this.dimensions = [];
                 this.domains = {};
                 this.table = [];
             };
@@ -352,6 +353,7 @@
                     var self = this;
                     $http.post(apiUrl, request)
                         .success(function (data) {
+                            self.dimensions = dimensions;
                             self.table = data.result.table;
                             self.domains = data.result.domains;
                         });
