@@ -159,6 +159,7 @@
                     dimension.distribution = dimension.get_distribution_in_order(dimension.table, dimension.domain);
                     if ( dimension.is_categorical() ){
                         dimension.filter.levels(dimension.get_categorical_levels().slice(0, dimension.num_default_show));
+                        dimension.search = {level: ""}
                     }
                 },
                 get_distribution_in_order: function(table, domain) {
@@ -191,6 +192,16 @@
                     });
 
                     return distribution;
+                },
+                show_search: function(){
+                    return this.is_categorical() && this.domain && this.domain.length > 10;
+                },
+                unfilter_level: function(d){
+                    d.show = true;
+                    this.filter.levels().push(d.level);
+
+                    this.filter.dirty = true;
+
                 },
                 change_level: function(d){
                     if (d.show == true){
@@ -234,6 +245,12 @@
                         dimension.filter.dirty = true;
                     }
                     return false;
+                },
+                reset_search: function(){
+                    var dimension = this;
+                    if ( dimension.is_categorical() ){
+                        dimension.search = {level: ""};
+                    }
                 }
             });
 
