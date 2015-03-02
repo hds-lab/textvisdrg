@@ -59,30 +59,30 @@ class Question(models.Model):
 
         if len(dimension_list) == 1:
             questions = questions.filter(dimensions__key=dimension_list[0])
-            final_questions.extend(questions[:total_questions_count])
+            final_questions.extend(questions.order_by('?')[:total_questions_count])
 
         elif len(dimension_list) == 2:
 
             questions = questions.filter(dimensions__key=dimension_list[0])
             questions = questions.filter(dimensions__key=dimension_list[1])
             count = int(total_questions_count / 2)
-            final_questions.extend(questions[:count])
+            final_questions.extend(questions.order_by('?')[:count])
 
             questions = cls.objects.all()
             questions = questions.filter(dimensions__key=dimension_list[0])
             questions = questions.exclude(dimensions__key=dimension_list[1])
             count = int((total_questions_count - len(final_questions)) / 2)
-            final_questions.extend(questions[:count])
+            final_questions.extend(questions.order_by('?')[:count])
 
             questions = cls.objects.all()
             questions = questions.filter(dimensions__key=dimension_list[1])
             questions = questions.exclude(dimensions__key=dimension_list[0])
             count = total_questions_count - len(final_questions)
-            final_questions.extend(questions[:count])
+            final_questions.extend(questions.order_by('?')[:count])
 
         if len(final_questions) == 0:
             questions = cls.objects.all()
-            final_questions.extend(questions[:total_questions_count])
+            final_questions.extend(questions.order_by('?')[:total_questions_count])
             """Consider the case that no dimension in the existing questions matches"""
 
 
