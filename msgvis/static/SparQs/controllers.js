@@ -216,7 +216,11 @@
 
         $scope.resetFilter = function () {
             if (!Filtering.dimension.filter.is_empty()) {
-                Filtering.dimension.filter.reset();
+                if (Filtering.dimension.is_categorical()){
+                    Filtering.dimension.filtered_all(false);
+                }else{
+                    Filtering.dimension.filter.reset();
+                }
                 Selection.changed('filters');
                 Filtering.dimension.filter.saved();
             }
