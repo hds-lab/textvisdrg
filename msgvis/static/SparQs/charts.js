@@ -325,47 +325,109 @@
                 onClicked();
             }
 
+            function aggregationLabel(dimension) {
+                return 'Avg. ' + dimension.name;
+            }
+
+            function weightedAverage(arr, valueKey, columnDataKey) {
+                if (arr.length == 0) return 0;
+
+                var denom = 0,
+                    sum = 0;
+
+                arr.forEach(function(row) {
+                    denom += row[valueKey];
+                    sum += row[valueKey] * row[columnDataKey];
+                });
+
+                if (denom > 0) {
+                    return sum / denom;
+                } else {
+                    return 0;
+                }
+            }
+
             function buildFullTable(primary, secondary, table, domains) {
-                var primaryDomain = domains[primary.key];
-                var secondaryDomain = secondary ? domains[secondary.key] : [DEFAULT_VALUE_KEY];
+                var rows;
+
+                if (primary.is_quantitative() && secondary && secondary.is_quantitative()) {
+                    //We're doing a scatter plot which is totally different
+                    // and much simpler.
+
+                    rows = table.map(function(row) {
+                        return [row[primary.key], row[secondary.key]];
+                    });
+
+                    rows.unshift([primary.key, secondary.key]);
+                    return rows;
+                }
+
+                //Otherwise let the fun begin...
+
+                //Use the primary dim values down the left always
+                var rowHeaders = domains[primary.key];
+                var columnHeaders = [DEFAULT_VALUE_KEY];
+
+                //Names inside the datatable rows
+                var rowDataKey = primary.key;
+                var columnDataKey = DEFAULT_VALUE_KEY;
+
+                //A function for aggregating cell values (used for quant secondary dimensions)
+                var columnAggregation = false;
+                if (secondary){
+                    if (!secondary.is_quantitative()) {
+                        //Use the secondary dim values across the top
+                        columnHeaders = domains[secondary.key];
+                    } else {
+                        //Leave the header alone but note we need to aggregate
+                        columnAggregation = true;
+                    }
+
+                    columnDataKey = secondary.key;
+                }
 
                 // Create a matrix of zeros
-                var rows = new Array(primaryDomain.length + 1);
+                rows = new Array(rowHeaders.length + 1);
 
                 // Maps from domain values to row/col indices
-                var primaryIndex = {};
-                var secondaryIndex = {};
+                var rowIndex = {};
+                var columnIndex = {};
 
-                // p is the row-index into the matrix.
-                // p-1 can be used to index into the primary domain
-                // s is the column-index into the matrix.
-                // s-1 can be used to index into the secondary domain
-                var s, p;
+                // r is the row-index into the matrix.
+                // r-1 can be used to index into the row headers
+                // c is the column-index into the matrix.
+                // c-1 can be used to index into the column headers
+                var r, c;
                 var dimValue = function(val) {
                     return val === null ? 'NULL' : val.toString();
                 };
-                for (p = 0; p <= primaryDomain.length; p++) {
-                    rows[p] = new Array(secondaryDomain.length + 1);
+                for (r = 0; r <= rowHeaders.length; r++) {
+                    rows[r] = new Array(columnHeaders.length + 1);
 
-                    if (p == 0) {
+                    if (r == 0) {
                         //Create the header row
-                        rows[p][0] = primary.key;
-                        for (s = 1; s <= secondaryDomain.length; s++) {
-                            rows[p][s] = dimValue(secondaryDomain[s - 1]);
+                        rows[r][0] = primary.key;
+                        for (c = 1; c <= columnHeaders.length; c++) {
+                            rows[r][c] = dimValue(columnHeaders[c - 1]);
 
-                            //Build the secondary index
-                            secondaryIndex[secondaryDomain[s - 1]] = s;
+                            //Build the column index
+                            columnIndex[columnHeaders[c - 1]] = c;
                         }
                     } else {
-                        // Build the primary index
-                        primaryIndex[primaryDomain[p - 1]] = p;
+                        // Build the row index
+                        rowIndex[rowHeaders[r - 1]] = r;
 
                         // Put the primary dimension value in place
-                        rows[p][0] = dimValue(primaryDomain[p - 1]);
+                        rows[r][0] = dimValue(rowHeaders[r - 1]);
 
-                        for (s = 1; s <= secondaryDomain.length; s++) {
+                        for (c = 1; c <= columnHeaders.length; c++) {
                             // Fill the cells with zeros
-                            rows[p][s] = 0;
+                            rows[r][c] = 0;
+
+                            // But if we're aggregating fill with an array
+                            if (columnAggregation) {
+                                rows[r][c] = [];
+                            }
                         }
                     }
                 }
@@ -373,11 +435,32 @@
                 // Now fill in the non-zeros from the table
                 table.forEach(function(row) {
                     var value = row[DEFAULT_VALUE_KEY];
-                    var p = primaryIndex[row[primary.key]];
-                    var s = secondary ? secondaryIndex[row[secondary.key]] : 1;
-                    rows[p][s] = value;
+                    var r = rowIndex[row[rowDataKey]];
+                    var c = 1;
+                    if (columnAggregation) {
+                        //We are aggregating
+                        rows[r][c].push(row);
+                    } else {
+
+                        if (secondary) {
+                            //we have secondary dimension values in the headers which means
+                            //the column index comes from the data
+                            c = columnIndex[row[columnDataKey]];
+                        }
+
+                        rows[r][c] = value;
+                    }
                 });
-                //
+
+                if (columnAggregation) {
+                    // Finish the aggregation
+                    for (r = 1; r <= rowHeaders.length; r++) {
+                        for (c = 1; c <= columnHeaders.length; c++) {
+                            rows[r][c] = weightedAverage(rows[r][c], DEFAULT_VALUE_KEY, columnDataKey);
+                        }
+                    }
+                }
+
                 ////Convert back to objects
                 //var tableOut = [];
                 //var dimValue;
@@ -402,59 +485,87 @@
 
             function getC3Config(primary, secondary, domains) {
                 //Default setup: one-axis bar chart vs. counts
-                var valueKeys = [DEFAULT_VALUE_KEY];
-                var yAxisLabel = 'Num. Messages';
-
-                var xAxisType = 'category';
-                var xAxisLabel = primary.name;
-                var xAxisKey = primary.key;
-
-                var chartType = 'bar';
-
-                if (secondary) {
-                    if (secondary.is_quantitative()) {
-                        //Alternate y axis setup
-                        valueKeys = [secondary.key];
-                        yAxisLabel = secondary.name;
-
-                        if (primary.is_quantitative()) {
-                            //Scatter plot setup
-                            chartType = 'scatter';
-                        }
-                    } else {
-                        //Grouped chart setup
-                        valueKeys = domains[secondary.key];
-                    }
-                }
-
-                //Modified one-axis setup for line and time series
-                if (primary.is_quantitative()) {
-                    chartType = 'line';
-                    xAxisType = 'indexed'
-                } else if (primary.is_time()) {
-                    chartType = 'line';
-                    xAxisType = 'timeseries';
-                }
 
                 var config = {
                     data:{
-                        type: chartType,
-                        x: xAxisKey,
+                        type: 'bar',
+                        x: primary.key,
                         names: {
-                            'value': yAxisLabel
+                            value: 'Num. Messages'
                         },
                         onclick: dataClicked
                     },
                     axis:  {
                         x: {
-                            type: xAxisType,
-                            label: xAxisLabel
+                            type: 'category',
+                            label: {
+                                text: primary.name,
+                                position: 'outer-center'
+                            }
                         },
                         y: {
-                            label: yAxisLabel
+                            label: {
+                                text: 'Num. Messages',
+                                position: 'outer-middle'
+                            }
                         }
+                    },
+                    legend: {
+                        show: false
                     }
                 };
+
+                //If x is quantitative, use a line chart
+                if (primary.is_quantitative()) {
+                    config.axis.x.type = 'indexed';
+
+                    if (secondary) {
+                        config.data.type = 'spline';
+                    } else {
+                        config.data.type = 'area-spline';
+                    }
+
+                }
+
+                //Special time-specific overrides
+                if (primary.is_time()) {
+                    config.axis.x.type = 'timeseries';
+
+                    //parsing django time values
+                    config.data.xFormat = '%Y-%m-%dT%H:%M:%SZ';
+                }
+
+                if (secondary) {
+
+                    if (secondary.is_quantitative()) {
+                        if (primary.is_quantitative()) {
+                            //Nope, draw a scatter plot
+                            config.data.type = 'scatter';
+
+                            //Use the secondary dimension as the y label
+                            config.axis.y.label.text = secondary.name;
+
+                            config.axis.x.tick = {
+                                fit: false
+                            };
+                        } else {
+                            // We are using aggregated y-values
+                            config.axis.y.label.text = aggregationLabel(secondary);
+                        }
+                    } else {
+                        // The secondary dimension is categorical, so it
+                        // requires a legend to reveal the groups.
+
+                        config.legend.show = true;
+                        config.legend.position = 'inset';
+                        config.legend.inset = {
+                            anchor: 'top-right',
+                            x: 20,
+                            y: 10,
+                            step: 2
+                        };
+                    }
+                }
 
                 //if (xAxisType == 'category') {
                 //    config.axis.x.categories = domains[primary.key]
