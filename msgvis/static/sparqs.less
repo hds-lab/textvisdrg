@@ -467,6 +467,9 @@ body {
         &.form-buttons {
             margin-top: 6px;
         }
+        hr{
+            margin: 0.5em;
+        }
     }
 
     .form-error {
@@ -492,7 +495,7 @@ body {
     }
     .dimension-levels{
         height: 200px;
-        overflow-y: scroll;
+        overflow-y: auto;
 
     }
     .dimension-level{
@@ -531,10 +534,20 @@ body {
            fill: steelblue;
         }
     }
+    .selected-levels{
+        max-height: 200px;
+        max-width: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 0 5px;
+    }
     .dimension-level-filter{
         margin: 0px 3px;
         padding: 0px 3px;
         background-color: #555;
+    }
+    .dimension-level-filter:hover{
+        cursor: pointer;
     }
     .level-select-button-group{
         text-align: left;
@@ -547,6 +560,18 @@ body {
     }
     .level-select-button:disabled{
         color: #333;
+    }
+    .search{
+        font-size: 0.5em;
+        text-align: left;
+        margin-top: 1.5em;
+    }
+    .search input{
+        color: black;
+        line-height: 0.5em;
+    }
+    .search .glyphicon-remove:hover{
+        cursor: pointer;
     }
 
 }

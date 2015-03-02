@@ -218,6 +218,8 @@
             if (!Filtering.dimension.filter.is_empty()) {
                 if (Filtering.dimension.is_categorical()){
                     Filtering.dimension.filtered_all(false);
+                    if ( typeof(Filtering.dimension.search) != "undefined")
+                        Filtering.dimension.search.level = "";
                 }else{
                     Filtering.dimension.filter.reset();
                 }
