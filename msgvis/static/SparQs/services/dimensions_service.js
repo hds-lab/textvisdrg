@@ -51,7 +51,7 @@
                 max: _getter_setter('max', Math.round),
                 min_time: _getter_setter('min_time'),
                 max_time: _getter_setter('max_time'),
-                levels: _getter_setter('levels'),
+                levels: [],
                 is_empty: function () {
                     if (angular.equals(this.data, {})) {
                         return true;
@@ -77,6 +77,7 @@
                 saved: function () {
                     this.old_data = angular.copy(this.data);
                     this.dirty = false;
+                    debugger;
                 }
             });
 
@@ -90,6 +91,7 @@
                 this.description = [this.name, this.name, this.name].join(', ') + '!';
                 this.table = undefined;
                 this.domain = undefined;
+                this.distribution = undefined;
             };
 
             angular.extend(Dimension.prototype, {
@@ -109,10 +111,13 @@
                     return cls;
                 },
                 is_quantitative: function () {
-                    return this.type == 'QuantitativeDimension' || this.is_time();
+                    return this.type == 'QuantitativeDimension';
                 },
                 is_time: function () {
                     return this.type == 'TimeDimension';
+                },
+                is_categorical: function () {
+                    return this.type == 'CategoricalDimension';
                 },
                 serialize_filter: function () {
                     return angular.extend({
@@ -135,9 +140,62 @@
                     }
                 },
                 set_distribution: function(datatable) {
-                    this._loading = false;
-                    this.table = datatable.table;
-                    this.domain = datatable.domains[this.key];
+                    var dimension = this;
+                    
+                    dimension._loading = false;
+                    dimension.table = datatable.table;
+                    dimension.domain = datatable.domains[dimension.key];
+                    dimension.distribution = dimension.get_distribution_in_order(dimension.table, dimension.domain);
+                    if ( dimension.is_categorical() ){
+                        dimension.filter.levels = dimension.domain.slice(0);
+                        var list = dimension.filter.levels();
+                        for ( var i = 0 ; i < list.length ; i++ ){
+                            if (list[i] == null)
+                                list[i] = "No " + dimension.key;
+                        }
+                    }
+                },
+                get_distribution_in_order: function(table, domain) {
+                    if (!table || !domain) {
+                        return undefined;
+                    }
+                    var dimension = this;
+                    var distribution_map = {};
+                    domain.forEach(function (d) {
+                        if (d == null)
+                            d = "No " + dimension.key;
+                        distribution_map[d] = 0;
+                    });
+                    table.forEach(function (d) {
+                        var level = d[dimension.key];
+                        if (level == null)
+                            level = "No " + dimension.key;
+                        distribution_map[level] = d.value;
+                    });
+                    var distribution = [];
+                    domain.forEach(function (d) {
+                        if (d == null)
+                            d = "No " + dimension.key;
+                        distribution.push({
+                            level: d,
+                            value: distribution_map[d],
+                            show: true
+                        });
+                    });
+
+                    return distribution;
+                },
+                change_level: function(d){
+                    if (d.show == true){
+                        this.filter.levels.push(d.level);
+                    }else{
+                        var idx = this.filter.levels.indexOf(d.level);
+                        if(idx != -1) {
+                            this.filter.levels.splice(idx, 1);
+                        }
+                    }
+                    this.filter.dirty = true;
+
                 }
             });
 

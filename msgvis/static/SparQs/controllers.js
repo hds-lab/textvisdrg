@@ -225,6 +225,8 @@
         $scope.onQuantitativeBrushed = function(min, max) {
             $scope.$digest();
         }
+
+
     };
 
     FilterController.$inject = [

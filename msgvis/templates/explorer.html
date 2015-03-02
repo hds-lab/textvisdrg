@@ -184,27 +184,17 @@
             </h3>
             <div class="filter-body">
                 <form ng-submit="saveFilter()">
-                    <p class="description">{$ filtering.dimension.description $}</p>
-                    <p class="form-group" ng-if="filtering.dimension.is_quantitative()">
+                    <div class="description">{$ filtering.dimension.description $}</div>
+                    <div ng-switch="filtering.dimension.type">
+                        <div class="form-group" ng-switch-when="QuantitativeDimension">
 
-                        <quant-histogram
-                            dimension="filtering.dimension"
-                            brush-min="filtering.dimension.filter.min()"
-                            brush-max="filtering.dimension.filter.max()"
-                            on-brushed="onQuantitativeBrushed">
-                        </quant-histogram>
+                            <quant-histogram
+                                dimension="filtering.dimension"
+                                brush-min="filtering.dimension.filter.min()"
+                                brush-max="filtering.dimension.filter.max()"
+                                on-brushed="onQuantitativeBrushed">
+                            </quant-histogram>
 
-                        <div ng-if="filtering.dimension.is_time()">
-                            <input type="text" class="filter-min form-control"
-                                   ng-model="filtering.dimension.filter.min_time"
-                                   ng-model-options="{ getterSetter: true }"
-                                   placeholder="min" datetime-format />
-                            <input type="text" class="filter-max form-control"
-                                   ng-model="filtering.dimension.filter.max_time"
-                                   ng-model-options="{ getterSetter: true }"
-                                   placeholder="max" datetime-format/>
-                        </div>
-                        <div ng-if="!filtering.dimension.is_time()">
                             <input type="text" class="filter-min form-control"
                                    ng-model="filtering.dimension.filter.min"
                                    ng-model-options="{ getterSetter: true }"
@@ -213,22 +203,81 @@
                                    ng-model="filtering.dimension.filter.max"
                                    ng-model-options="{ getterSetter: true }"
                                    placeholder="max"/>
+
+
+                        </div>
+
+                        <div class="form-group" ng-switch-when="TimeDimension">
+
+                            <quant-histogram
+                                dimension="filtering.dimension"
+                                brush-min="filtering.dimension.filter.min()"
+                                brush-max="filtering.dimension.filter.max()"
+                                on-brushed="onQuantitativeBrushed">
+                            </quant-histogram>
+
+                            <input type="text" class="filter-min form-control"
+                                   ng-model="filtering.dimension.filter.min_time"
+                                   ng-model-options="{ getterSetter: true }"
+                                   placeholder="min" datetime-format />
+                            <input type="text" class="filter-max form-control"
+                                   ng-model="filtering.dimension.filter.max_time"
+                                   ng-model-options="{ getterSetter: true }"
+                                   placeholder="max" datetime-format/>
+
+                        </div>
+
+                        <div class="form-group" ng-switch-when="CategoricalDimension">
+                            <!-- TODO: search
+                            <div class="search">
+                                <input type="text" />
+                            </div>
+
+                            <hr />
+                            <div>
+                                <span >Select All</span> <span>Unselected All</span>
+                            </div>
+                            -->
+
+                            <div class="dimension-levels">
+                                <div class=dimension-level ng-repeat="d in filtering.dimension.distribution">
+                                    <div class="level-name">
+                                        <label><input type="checkbox" ng-model="d.show" ng-change="filtering.dimension.change_level(d)" /> {$ d.level $} </label>
+                                    </div>
+                                    <div class="level-value">{$ d.value $}</div>
+                                    <div class="level-bar">
+                                        <categorical-histogram
+                                                dimension="filtering.dimension"
+                                                level-value="{$ d.value $}">
+                                        </categorical-histogram>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr />
+                            <div class="selected-levels">
+                                <strong>The following levels will be filtered out:</strong> <br />
+                                <span class=dimension-level-filter ng-repeat="d in filtering.dimension.distribution" ng-show="!d.show">
+                                    {$ d.level $}
+                                </span>
+
+                            </div>
+
+
+
                         </div>
 
 
-                    </p>
+                    </div>
 
-                    <p class="form-error" ng-show="!filtering.dimension.is_quantitative()">
-                        Not yet implemented! <br/> Only quantitative filters.
-                    </p>
-                    <p class="form-group form-buttons">
+
+                    <div class="form-group form-buttons">
                         <button type="submit" class="btn btn-sm btn-primary apply-button"
                                 ng-disabled="!filtering.dimension.filter.dirty"
                                 ng-click="saveFilter()">Update</button>
                         <button type="button" class="btn btn-sm btn-default clear-button"
                                 ng-disabled="filtering.dimension.filter.is_empty()"
                                 ng-click="resetFilter()">Clear</button>
-                    </p>
+                    </div>
 
                 </form>
             </div>
