@@ -158,7 +158,7 @@
                     dimension.domain = datatable.domains[dimension.key];
                     dimension.distribution = dimension.get_distribution_in_order(dimension.table, dimension.domain);
                     if ( dimension.is_categorical() ){
-                        dimension.filter.levels(dimension.get_categorical_levels());
+                        dimension.filter.levels(dimension.get_categorical_levels().slice(0, dimension.num_default_show));
                     }
                 },
                 get_distribution_in_order: function(table, domain) {
@@ -179,13 +179,14 @@
                         distribution_map[level] = d.value;
                     });
                     var distribution = [];
-                    domain.forEach(function (d) {
+                    dimension.num_default_show = 5;
+                    domain.forEach(function (d, i) {
                         if (d == null)
                             d = "No " + dimension.key;
                         distribution.push({
                             level: d,
                             value: distribution_map[d],
-                            show: true
+                            show: (i < dimension.num_default_show) ? true : false
                         });
                     });
 
