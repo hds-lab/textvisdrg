@@ -43,8 +43,8 @@ class ResearchQuestionsViewTest(APITestCase):
         ]
 
         for q in self.sample_questions:
-            q.dimensions.add(primary_dim)
-            q.dimensions.add(secondary_dim)
+            q.add_dimension(primary_dim)
+            q.add_dimension(secondary_dim)
 
     @mock.patch('msgvis.apps.questions.models.Question.get_sample_questions')
     def test_get_sample_questions_api(self, get_sample_questions):
