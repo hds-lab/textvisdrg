@@ -332,7 +332,6 @@
                 height: $element.parent().height()
             };
             var $d3_element = d3.select($element[0]);
-            console.log(elementSize);
             var svg = $d3_element.append("svg");
             svg.attr("width", elementSize.width);
             svg.attr("height", elementSize.height);
@@ -352,7 +351,6 @@
                     setup_dimension_scale(scope.dimension, elementSize.width);
                 }
                 create_bar($element, scope.dimension, attrs.levelValue);
-                console.log("link2");
             }
         };
 
@@ -361,7 +359,6 @@
                     if (newVals) return render_bar(scope, $element, attrs);
             }, false);
 
-            console.log("link");
         }
 
         return {

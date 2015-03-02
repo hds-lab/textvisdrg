@@ -228,15 +228,21 @@
                         </div>
 
                         <div class="form-group" ng-switch-when="CategoricalDimension">
-
+                            <!-- TODO: search
                             <div class="search">
                                 <input type="text" />
                             </div>
+
                             <hr />
+                            <div>
+                                <span >Select All</span> <span>Unselected All</span>
+                            </div>
+                            -->
+
                             <div class="dimension-levels">
                                 <div class=dimension-level ng-repeat="d in filtering.dimension.distribution">
                                     <div class="level-name">
-                                        <label><input type="checkbox" checked="checked" /> {$ d.level $} </label>
+                                        <label><input type="checkbox" ng-model="d.show" ng-change="filtering.dimension.change_level(d)" /> {$ d.level $} </label>
                                     </div>
                                     <div class="level-value">{$ d.value $}</div>
                                     <div class="level-bar">
@@ -249,6 +255,10 @@
                             </div>
                             <hr />
                             <div class="selected-levels">
+                                <strong>The following levels will be filtered out:</strong> <br />
+                                <span class=dimension-level-filter ng-repeat="d in filtering.dimension.distribution" ng-show="!d.show">
+                                    {$ d.level $}
+                                </span>
 
                             </div>
 

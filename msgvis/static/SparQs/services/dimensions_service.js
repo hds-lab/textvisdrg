@@ -51,7 +51,7 @@
                 max: _getter_setter('max', Math.round),
                 min_time: _getter_setter('min_time'),
                 max_time: _getter_setter('max_time'),
-                levels: _getter_setter('levels'),
+                levels: [],
                 is_empty: function () {
                     if (angular.equals(this.data, {})) {
                         return true;
@@ -77,6 +77,7 @@
                 saved: function () {
                     this.old_data = angular.copy(this.data);
                     this.dirty = false;
+                    debugger;
                 }
             });
 
@@ -115,6 +116,9 @@
                 is_time: function () {
                     return this.type == 'TimeDimension';
                 },
+                is_categorical: function () {
+                    return this.type == 'CategoricalDimension';
+                },
                 serialize_filter: function () {
                     return angular.extend({
                         dimension: this.key
@@ -136,10 +140,20 @@
                     }
                 },
                 set_distribution: function(datatable) {
-                    this._loading = false;
-                    this.table = datatable.table;
-                    this.domain = datatable.domains[this.key];
-                    this.distribution = this.get_distribution_in_order(this.table, this.domain);
+                    var dimension = this;
+                    
+                    dimension._loading = false;
+                    dimension.table = datatable.table;
+                    dimension.domain = datatable.domains[dimension.key];
+                    dimension.distribution = dimension.get_distribution_in_order(dimension.table, dimension.domain);
+                    if ( dimension.is_categorical() ){
+                        dimension.filter.levels = dimension.domain.slice(0);
+                        var list = dimension.filter.levels();
+                        for ( var i = 0 ; i < list.length ; i++ ){
+                            if (list[i] == null)
+                                list[i] = "No " + dimension.key;
+                        }
+                    }
                 },
                 get_distribution_in_order: function(table, domain) {
                     if (!table || !domain) {
@@ -164,11 +178,23 @@
                             d = "No " + dimension.key;
                         distribution.push({
                             level: d,
-                            value: distribution_map[d]
+                            value: distribution_map[d],
+                            show: true
                         });
                     });
 
                     return distribution;
+                },
+                change_level: function(d){
+                    if (d.show == true){
+                        this.filter.levels.push(d.level);
+                    }else{
+                        var idx = this.filter.levels.indexOf(d.level);
+                        if(idx != -1) {
+                            this.filter.levels.splice(idx, 1);
+                        }
+                    }
+                    this.filter.dirty = true;
 
                 }
             });

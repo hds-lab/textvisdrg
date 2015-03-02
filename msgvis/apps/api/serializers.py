@@ -99,7 +99,7 @@ class FilterSerializer(serializers.Serializer):
     min_time = serializers.DateTimeField(required=False)
     max_time = serializers.DateTimeField(required=False)
 
-    levels = serializers.ListSerializer(child=serializers.CharField(), required=False)
+    levels = serializers.ListSerializer(child=serializers.CharField(allow_null=True), required=False)
 
     value = serializers.CharField(required=False)
 
