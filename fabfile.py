@@ -159,6 +159,7 @@ def deploy():
 
         run('fab pull')
         run('fab dependencies:prod')
+        run('fab nltk_init')
         run('fab print_env check_database migrate')
         run('fab build_static restart_webserver')
 
