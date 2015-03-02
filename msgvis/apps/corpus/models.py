@@ -29,7 +29,7 @@ class Dataset(models.Model):
 
             messages = dimension.filter(messages, **params)
 
-        return messages[:10]
+        return messages.order_by('?')[:10]
 
 
 class MessageType(models.Model):
