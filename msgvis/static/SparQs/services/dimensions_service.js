@@ -90,6 +90,7 @@
                 this.description = [this.name, this.name, this.name].join(', ') + '!';
                 this.table = undefined;
                 this.domain = undefined;
+                this.distribution = undefined;
             };
 
             angular.extend(Dimension.prototype, {
@@ -109,7 +110,7 @@
                     return cls;
                 },
                 is_quantitative: function () {
-                    return this.type == 'QuantitativeDimension' || this.is_time();
+                    return this.type == 'QuantitativeDimension';
                 },
                 is_time: function () {
                     return this.type == 'TimeDimension';
@@ -138,6 +139,37 @@
                     this._loading = false;
                     this.table = datatable.table;
                     this.domain = datatable.domains[this.key];
+                    this.distribution = this.get_distribution_in_order(this.table, this.domain);
+                },
+                get_distribution_in_order: function(table, domain) {
+                    if (!table || !domain) {
+                        return undefined;
+                    }
+                    var dimension = this;
+                    var distribution_map = {};
+                    domain.forEach(function (d) {
+                        if (d == null)
+                            d = "No " + dimension.key;
+                        distribution_map[d] = 0;
+                    });
+                    table.forEach(function (d) {
+                        var level = d[dimension.key];
+                        if (level == null)
+                            level = "No " + dimension.key;
+                        distribution_map[level] = d.value;
+                    });
+                    var distribution = [];
+                    domain.forEach(function (d) {
+                        if (d == null)
+                            d = "No " + dimension.key;
+                        distribution.push({
+                            level: d,
+                            value: distribution_map[d]
+                        });
+                    });
+
+                    return distribution;
+
                 }
             });
 

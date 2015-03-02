@@ -315,6 +315,67 @@
         };
     });
 
+    module.directive('categoricalHistogram', function () {
+
+
+        var dimensionScale = {};
+        var setup_dimension_scale = function(dimension, width){
+            var values = dimension.table.map(function(d){ return d.value; });
+            var scale = d3.scale.linear();
+            scale.domain([0, d3.max(values)]);
+            scale.range([0, width]);
+            dimensionScale[dimension.key] = scale;
+        };
+        var create_bar = function($element, dimension, level_value) {
+            var elementSize = {
+                width: $element.parent().width(),
+                height: $element.parent().height()
+            };
+            var $d3_element = d3.select($element[0]);
+            console.log(elementSize);
+            var svg = $d3_element.append("svg");
+            svg.attr("width", elementSize.width);
+            svg.attr("height", elementSize.height);
+
+            var rect = svg.append("rect");
+            rect.attr("width", dimensionScale[dimension.key](level_value));
+            rect.attr("height", elementSize.height);
+        };
+
+        var render_bar = function(scope, $element, attrs){
+            if ( typeof(scope.dimension) !== "undefined" ){
+                var elementSize = {
+                    width: $element.parent().width(),
+                    height: $element.parent().height()
+                };
+                if ( typeof(dimensionScale[scope.dimension.key]) === "undefined" ){
+                    setup_dimension_scale(scope.dimension, elementSize.width);
+                }
+                create_bar($element, scope.dimension, attrs.levelValue);
+                console.log("link2");
+            }
+        };
+
+        function link(scope, $element, attrs){
+            scope.$watch('dimension.filtering', function (newVals, oldVals) {
+                    if (newVals) return render_bar(scope, $element, attrs);
+            }, false);
+
+            console.log("link");
+        }
+
+        return {
+            restrict: 'E',
+            replace: false,
+
+            scope: {
+                dimension: '=dimension'
+            },
+            link: link
+
+        }
+    });
+
     module.directive('sparqsVis', function () {
 
         var SparQsVis = function($element, attrs, onClicked) {
