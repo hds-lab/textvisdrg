@@ -2,6 +2,7 @@
 
 DJANGO_SETTINGS_MODULE={{ SETTINGS_MODULE }}
 # DEBUG=
+# DEBUG_JS=
 
 # Set the web server listening address
 SERVER_HOST={{ SERVER_HOST }}
