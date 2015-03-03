@@ -104,7 +104,9 @@ class DataTable(object):
         """Return the sorted levels in this dimension"""
         if filter is not None:
             queryset = dimension.filter(queryset, **filter)
-        return dimension.get_domain(queryset, bins=desired_bins)
+        domain = dimension.get_domain(queryset, bins=desired_bins)
+        labels = dimension.get_domain_labels(domain)
+        return domain, labels
 
     def generate(self, dataset, filters=None):
         """
@@ -135,19 +137,30 @@ class DataTable(object):
                     secondary_filter = filter
 
         # Render a table
-        rendered = self.render(queryset)
+        table = self.render(queryset)
+        domains = {}
+        domain_labels = {}
 
         # Include the domains for primary and (secondary) dimensions
-        domains = {
-            self.primary_dimension.key:
-                self.domain(self.primary_dimension, dataset.message_set.all(), primary_filter)
-        }
+        domain, labels = self.domain(self.primary_dimension,
+                                     dataset.message_set.all(),
+                                     primary_filter)
+        domains[self.primary_dimension.key] = domain
+        if labels is not None:
+            domain_labels[self.primary_dimension.key] = labels
+
         if self.secondary_dimension:
-            domains[self.secondary_dimension.key] = \
-                self.domain(self.secondary_dimension, dataset.message_set.all(), secondary_filter)
+            domain, labels = self.domain(self.secondary_dimension,
+                                         dataset.message_set.all(),
+                                         secondary_filter)
+
+            domains[self.secondary_dimension.key] = domain
+            if labels is not None:
+                domain_labels[self.secondary_dimension.key] = labels
 
         return {
-            'table': rendered,
-            'domains': domains
+            'table': table,
+            'domains': domains,
+            'domain_labels': domain_labels,
         }
 

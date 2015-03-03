@@ -9,8 +9,8 @@
     //The collection of dimensions.
     //Dimension objects have some extra functionality added.
     module.factory('SparQs.services.Dimensions', [
-        'SparQs.services.DimensionDistributions',
-        function (DimensionDistributions) {
+        '$http', 'djangoUrl', 'SparQs.services.Dataset',
+        function ($http, djangoUrl, Dataset) {
 
             var filterProps = [
                 'min',
@@ -28,7 +28,7 @@
             };
 
             function _getter_setter(prop, format, parse) {
-                return function(value) {
+                return function (value) {
                     if (arguments.length > 0) {
 
                         if (value === '') {
@@ -126,7 +126,7 @@
                         dimension: this.key
                     }, this.filter.data);
                 },
-                set_filtering: function(filtering) {
+                set_filtering: function (filtering) {
                     if (this.filtering != filtering) {
                         this.filtering = filtering;
 
@@ -138,14 +138,38 @@
                 load_distribution: function (dataset) {
                     if (!this._loading && !this.table) {
                         this._loading = true;
-                        DimensionDistributions.load(this);
+
+                        var request = {
+                            dataset: Dataset.id,
+                            dimensions: [this.key]
+                        };
+
+                        var apiUrl = djangoUrl.reverse('data-table');
+
+                        var self = this;
+                        return $http.post(apiUrl, request)
+                            .success(function (data) {
+                                var result = data.result;
+                                self._loading = false;
+
+                                self.table = result.table;
+                                self.domain = result.domains[self.key];
+                                self.domain_labels = result.domain_labels[self.key] || {};
+
+                                self.distribution = self.get_distribution_in_order(self.table, self.domain, self.domain_labels);
+
+                                if (self.is_categorical()) {
+                                    self.filter.levels(self.get_categorical_levels().slice(0, self.num_default_show));
+                                    self.search = {level: ""}
+                                }
+                            });
                     }
                 },
-                get_categorical_levels: function(){
+                get_categorical_levels: function () {
                     var dimension = this;
-                    if ( dimension.is_categorical() ){
+                    if (dimension.is_categorical()) {
                         var list = dimension.domain.slice(0);
-                        for ( var i = 0 ; i < list.length ; i++ ){
+                        for (var i = 0; i < list.length; i++) {
                             if (list[i] == null)
                                 list[i] = "No " + dimension.key;
                         }
@@ -153,95 +177,84 @@
                     }
                     return undefined;
                 },
-                set_distribution: function(datatable) {
-                    var dimension = this;
-                    
-                    dimension._loading = false;
-                    dimension.table = datatable.table;
-                    dimension.domain = datatable.domains[dimension.key];
-                    dimension.distribution = dimension.get_distribution_in_order(dimension.table, dimension.domain);
-                    if ( dimension.is_categorical() ){
-                        dimension.filter.levels(dimension.get_categorical_levels().slice(0, dimension.num_default_show));
-                        dimension.search = {level: ""}
-                    }
-                },
-                get_distribution_in_order: function(table, domain) {
+                get_distribution_in_order: function (table, domain, labels) {
                     if (!table || !domain) {
                         return undefined;
                     }
                     var dimension = this;
                     var distribution_map = {};
-                    domain.forEach(function (d) {
-                        if (d == null)
-                            d = "No " + dimension.key;
-                        distribution_map[d] = 0;
-                    });
                     table.forEach(function (d) {
                         var level = d[dimension.key];
-                        if (level == null)
-                            level = "No " + dimension.key;
                         distribution_map[level] = d.value;
                     });
-                    var distribution = [];
-                    dimension.num_default_show = 5;
-                    domain.forEach(function (d, i) {
-                        if (d == null)
-                            d = "No " + dimension.key;
-                        distribution.push({
-                            level: d,
-                            value: distribution_map[d],
-                            show: (i < dimension.num_default_show) ? true : false
-                        });
-                    });
 
-                    return distribution;
+                    dimension.num_default_show = 5;
+
+                    return domain.map(function(level, i) {
+                        var value = distribution_map[level] || 0;
+
+                        if (level === null || level === "")
+                            level = "No " + dimension.key;
+
+                        var label;
+                        if (labels && labels.length > i) {
+                            label = labels[i];
+                        }
+
+                        return {
+                            level: level,
+                            label: label,
+                            value: value,
+                            show: (i < dimension.num_default_show)
+                        };
+                    });
                 },
-                show_search: function(){
+                show_search: function () {
                     return this.is_categorical() && this.domain && this.domain.length > 10;
                 },
-                unfilter_level: function(d){
+                unfilter_level: function (d) {
                     d.show = true;
                     this.filter.levels().push(d.level);
 
                     this.filter.dirty = true;
 
                 },
-                change_level: function(d){
-                    if (d.show == true){
+                change_level: function (d) {
+                    if (d.show == true) {
                         this.filter.levels().push(d.level);
-                    }else{
+                    } else {
                         var idx = this.filter.levels().indexOf(d.level);
-                        if(idx != -1) {
+                        if (idx != -1) {
                             this.filter.levels().splice(idx, 1);
                         }
                     }
                     this.filter.dirty = true;
 
                 },
-                is_all_filtered: function(){
-                    if ( typeof (this.filter.levels()) !== "undefined"){
+                is_all_filtered: function () {
+                    if (typeof (this.filter.levels()) !== "undefined") {
                         return this.is_categorical() && this.filter.levels().length == 0;
                     }
                     return false;
                 },
-                is_not_filtered: function(){
-                    if ( typeof (this.filter.levels()) !== "undefined"){
+                is_not_filtered: function () {
+                    if (typeof (this.filter.levels()) !== "undefined") {
                         return this.is_categorical() && this.filter.levels().length == this.domain.length;
                     }
                     return false;
                 },
-                filtered_all: function(flag) {
+                filtered_all: function (flag) {
                     var dimension = this;
                     if (typeof (dimension.filter.levels()) !== "undefined") {
                         if (flag == true) {
                             dimension.filter.levels([]);
-                            dimension.distribution.forEach(function(d){
+                            dimension.distribution.forEach(function (d) {
                                 d.show = false;
                             });
                         }
                         else {
                             dimension.filter.levels(dimension.get_categorical_levels());
-                            dimension.distribution.forEach(function(d){
+                            dimension.distribution.forEach(function (d) {
                                 d.show = true;
                             });
                         }
@@ -249,9 +262,9 @@
                     }
                     return false;
                 },
-                reset_search: function(){
+                reset_search: function () {
                     var dimension = this;
-                    if ( dimension.is_categorical() ){
+                    if (dimension.is_categorical()) {
                         dimension.search = {level: ""};
                     }
                 }

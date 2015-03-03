@@ -14,12 +14,6 @@ from msgvis.apps.corpus import models as corpus_models
 QUANTITATIVE_DIMENSION_BINS = getattr(settings, 'QUANTITATIVE_DIMENSION_BINS', 50)
 
 
-def add_metadata(queryset, **kwargs):
-    for key, value in kwargs.iteritems():
-        setattr(queryset, key, value)
-    return queryset
-
-
 def db_vendor():
     from django.db import connection
 
@@ -63,7 +57,6 @@ class CategoricalDimension(object):
     def get_key_model(self):
         dimension_key_model, created = DimensionKey.objects.get_or_create(key=self.key)
         return dimension_key_model
-
 
     def filter(self, queryset, **kwargs):
         """Apply a filter to a queryset and return the new queryset."""
@@ -153,6 +146,13 @@ class CategoricalDimension(object):
         return [row['value'] for row in queryset]
 
 
+    def get_domain_labels(self, domain):
+        """Return a list of labels corresponding to the domain values"""
+        if hasattr(self, 'domain_labels'):
+            return self.domain_labels
+        return None
+
+
     def get_grouping_expression(self, queryset, **kwargs):
         """
         Given a set of messages (possibly filtered),
@@ -160,6 +160,25 @@ class CategoricalDimension(object):
         group the messages by this dimension.
         """
         return self.field_name
+
+
+class ChoicesCategoricalDimension(CategoricalDimension):
+    """
+    A categorical dimension where the values come from
+    a choices set.
+
+    Don't use for related fields.
+    """
+
+    def __init__(self, key, name=None, description=None, field_name=None, domain=None):
+        super(ChoicesCategoricalDimension, self).__init__(key, name, description, field_name, domain)
+
+        field = corpus_models.Message._meta.get_field(field_name)
+        self.choices = getattr(field, 'choices', None)
+        if self.choices is None:
+            raise ValueError("Field %s does not have choices." % field_name)
+
+        self.domain, self.domain_labels = zip(*self.choices)
 
 
 class RelatedCategoricalDimension(CategoricalDimension):

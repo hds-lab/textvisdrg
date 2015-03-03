@@ -22,7 +22,7 @@ class CategoricalDomainTest(DistributionTestCaseMixins, TestCase):
         # Create some language labels
         languages = self.create_test_languages(model=True)
         language_ids = [lang.id for lang in languages]
-        language_codes = [lang.code for lang in languages]
+        language_names = [lang.name for lang in languages]
         dimension = registry.get_dimension('language')
 
         # Generate a distribution where messages increase with each lang id
@@ -33,7 +33,7 @@ class CategoricalDomainTest(DistributionTestCaseMixins, TestCase):
         )
         result = dimension.get_domain(dataset.message_set.all())
         # results are in descending frequency order
-        self.assertEquals(result, list(reversed(language_codes)))
+        self.assertEquals(result, list(reversed(language_names)))
 
         # Generate another dataset with the distribution going the other way
         language_distribution = self.get_distribution(reversed(language_ids))
@@ -42,7 +42,7 @@ class CategoricalDomainTest(DistributionTestCaseMixins, TestCase):
             distribution=language_distribution,
         )
         result = dimension.get_domain(dataset.message_set.all())
-        self.assertEquals(result, language_codes)
+        self.assertEquals(result, language_names)
 
     def test_categorical_domain(self):
         """
@@ -65,8 +65,8 @@ class CategoricalDomainTest(DistributionTestCaseMixins, TestCase):
         # Calculate the categorical distribution over the field name
         result = dimension.get_domain(dataset.message_set.all())
 
-        # in descending order by frequency
-        self.assertEquals(result, list(reversed(sentiment_values)))
+        # in order of CHOICES
+        self.assertEquals(result, sentiment_values)
 
     def test_boolean_domain(self):
         dataset = self.create_empty_dataset()

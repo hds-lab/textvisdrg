@@ -139,10 +139,10 @@ register(models.RelatedCategoricalDimension, dict(
     key='language',
     name='Language',
     description='The language of the message',
-    field_name='language__code',
+    field_name='language__name',
 ))
 
-register(models.RelatedCategoricalDimension, dict(
+register(models.ChoicesCategoricalDimension, dict(
     key='sentiment',
     name='Sentiment',
     description='The sentiment of the message',

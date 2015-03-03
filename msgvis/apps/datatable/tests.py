@@ -182,8 +182,8 @@ class TestRelatedCategoricalDataTable(DistributionTestCaseMixins, TestCase):
         # Create some language labels
         language_ids = self.create_test_languages()
         language_distribution = self.get_distribution(language_ids)
-        language_code_distribution = self.recover_related_field_distribution(language_distribution,
-                                                                             corpus_models.Language, 'code')
+        language_name_distribution = self.recover_related_field_distribution(language_distribution,
+                                                                             corpus_models.Language, 'name')
 
         dataset = self.generate_messages_for_distribution(
             field_name='language_id',
@@ -195,7 +195,7 @@ class TestRelatedCategoricalDataTable(DistributionTestCaseMixins, TestCase):
         datatable = models.DataTable(dimension)
         result = datatable.render(dataset)
 
-        self.assertDistributionsEqual(result, language_code_distribution, level_key='language', measure_key='value')
+        self.assertDistributionsEqual(result, language_name_distribution, level_key='language', measure_key='value')
 
     def test_render_two_related_categorical(self):
         """Can produce a datatable with two related categorical dimensions."""
@@ -222,7 +222,7 @@ class TestRelatedCategoricalDataTable(DistributionTestCaseMixins, TestCase):
         # Get the actual expected distribution
         value_distribution = self.convert_id_distribution_to_related(id_distribution,
                                                                      (corpus_models.Language, corpus_models.Person),
-                                                                     ('code', 'username'))
+                                                                     ('name', 'username'))
 
         d1 = registry.get_dimension('language')
         d2 = registry.get_dimension('sender_name')
@@ -253,15 +253,15 @@ class CategoricalDimensionsRegistryTest(DistributionTestCaseMixins, TestCase):
         # Create some language labels
         language_ids = self.create_test_languages()
         language_distribution = self.get_distribution(language_ids)
-        language_code_distribution = self.recover_related_field_distribution(language_distribution,
-                                                                             corpus_models.Language, 'code')
+        language_name_distribution = self.recover_related_field_distribution(language_distribution,
+                                                                             corpus_models.Language, 'name')
 
         dataset = self.generate_messages_for_distribution(
             field_name='language_id',
             distribution=language_distribution,
         )
 
-        self.doCategoricalDistributionTest('language', dataset, language_code_distribution)
+        self.doCategoricalDistributionTest('language', dataset, language_name_distribution)
 
     def test_many_related_model_distribution(self):
         """

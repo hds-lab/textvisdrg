@@ -16,36 +16,6 @@
         }
     ]);
 
-    //A service for loading dimension distributions.
-    module.factory('SparQs.services.DimensionDistributions', [
-        '$http', 'djangoUrl', 'SparQs.services.Dataset',
-        function dimensionDistributionsFactory($http, djangoUrl, Dataset) {
-
-            var apiUrl = djangoUrl.reverse('data-table');
-
-            var DimensionDistributions = function () {
-            };
-
-            angular.extend(DimensionDistributions.prototype, {
-                load: function (dimension) {
-                    var request = {
-                        dataset: Dataset.id,
-                        dimensions: [dimension.key]
-                    };
-
-                    var self = this;
-                    return $http.post(apiUrl, request)
-                        .success(function (data) {
-                            dimension.set_distribution(data.result);
-                        });
-
-                }
-            });
-
-            return new DimensionDistributions();
-        }
-    ]);
-
     //The collection of tokens.
     module.factory('SparQs.services.Tokens', [
         'token_images',
@@ -331,6 +301,7 @@
             var DataTables = function () {
                 this.dimensions = [];
                 this.domains = {};
+                this.domain_labels = {};
                 this.table = [];
             };
 
@@ -356,6 +327,7 @@
                             self.dimensions = dimensions;
                             self.table = data.result.table;
                             self.domains = data.result.domains;
+                            self.domain_labels = data.result.domain_labels;
                         });
                 }
             });
