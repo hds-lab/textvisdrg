@@ -98,7 +98,8 @@ class DataTableView(APIView):
                   "some_time_val",
                   "some_time_val"
                 ]
-            ]
+              ],
+              "domain_labels": {}
         }
     """
 

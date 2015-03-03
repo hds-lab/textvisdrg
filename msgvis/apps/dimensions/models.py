@@ -146,6 +146,13 @@ class CategoricalDimension(object):
         return [row['value'] for row in queryset]
 
 
+    def get_domain_labels(self, domain):
+        """Return a list of labels corresponding to the domain values"""
+        if hasattr(self, 'domain_labels'):
+            return self.domain_labels
+        return None
+
+
     def get_grouping_expression(self, queryset, **kwargs):
         """
         Given a set of messages (possibly filtered),
@@ -171,7 +178,8 @@ class ChoicesCategoricalDimension(CategoricalDimension):
         if self.choices is None:
             raise ValueError("Field %s does not have choices." % field_name)
 
-        self.domain, self.domain_map = zip(*self.choices)
+        self.domain, self.domain_labels = zip(*self.choices)
+
 
 class RelatedCategoricalDimension(CategoricalDimension):
     """
