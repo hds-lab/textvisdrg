@@ -156,7 +156,7 @@
                                 self.domain = result.domains[self.key];
                                 self.domain_labels = result.domain_labels[self.key] || {};
 
-                                self.distribution = self.get_distribution_in_order(self.table, self.domain);
+                                self.distribution = self.get_distribution_in_order(self.table, self.domain, self.domain_labels);
 
                                 if (self.is_categorical()) {
                                     self.filter.levels(self.get_categorical_levels().slice(0, self.num_default_show));
@@ -177,36 +177,37 @@
                     }
                     return undefined;
                 },
-                get_distribution_in_order: function (table, domain) {
+                get_distribution_in_order: function (table, domain, labels) {
                     if (!table || !domain) {
                         return undefined;
                     }
                     var dimension = this;
                     var distribution_map = {};
-                    domain.forEach(function (d) {
-                        if (d == null)
-                            d = "No " + dimension.key;
-                        distribution_map[d] = 0;
-                    });
                     table.forEach(function (d) {
                         var level = d[dimension.key];
-                        if (level == null)
-                            level = "No " + dimension.key;
                         distribution_map[level] = d.value;
                     });
-                    var distribution = [];
-                    dimension.num_default_show = 5;
-                    domain.forEach(function (d, i) {
-                        if (d == null)
-                            d = "No " + dimension.key;
-                        distribution.push({
-                            level: d,
-                            value: distribution_map[d],
-                            show: (i < dimension.num_default_show)
-                        });
-                    });
 
-                    return distribution;
+                    dimension.num_default_show = 5;
+
+                    return domain.map(function(level, i) {
+                        var value = distribution_map[level] || 0;
+
+                        if (level === null || level === "")
+                            level = "No " + dimension.key;
+
+                        var label;
+                        if (labels && labels.length > i) {
+                            label = labels[i];
+                        }
+
+                        return {
+                            level: level,
+                            label: label,
+                            value: value,
+                            show: (i < dimension.num_default_show)
+                        };
+                    });
                 },
                 show_search: function () {
                     return this.is_categorical() && this.domain && this.domain.length > 10;

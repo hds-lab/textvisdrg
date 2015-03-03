@@ -350,7 +350,7 @@
                 if ( typeof(dimensionScale[scope.dimension.key]) === "undefined" ){
                     setup_dimension_scale(scope.dimension, elementSize.width);
                 }
-                create_bar($element, scope.dimension, attrs.levelValue);
+                create_bar($element, scope.dimension, scope.levelValue);
             }
         };
 
@@ -366,7 +366,8 @@
             replace: false,
 
             scope: {
-                dimension: '=dimension'
+                dimension: '=dimension',
+                levelValue: '=levelValue'
             },
             link: link
 
