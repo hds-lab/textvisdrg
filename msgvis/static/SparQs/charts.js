@@ -131,7 +131,7 @@
             };
 
             this.render = function (dimension) {
-                if (!dimension || (!dimension.is_quantitative() && !dimension.is_time())) {
+                if (!dimension || (!dimension.is_quantitative_or_time())) {
                     return;
                 }
 
@@ -408,7 +408,7 @@
             function buildFullTable(primary, secondary, table, domains) {
                 var rows;
 
-                if (primary.is_quantitative() && secondary && secondary.is_quantitative()) {
+                if (primary.is_quantitative_or_time() && secondary && secondary.is_quantitative_or_time()) {
                     //We're doing a scatter plot which is totally different
                     // and much simpler.
 
@@ -433,7 +433,7 @@
                 //A function for aggregating cell values (used for quant secondary dimensions)
                 var columnAggregation = false;
                 if (secondary){
-                    if (!secondary.is_quantitative()) {
+                    if (!secondary.is_quantitative_or_time()) {
                         //Use the secondary dim values across the top
                         columnHeaders = domains[secondary.key];
                     } else {
