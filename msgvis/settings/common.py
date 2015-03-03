@@ -337,6 +337,9 @@ COMPRESS_PRECOMPILERS = (
     ('text/less', 'msgvis.precompilers.LessFilter'),
 )
 
+# Don't actually compress the js
+COMPRESS_JS_FILTERS = []
+
 COMPRESS_ROOT = STATIC_ROOT
 COMPRESS_OUTPUT_DIR = 'CACHE'
 ########## END COMPRESSOR CONFIGURATION
