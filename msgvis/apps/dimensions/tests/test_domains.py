@@ -65,8 +65,8 @@ class CategoricalDomainTest(DistributionTestCaseMixins, TestCase):
         # Calculate the categorical distribution over the field name
         result = dimension.get_domain(dataset.message_set.all())
 
-        # in descending order by frequency
-        self.assertEquals(result, list(reversed(sentiment_values)))
+        # in order of CHOICES
+        self.assertEquals(result, sentiment_values)
 
     def test_boolean_domain(self):
         dataset = self.create_empty_dataset()

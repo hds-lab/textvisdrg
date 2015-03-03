@@ -172,8 +172,6 @@ class ChoicesCategoricalDimension(CategoricalDimension):
             raise ValueError("Field %s does not have choices." % field_name)
 
         self.domain, self.domain_map = zip(*self.choices)
-        print self.domain
-        print self.domain_map
 
 class RelatedCategoricalDimension(CategoricalDimension):
     """
