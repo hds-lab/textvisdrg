@@ -574,7 +574,7 @@
                 };
 
                 //If x is quantitative, use a line chart
-                if (primary.is_quantitative()) {
+                if (primary.is_quantitative_or_time()) {
                     config.axis.x.type = 'indexed';
 
                     if (secondary) {
@@ -583,21 +583,24 @@
                         config.data.type = 'area-spline';
                     }
 
-                }
+                    //Special time-specific overrides
+                    if (primary.is_time()) {
+                        config.axis.x.type = 'timeseries';
 
-                //Special time-specific overrides
-                if (primary.is_time()) {
-                    config.axis.x.type = 'timeseries';
-
-                    //parsing django time values
-                    config.data.xFormat = '%Y-%m-%dT%H:%M:%SZ';
+                        //parsing django time values
+                        config.data.xFormat = '%Y-%m-%dT%H:%M:%SZ';
+                    }
                 }
 
                 if (secondary) {
+                    // There are two dimensions
 
-                    if (secondary.is_quantitative()) {
-                        if (primary.is_quantitative()) {
+                    if (secondary.is_quantitative_or_time()) {
+                        //We'll be swapping the y axis
+
+                        if (primary.is_quantitative_or_time()) {
                             //Nope, draw a scatter plot
+
                             config.data.type = 'scatter';
 
                             //Use the secondary dimension as the y label
@@ -624,10 +627,6 @@
                         };
                     }
                 }
-
-                //if (xAxisType == 'category') {
-                //    config.axis.x.categories = domains[primary.key]
-                //}
 
                 return config;
             }
