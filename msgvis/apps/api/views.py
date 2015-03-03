@@ -41,13 +41,18 @@ class DataTableView(APIView):
     in the request, but the default measure is message count.
 
     The response will be a JSON object that mimics the request body, but
-    with a new ``result`` field added, which will be a list of objects.
+    with a new ``result`` field added. The result field
+    includes a ``table``, which will be a list of objects.
 
-    Each object in the result field represents a cell in a table or a dot
+    Each object in the table field represents a cell in a table or a dot
     (for scatterplot-type results). For every dimension in the dimensions
     list (from the request), the result object will include a property keyed
     to the name of the dimension and a value for that dimension. A ``value``
     field provides the requested summary statistic.
+
+    The ``result`` field also includes a ``domains`` object, which
+    defines the list of possible values within the selected data
+    for each of the dimensions in the request.
 
     This is the most general output format for results, but later we may
     switch to a more compact format.
@@ -59,33 +64,41 @@ class DataTableView(APIView):
     ::
 
         {
-          "dataset": 2,
+          "dataset": 1,
           "dimensions": ["time"],
           "filters": [
             {
               "dimension": "time",
-              "min_time": "2010-02-25T00:23:53Z",
-              "max_time": "2010-02-28T00:23:53Z"
+              "min_time": "2015-02-25T00:23:53Z",
+              "max_time": "2015-02-28T00:23:53Z"
             }
           ],
-          "result": [
-            {
-              "value": 35,
-              "time": "2010-02-25T00:23:53Z"
-            },
-            {
-              "value": 35,
-              "time": "2010-02-26T00:23:53Z"
-            },
-            {
-              "value": 35,
-              "time": "2010-02-27T00:23:53Z"
-            },
-            {
-              "value": 35,
-              "time": "2010-02-28T00:23:53Z"
-            }
-          ]
+          "result": {
+            "table": [
+              {
+                "value": 35,
+                "time": "2015-02-25T00:23:53Z"
+              },
+              {
+                "value": 35,
+                "time": "2015-02-26T00:23:53Z"
+              },
+              {
+                "value": 35,
+                "time": "2015-02-27T00:23:53Z"
+              },
+              {
+                "value": 35,
+                "time": "2015-02-28T00:23:53Z"
+              },
+              "domains": {
+                "time": [
+                  "some_time_val",
+                  "some_time_val",
+                  "some_time_val",
+                  "some_time_val"
+                ]
+            ]
         }
     """
 
@@ -123,24 +136,24 @@ class ExampleMessagesView(APIView):
     ::
 
         {
-            "dataset": 2,
+            "dataset": 1,
             "filters": [
                 {
                     "dimension": "time",
-                    "min_time": "2010-02-25T00:23:53Z",
-                    "max_time": "2010-02-28T00:23:53Z"
+                    "min_time": "2015-02-25T00:23:53Z",
+                    "max_time": "2015-02-28T00:23:53Z"
                 }
             ],
             "focus": [
                 {
                     "dimension": "time",
-                    "value": "2010-02-28T00:23:53Z"
+                    "value": "2015-02-28T00:23:53Z"
                 }
             ],
             "messages": [
                 {
                     "id": 52,
-                    "dataset": 2,
+                    "dataset": 1,
                     "text": "Some sort of thing or other",
                     "sender": {
                         "id": 2,
@@ -149,7 +162,7 @@ class ExampleMessagesView(APIView):
                         "username": "my_name",
                         "full_name": "My Name"
                     },
-                    "time": "2010-02-25T00:23:53Z"
+                    "time": "2015-02-25T00:23:53Z"
                 }
             ]
         }
