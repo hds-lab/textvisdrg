@@ -20,7 +20,7 @@ class Command(BaseCommand):
                         make_option('-d', '--dataset',
                             action='store',
                             dest='dataset',
-                            default=False,
+                            default=None,
                             help='Set a target dataset to add to'),
                         )
 
