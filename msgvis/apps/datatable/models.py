@@ -56,6 +56,9 @@ class DataTable(object):
         # Type checking
         queryset = find_messages(queryset)
 
+        # Filter out null time
+        queryset = queryset.exclude(time__isnull=True)
+
         if not self.secondary_dimension:
             # If there is only one dimension, we should be able to fall back
             # on that dimension's group_by() implementation.

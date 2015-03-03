@@ -4,7 +4,8 @@ import mock
 from templatetags import active
 
 from msgvis.apps.corpus import models as corpus_models
-
+from django.utils import timezone as tz
+from datetime import timedelta
 
 class TemplateTagActiveTest(TestCase):
     def test_matches_request_path(self):
@@ -55,11 +56,14 @@ class DistributionTestCaseMixins(object):
                 description="Created by generate_message_distribution",
             )
 
+        now = tz.now()
+
         num = 0
         for value, count in distribution.iteritems():
             for i in range(count):
                 create_params = {
                     'text': "Message %d: %s = '%s'" % (num, field_name, value),
+                    'time': now + timedelta(seconds=i)
                 }
 
                 if not many:
@@ -180,13 +184,17 @@ class DistributionTestCaseMixins(object):
                 description="Created by create_multi_distribution",
             )
 
+        now = tz.now()
+
         num = 0
         for value_tuple, count in distribution.iteritems():
             for i in range(count):
-                field_values = dict(zip(field_names, value_tuple))
-
-                field_values['text'] = "Message %d: '%s'" % (num, str(field_values))
-                msg = dataset.message_set.create(**field_values)
+                field_values = {
+                    'text': "Message %d: '%s'" % (num, str(value_tuple)),
+                    'time': now + timedelta(seconds=i)
+                }
+                field_values.update(dict(zip(field_names, value_tuple)))
+                dataset.message_set.create(**field_values)
 
                 num += 1
 

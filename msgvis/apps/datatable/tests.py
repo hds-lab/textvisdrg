@@ -549,4 +549,3 @@ class GenerateDataTableTest(DistributionTestCaseMixins, TestCase):
         datatable = MockDataTable(primary_dimension='time')
         datatable.generate(dataset)
         self.assertEquals(len(render_calls), 1)
-
