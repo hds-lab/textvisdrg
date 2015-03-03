@@ -139,3 +139,80 @@ class CategoricalDimensionTest(TestCase):
         # It should't need a different internal key in this simple case
         self.assertEquals(internal_key, dimension.field_name)
         self.assertEquals(result, queryset)
+
+class QuantitativeDimensionTest(TestCase):
+
+    def test_get_range_empty(self):
+        """If there is no data, get_range returns none"""
+
+        queryset = mock.Mock()
+        queryset.aggregate.return_value = None
+
+        dimension = models.QuantitativeDimension(
+            key='shares',
+            name='Count of shares',
+            description='Count of shares',
+            field_name='shared_count',
+        )
+
+        min_val, max_val = dimension.get_range(queryset)
+
+        self.assertIsNone(min_val)
+        self.assertIsNone(max_val)
+
+    def test_grouping_expression_empty(self):
+        """If there is no range in the data, returns no grouping expression"""
+
+        class TestQuantDimension(models.QuantitativeDimension):
+            """A quant dimension that returns no range"""
+
+            def __init__(self, *args, **kwargs):
+                super(TestQuantDimension, self).__init__(*args, **kwargs)
+                self._get_range_calls = 0
+
+            def get_range(self, queryset):
+                self._get_range_calls += 1
+                return None, None
+
+        dimension = TestQuantDimension(
+            key='shares',
+            name='Count of shares',
+            description='Count of shares',
+            field_name='shared_count',
+        )
+
+        queryset = mock.Mock()
+        expression = dimension.get_grouping_expression(queryset)
+
+        self.assertIsNone(expression)
+        self.assertEquals(dimension._get_range_calls, 1)
+
+
+    def test_group_by_empty(self):
+        """If there is no data, group by returns an empty values queryset"""
+
+        class TestQuantDimension(models.QuantitativeDimension):
+            """A quant dimension that returns no grouping expression"""
+            def __init__(self, *args, **kwargs):
+                super(TestQuantDimension, self).__init__(*args, **kwargs)
+                self._get_grouping_expression_calls = 0
+
+            def get_grouping_expression(self, queryset, bins=None, bin_size=None, **kwargs):
+                self._get_grouping_expression_calls += 1
+                return None
+
+        dimension = TestQuantDimension(
+            key='shares',
+            name='Count of shares',
+            description='Count of shares',
+            field_name='shared_count',
+        )
+
+        queryset = mock.Mock()
+        expected_result = queryset.values.return_value
+
+        result = dimension.group_by(queryset)
+
+        self.assertEquals(result, expected_result)
+        queryset.values.assert_called_once_with()
+        self.assertEquals(dimension._get_grouping_expression_calls, 1)

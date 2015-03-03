@@ -76,6 +76,10 @@ class DataTable(object):
             secondary_group = self.secondary_dimension.get_grouping_expression(queryset,
                                                                                bins=desired_secondary_bins)
 
+            if primary_group is None or secondary_group is None:
+                # There is no data to group
+                return queryset.values()
+
             queryset, internal_primary_key = self.primary_dimension.select_grouping_expression(
                 queryset,
                 primary_group)

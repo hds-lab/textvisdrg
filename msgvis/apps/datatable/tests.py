@@ -375,6 +375,32 @@ class QuantitativeDistributionsTest(DistributionTestCaseMixins, TestCase):
         self.doQuantitativeDimensionsTest('shares', dataset, binned_distribution, desired_primary_bins=5)
 
 
+
+    def test_excludes_all_data(self):
+        """
+        If the filters exclude all the data, an empty result set should be produced.
+        """
+
+        field_names = ('shared_count', 'replied_to_count')
+        values = [(1, 1), (1, 4), (1, 3), (2, 1), (2, 2)]
+        bi_distribution = self.get_distribution(values)
+
+        dataset = self.generate_messages_for_multi_distribution(field_names, bi_distribution)
+
+        d1 = registry.get_dimension('shares')
+        d2 = registry.get_dimension('replies')
+
+        datatable = models.DataTable(d1, d2)
+
+        filtered = dataset.message_set.filter(
+            shared_count__range=(2, 5),
+            replied_to_count__range=(3, 5),
+        )
+
+        result = datatable.render(filtered)
+        self.assertEquals(result.count(), 0)
+
+
 class TimeDistributionsTest(DistributionTestCaseMixins, TestCase):
     def setUp(self):
         # Get an arbitrary time to work with
