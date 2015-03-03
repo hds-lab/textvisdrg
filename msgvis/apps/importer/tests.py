@@ -3,11 +3,24 @@ from django.test import TestCase
 from msgvis.apps.corpus.models import Dataset, Message
 from msgvis.apps.questions.models import Article, Question
 
-from models import create_an_instance_from_json, load_research_questions_from_json
+from models import create_an_instance_from_json, load_research_questions_from_json, get_or_create_a_tweet_from_json_obj
 
 
 # Create your tests here.
 class ImportTest(TestCase):
+
+    def test_mini_tweet(self):
+        dset = Dataset.objects.create(name="Test Corpus", description="My Dataset")
+        tmp_tweet = {
+                        'id': 1234,
+                        'user': {
+                                    'id': 5678,
+                                    'screen_name': 'test',
+                                },
+                        'in_reply_to_status_id': None
+                    }
+        msg = get_or_create_a_tweet_from_json_obj(tmp_tweet, dset)
+        self.assertNotEquals(msg, None)
 
     def test_import_tweets(self):
         """Dataset.created_at should get set automatically."""

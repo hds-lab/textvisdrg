@@ -208,6 +208,6 @@ class Message(models.Model):
     mentions = models.ManyToManyField(Person, related_name="mentioned_in", null=True, blank=True, default=None)
     """The set of :class:`Person` mentioned in the message."""
 
-    text = models.TextField()
+    text = models.TextField(null=True, blank=True, default="")
     """The actual text of the message."""
 
