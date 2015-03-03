@@ -406,15 +406,46 @@
                 }
             }
 
-            function buildFullTable(primary, secondary, table, domains) {
+            function getValueLabelMap(dimension, domain, domain_labels) {
+                var valueLabels = {};
+                domain.forEach(function (value, idx) {
+                    //Use the domain label or the value itself as the label
+                    var label = value;
+
+                    if (domain_labels) {
+                        label = domain_labels[idx];
+                    }
+
+                    if (label === null || label === '') {
+                        label = "No " + dimension.key;
+                    }
+
+                    valueLabels[value] = label.toString();
+                });
+                return function(value) {
+                    return valueLabels[value] || value.toString();
+                };
+            }
+
+            function buildFullTable(primary, secondary, table, domains, domain_labels) {
                 var rows;
+
+                //Get functions that map from values to labels
+                var primaryValueLabel = getValueLabelMap(primary, domains[primary.key], domain_labels[primary.key]);
+                var secondaryValueLabel;
+                if (secondary) {
+                    secondaryValueLabel = getValueLabelMap(secondary, domains[secondary.key], domain_labels[secondary.key]);
+                }
 
                 if (primary.is_quantitative_or_time() && secondary && secondary.is_quantitative_or_time()) {
                     //We're doing a scatter plot which is totally different
                     // and much simpler.
 
                     rows = table.map(function(row) {
-                        return [row[primary.key], row[secondary.key]];
+                        return [
+                            primaryValueLabel(row[primary.key]),
+                            secondaryValueLabel(row[secondary.key])
+                        ];
                     });
 
                     rows.unshift([primary.key, secondary.key]);
@@ -424,7 +455,7 @@
                 //Otherwise let the fun begin...
 
                 //Use the primary dim values down the left always
-                var rowHeaders = domains[primary.key];
+                var rowHeaders = domains[primary.key].map(primaryValueLabel);
                 var columnHeaders = [DEFAULT_VALUE_KEY];
 
                 //Names inside the datatable rows
@@ -436,7 +467,7 @@
                 if (secondary){
                     if (!secondary.is_quantitative_or_time()) {
                         //Use the secondary dim values across the top
-                        columnHeaders = domains[secondary.key];
+                        columnHeaders = domains[secondary.key].map(secondaryValueLabel);
                     } else {
                         //Leave the header alone but note we need to aggregate
                         columnAggregation = true;
@@ -457,9 +488,6 @@
                 // c is the column-index into the matrix.
                 // c-1 can be used to index into the column headers
                 var r, c;
-                var dimValue = function(val) {
-                    return val === null ? 'NULL' : val.toString();
-                };
                 for (r = 0; r <= rowHeaders.length; r++) {
                     rows[r] = new Array(columnHeaders.length + 1);
 
@@ -467,7 +495,7 @@
                         //Create the header row
                         rows[r][0] = primary.key;
                         for (c = 1; c <= columnHeaders.length; c++) {
-                            rows[r][c] = dimValue(columnHeaders[c - 1]);
+                            rows[r][c] = columnHeaders[c - 1];
 
                             //Build the column index
                             columnIndex[columnHeaders[c - 1]] = c;
@@ -477,7 +505,7 @@
                         rowIndex[rowHeaders[r - 1]] = r;
 
                         // Put the primary dimension value in place
-                        rows[r][0] = dimValue(rowHeaders[r - 1]);
+                        rows[r][0] = rowHeaders[r - 1];
 
                         for (c = 1; c <= columnHeaders.length; c++) {
                             // Fill the cells with zeros
@@ -494,7 +522,7 @@
                 // Now fill in the non-zeros from the table
                 table.forEach(function(row) {
                     var value = row[DEFAULT_VALUE_KEY];
-                    var r = rowIndex[row[rowDataKey]];
+                    var r = rowIndex[primaryValueLabel(row[primary.key])];
                     var c = 1;
                     if (columnAggregation) {
                         //We are aggregating
@@ -504,7 +532,7 @@
                         if (secondary) {
                             //we have secondary dimension values in the headers which means
                             //the column index comes from the data
-                            c = columnIndex[row[columnDataKey]];
+                            c = columnIndex[secondaryValueLabel(row[secondary.key])];
                         }
 
                         rows[r][c] = value;
@@ -515,7 +543,7 @@
                     // Finish the aggregation
                     for (r = 1; r <= rowHeaders.length; r++) {
                         for (c = 1; c <= columnHeaders.length; c++) {
-                            rows[r][c] = weightedAverage(rows[r][c], DEFAULT_VALUE_KEY, columnDataKey);
+                            rows[r][c] = weightedAverage(rows[r][c], DEFAULT_VALUE_KEY, secondary.key);
                         }
                     }
                 }
@@ -645,7 +673,7 @@
                     secondary = dimensions[1];
                 }
                 if (primary) {
-                    var table = buildFullTable(primary, secondary, dataTable.table, dataTable.domains);
+                    var table = buildFullTable(primary, secondary, dataTable.table, dataTable.domains, dataTable.domain_labels);
                     var config = getC3Config(primary, secondary, dataTable.domains);
                     config.data.rows = table;
                     config.bindto = $element.find('.sparqs-vis-render-target')[0];
