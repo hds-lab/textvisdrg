@@ -334,6 +334,10 @@ class QuantitativeDimension(CategoricalDimension):
 
         expression = self.get_grouping_expression(queryset, bins=bins, bin_size=bin_size, **kwargs)
 
+        if expression is None:
+            # no results
+            return queryset.values()
+
         if expression == self.field_name:
 
             # We still have to map back to the requested grouping_key
