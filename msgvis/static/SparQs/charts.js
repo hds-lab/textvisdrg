@@ -131,7 +131,7 @@
             };
 
             this.render = function (dimension) {
-                if (!dimension || (!dimension.is_quantitative() && !dimension.is_time())) {
+                if (!dimension || (!dimension.is_quantitative_or_time())) {
                     return;
                 }
 
@@ -408,7 +408,7 @@
             function buildFullTable(primary, secondary, table, domains) {
                 var rows;
 
-                if (primary.is_quantitative() && secondary && secondary.is_quantitative()) {
+                if (primary.is_quantitative_or_time() && secondary && secondary.is_quantitative_or_time()) {
                     //We're doing a scatter plot which is totally different
                     // and much simpler.
 
@@ -433,7 +433,7 @@
                 //A function for aggregating cell values (used for quant secondary dimensions)
                 var columnAggregation = false;
                 if (secondary){
-                    if (!secondary.is_quantitative()) {
+                    if (!secondary.is_quantitative_or_time()) {
                         //Use the secondary dim values across the top
                         columnHeaders = domains[secondary.key];
                     } else {
@@ -574,7 +574,7 @@
                 };
 
                 //If x is quantitative, use a line chart
-                if (primary.is_quantitative()) {
+                if (primary.is_quantitative_or_time()) {
                     config.axis.x.type = 'indexed';
 
                     if (secondary) {
@@ -583,21 +583,24 @@
                         config.data.type = 'area-spline';
                     }
 
-                }
+                    //Special time-specific overrides
+                    if (primary.is_time()) {
+                        config.axis.x.type = 'timeseries';
 
-                //Special time-specific overrides
-                if (primary.is_time()) {
-                    config.axis.x.type = 'timeseries';
-
-                    //parsing django time values
-                    config.data.xFormat = '%Y-%m-%dT%H:%M:%SZ';
+                        //parsing django time values
+                        config.data.xFormat = '%Y-%m-%dT%H:%M:%SZ';
+                    }
                 }
 
                 if (secondary) {
+                    // There are two dimensions
 
-                    if (secondary.is_quantitative()) {
-                        if (primary.is_quantitative()) {
+                    if (secondary.is_quantitative_or_time()) {
+                        //We'll be swapping the y axis
+
+                        if (primary.is_quantitative_or_time()) {
                             //Nope, draw a scatter plot
+
                             config.data.type = 'scatter';
 
                             //Use the secondary dimension as the y label
@@ -624,10 +627,6 @@
                         };
                     }
                 }
-
-                //if (xAxisType == 'category') {
-                //    config.axis.x.categories = domains[primary.key]
-                //}
 
                 return config;
             }

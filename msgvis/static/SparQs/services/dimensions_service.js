@@ -115,6 +115,9 @@
                 is_time: function () {
                     return this.type == 'TimeDimension';
                 },
+                is_quantitative_or_time: function () {
+                    return this.type == 'QuantitativeDimension' || this.type == 'TimeDimension';
+                },
                 is_categorical: function () {
                     return this.type == 'CategoricalDimension';
                 },
