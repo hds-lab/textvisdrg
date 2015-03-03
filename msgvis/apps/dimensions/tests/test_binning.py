@@ -110,6 +110,13 @@ class TestTimeBinning(TestCase):
             desired_bins=10,
             expected_bin_size=1)
 
+    def test_time_bin_max_size(self):
+        """Returns a max bin size of 1 year."""
+        self.run_time_bin_test(
+            delta=tz.timedelta(days=10*365),
+            desired_bins=5,
+            expected_bin_size=31536e3)  # 1 year in seconds
+
     def test_time_bin_even_split(self):
         """Split evenly when the desired bins is perfect"""
         self.run_time_bin_test(
@@ -131,6 +138,12 @@ class TestTimeBinning(TestCase):
         self.run_time_bin_test(
             delta=tz.timedelta(minutes=4),
             desired_bins=9,
-            expected_bin_size=15,
-            )
+            expected_bin_size=30,
+        ) # 4 minutes / 9 is 26.6 seconds, so it should go up
 
+    def test_time_bin_special(self):
+        self.run_time_bin_test(
+            delta=tz.timedelta(minutes=4, seconds=11),
+            desired_bins=50,
+            expected_bin_size=5,
+        )

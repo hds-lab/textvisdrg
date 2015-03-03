@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from datetime import timedelta
 from django.utils import timezone as tz
-
+from django.utils import dateparse
 from django.conf import settings
 
 from msgvis.apps.dimensions import registry
@@ -104,3 +104,44 @@ class CategoricalDomainTest(DistributionTestCaseMixins, TestCase):
         self.assertEquals(result[0], base_time.replace(minute=0, second=0))
         self.assertEquals(result[24], time_values[1].replace(minute=0, second=0))
         self.assertEquals(result[25], time_values[1].replace(minute=0, second=0) + timedelta(hours=1))
+
+
+    def test_time_domain_just_over(self):
+        """If the domain is a little over a convenient bin size, rounds down"""
+
+        # Four minutes and 10 seconds is a perfect 50 bins of 5 seconds
+        # so this is 4 seconds extra.
+        start_time = dateparse.parse_datetime('2014-03-21T00:00:00Z')
+        end_time = dateparse.parse_datetime('2014-03-21T00:04:14Z')
+
+        time_values = [start_time, end_time]
+        distribution = self.get_distribution(time_values)
+
+        dataset = self.generate_messages_for_distribution('time', distribution)
+
+        dimension = registry.get_dimension('time')
+        result = dimension.get_domain(dataset.message_set.all(), bins=50)
+
+        # Should have decided to use 5 second increments
+        self.assertEquals(result[0], start_time)
+        self.assertEquals(result[1], start_time + timedelta(seconds=5))
+
+    def test_time_domain_just_under(self):
+        """If the domain is a little under a convenient bin size, rounds up"""
+
+        # Four minutes and 10 seconds is a perfect 50 bins of 5 seconds
+        # so this is 4 seconds under.
+        start_time = dateparse.parse_datetime('2014-03-21T00:00:00Z')
+        end_time = dateparse.parse_datetime('2014-03-21T00:04:06Z')
+
+        time_values = [start_time, end_time]
+        distribution = self.get_distribution(time_values)
+
+        dataset = self.generate_messages_for_distribution('time', distribution)
+
+        dimension = registry.get_dimension('time')
+        result = dimension.get_domain(dataset.message_set.all(), bins=50)
+
+        # Should have decided to use 5 second increments
+        self.assertEquals(result[0], start_time)
+        self.assertEquals(result[1], start_time + timedelta(seconds=5))
