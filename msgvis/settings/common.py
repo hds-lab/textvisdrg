@@ -338,7 +338,8 @@ COMPRESS_PRECOMPILERS = (
 )
 
 # Don't actually compress the js
-COMPRESS_JS_FILTERS = []
+if get_env_setting('DEBUG_JS', False):
+    COMPRESS_JS_FILTERS = []
 
 COMPRESS_ROOT = STATIC_ROOT
 COMPRESS_OUTPUT_DIR = 'CACHE'
