@@ -502,24 +502,42 @@ class TimeDimension(QuantitativeDimension):
         Determines a bin size for the time interval
         that supplies at least as many bins as minimum_bins,
         unless the time interval spans fewer than minimum_bins seconds.
+
+        See tickMethod() in d3/src/time/scale.js
         """
 
+        # var span = extent[1] - extent[0]
         extent = max_val - min_val
-        bin_size = extent / desired_bins
 
-        bin_size_seconds = bin_size.total_seconds()
+        # target = span / count
+        target_size = extent / desired_bins
+        target_size_millis = target_size.total_seconds() * 1000
 
-        bin_size_millis = 1000 * bin_size_seconds
-
-        # Find the first human-friendly bin size that isn't bigger than bin_size_seconds
-        best_bin_millis = self.d3_time_scaleSteps[0]
-        for step in self.d3_time_scaleSteps:
-            if step <= bin_size_millis:
-                best_bin_millis = step
-            else:
+        # Find the first index where the bin size is greater than the target
+        # i = d3.bisect(d3_time_scaleSteps, target);
+        bisect_index = 0
+        for bisect_index, step in enumerate(self.d3_time_scaleSteps):
+            if step > target_size_millis:
                 break
 
-        return best_bin_millis / 1000
+        if bisect_index == len(self.d3_time_scaleSteps):
+            # Default to year if we ran out of bins
+            bisect_index = len(self.d3_time_scaleSteps) - 1
+        elif bisect_index == 0:
+            # A boring case -- just let it be 0
+            bisect_index = 0
+        else:
+            # we're somewhere in the middle
+            # do this kinda odd ratio test to decide where to break
+            # target / d3_time_scaleSteps[i - 1] < d3_time_scaleSteps[i] / target ? i - 1 : i
+
+            left = float(self.d3_time_scaleSteps[bisect_index - 1])
+            right = float(self.d3_time_scaleSteps[bisect_index])
+            if target_size_millis / left < right / target_size_millis:
+                bisect_index -= 1
+            # else just leave it at bisect_index
+
+        return self.d3_time_scaleSteps[bisect_index] / 1000 # back to seconds
 
     def _bin_value(self, value, bin_size):
         """Bin the given value"""
