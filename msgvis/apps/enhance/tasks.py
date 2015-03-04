@@ -175,9 +175,9 @@ class TopicContext(object):
         dictionary._vectorize_corpus(queryset=self.queryset,
                                      tokenizer=tokenized_texts)
 
-    def build_lda(self, dictionary, num_topics=30):
+    def build_lda(self, dictionary, num_topics=30, **kwargs):
         corpus = DbWordVectorIterator(dictionary)
-        return dictionary._build_lda(self.name, corpus, num_topics=num_topics)
+        return dictionary._build_lda(self.name, corpus, num_topics=num_topics, **kwargs)
 
     def apply_lda(self, dictionary, model, lda=None):
         corpus = DbWordVectorIterator(dictionary)
@@ -188,7 +188,7 @@ class TopicContext(object):
         return dictionary._evaluate_lda(model, corpus, lda=lda)
 
 
-def standard_topic_pipeline(context, num_topics):
+def standard_topic_pipeline(context, num_topics, **kwargs):
     dictionary = context.find_dictionary()
     if dictionary is None:
         dictionary = context.build_dictionary()
@@ -196,7 +196,7 @@ def standard_topic_pipeline(context, num_topics):
     if not context.bows_exist(dictionary):
         context.build_bows(dictionary)
 
-    model, lda = context.build_lda(dictionary, num_topics=num_topics)
+    model, lda = context.build_lda(dictionary, num_topics=num_topics, **kwargs)
     context.apply_lda(dictionary, model, lda)
     context.evaluate_lda(dictionary, model, lda)
 

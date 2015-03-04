@@ -21,10 +21,6 @@ class TopicsTest(TestCase):
     def setUp(self):
         self.dataset = corpus_models.Dataset.objects.create(name="Test Corpus", description="My Dataset")
 
-        self.msg = self.dataset.message_set.create(
-            text="kitties are the worst awfullest animals and i hate them"
-        )
-
         self.dictionary = models.Dictionary.objects.create(
             name="test dictionary",
             dataset="test dataset",
@@ -44,29 +40,43 @@ class TopicsTest(TestCase):
 
     def test_get_topics_no_topics(self):
         """When there are no topics, should return empty list of topics"""
-        self.assertEquals(self.msg.topics.count(), 0)
+
+        msg = self.dataset.message_set.create(
+            text="kitties are the worst awfullest animals and i hate them"
+        )
+
+        self.assertEquals(msg.topics.count(), 0)
 
     def test_get_topics_with_topics(self):
         """If the message has topics, should return them"""
+
+        msg = self.dataset.message_set.create(
+            text="kitties are the worst awfullest animals and i hate them"
+        )
+
         models.MessageTopic.objects.create(
             topic_model=self.topic_model,
             topic=self.topic,
             probability=0.5,
-            message=self.msg,
+            message=msg,
         )
 
-        self.assertEquals(self.msg.topics.count(), 1)
-        topic = self.msg.topics.first()
+        self.assertEquals(msg.topics.count(), 1)
+        topic = msg.topics.first()
         self.assertIsInstance(topic, models.Topic)
 
     def test_topic_modeling(self):
         """Generate some test messages and actually model topics"""
+
+        randomseed = 1
+        from numpy import random as nprandom
+        import random
+        nprandom.seed(randomseed)
+        random.seed(randomseed)
+
         n_messages = 50
         n_words = 5
         num_topics = 2
-
-        from random import choice
-        import math
 
         topic_a_vocab = ['cat', 'hat', 'marbles']
         topic_b_vocab = ['oppossum', 'lasso', 'amalgam']
@@ -81,12 +91,12 @@ class TopicsTest(TestCase):
                 vocab = topic_b_vocab
 
             self.dataset.message_set.create(
-                text=" ".join(choice(vocab) for w in xrange(n_words)),
+                text=" ".join(random.choice(vocab) for w in xrange(n_words)),
                 language=english,
             )
 
         context = tasks.default_topic_context("test_topic_modeling", dataset_id=self.dataset.id)
-        tasks.standard_topic_pipeline(context, num_topics=num_topics)
+        tasks.standard_topic_pipeline(context, num_topics=num_topics, multicore=False)
 
         dictionary = models.Dictionary.objects.get(name='test_topic_modeling')
 
@@ -110,6 +120,17 @@ class TopicsTest(TestCase):
 
         # Should be the proper number of messages with positive topic probabilities
         # The - 3 factor on the end allows a little wiggle room for randomness
-        self.assertGreater(topic_a.message_probabilities.filter(probability__gt=0.5).count(), n_messages / 2 - 3)
-        self.assertGreater(topic_b.message_probabilities.filter(probability__gt=0.5).count(), n_messages / 2 - 3)
+
+        # Count the messages that prefer each topic
+        from collections import defaultdict
+        topic_count = defaultdict(int)
+        for msg in self.dataset.message_set.all():
+            topic = topic_model.get_probable_topic(msg)
+            topic_count[topic] += 1
+
+        self.assertEquals(topic_count, {
+            topic_a: n_messages / 2,
+            topic_b: n_messages / 2,
+        })
+
 

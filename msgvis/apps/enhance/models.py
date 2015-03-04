@@ -181,15 +181,20 @@ class Dictionary(models.Model):
         logger.info("Created %d word vector entries" % count)
 
 
-    def _build_lda(self, name, corpus, num_topics=30, words_to_save=200):
-        from gensim.models import LdaMulticore
+    def _build_lda(self, name, corpus, num_topics=30, words_to_save=200, multicore=True):
+        from gensim.models import LdaMulticore, LdaModel
 
         gdict = self.gensim_dictionary
 
-        lda = LdaMulticore(corpus=corpus,
-                           num_topics=num_topics,
-                           workers=3,
-                           id2word=gdict)
+        if multicore:
+            lda = LdaMulticore(corpus=corpus,
+                               num_topics=num_topics,
+                               workers=3,
+                               id2word=gdict)
+        else:
+            lda = LdaModel(corpus=corpus,
+                               num_topics=num_topics,
+                               id2word=gdict)
 
         model = TopicModel(name=name, dictionary=self)
         model.save()
@@ -306,6 +311,21 @@ class TopicModel(models.Model):
 
     def save_to_file(self, gensim_lda):
         gensim_lda.save("lda_out_%d.model" % self.id)
+
+    def get_probable_topic(self, message):
+        """For this model, get the most likely topic for the message."""
+        message_topics = message.topic_probabilities\
+            .filter(topic_model=self)\
+            .only('topic', 'probability')
+
+        max_prob = -100000
+        probable_topic = None
+        for mt in message_topics:
+            if mt.probability > max_prob:
+                probable_topic = mt.topic
+                max_prob = mt.probability
+
+        return probable_topic
 
 
 class Topic(models.Model):
