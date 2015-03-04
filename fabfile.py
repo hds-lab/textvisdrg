@@ -34,6 +34,7 @@ def dependencies(default_env='dev'):
     pip_install(default_env)
     npm_install()
     bower_install()
+    nltk_init()
 
 test = factories.test_task(default_settings='msgvis.settings.test')
 test_coverage = factories.coverage_task(default_settings='msgvis.settings.test')
