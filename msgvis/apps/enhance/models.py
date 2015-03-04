@@ -16,6 +16,7 @@ import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
+
 class Dictionary(models.Model):
     name = models.CharField(max_length=100)
     dataset = models.CharField(max_length=100)
@@ -130,7 +131,7 @@ class Dictionary(models.Model):
 
         return dict_model
 
-    def _vectorize_corpus(self, queryset, tokenizer, wv_class, textfield='text'):
+    def _vectorize_corpus(self, queryset, tokenizer):
 
         import math
 
@@ -144,24 +145,24 @@ class Dictionary(models.Model):
         batch_size = 1000
         print_freq = 10000
 
-        for obj in queryset.iterator():
-            text = getattr(obj, textfield)
+        for msg in queryset.iterator():
+            text = msg.text
             bow = gdict.doc2bow(tokenizer.tokenize(text))
 
             for word_index, word_freq in bow:
                 word_id = self.get_word_id(word_index)
                 document_freq = gdict.dfs[word_index]
                 tfidf = word_freq * math.log(total_documents, document_freq)
-                batch.append(wv_class.create(dictionary=self,
-                                             word_id=word_id,
-                                             word_index=word_index,
-                                             count=word_freq,
-                                             tfidf=tfidf,
-                                             source_obj=obj))
+                batch.append(MessageWord(dictionary=self,
+                                         word_id=word_id,
+                                         word_index=word_index,
+                                         count=word_freq,
+                                         tfidf=tfidf,
+                                         message=msg))
             count += 1
 
             if len(batch) > batch_size:
-                wv_class.objects.bulk_create(batch)
+                MessageWord.objects.bulk_create(batch)
                 batch = []
 
                 if settings.DEBUG:
@@ -174,21 +175,26 @@ class Dictionary(models.Model):
                 logger.info("Saved word-vectors for %d / %d documents" % (count, total_count))
 
         if len(batch):
-            wv_class.objects.bulk_create(batch)
+            MessageWord.objects.bulk_create(batch)
             logger.info("Saved word-vectors for %d / %d documents" % (count, total_count))
 
         logger.info("Created %d word vector entries" % count)
 
 
-    def _build_lda(self, name, corpus, num_topics=30, words_to_save=200):
-        from gensim.models import LdaMulticore
+    def _build_lda(self, name, corpus, num_topics=30, words_to_save=200, multicore=True):
+        from gensim.models import LdaMulticore, LdaModel
 
         gdict = self.gensim_dictionary
 
-        lda = LdaMulticore(corpus=corpus,
-                           num_topics=num_topics,
-                           workers=3,
-                           id2word=gdict)
+        if multicore:
+            lda = LdaMulticore(corpus=corpus,
+                               num_topics=num_topics,
+                               workers=3,
+                               id2word=gdict)
+        else:
+            lda = LdaModel(corpus=corpus,
+                               num_topics=num_topics,
+                               id2word=gdict)
 
         model = TopicModel(name=name, dictionary=self)
         model.save()
@@ -222,7 +228,7 @@ class Dictionary(models.Model):
 
         return (model, lda)
 
-    def _apply_lda(self, model, corpus, topicvector_class, lda=None):
+    def _apply_lda(self, model, corpus, lda=None):
 
         if lda is None:
             # recover the lda
@@ -239,20 +245,20 @@ class Dictionary(models.Model):
         # Go through the bows and get their topic mixtures
         for bow in corpus:
             mixture = lda[bow]
-            source_id = corpus.current_source_id
+            message_id = corpus.current_message_id
 
             for topic_index, prob in mixture:
                 topic = topics[topic_index]
-                itemtopic = topicvector_class(topic_model=model,
-                                              topic=topic,
-                                              probability=prob,
-                                              source_id=source_id)
+                itemtopic = MessageTopic(topic_model=model,
+                                         topic=topic,
+                                         message_id=message_id,
+                                         probability=prob)
                 batch.append(itemtopic)
 
             count += 1
 
             if len(batch) > batch_size:
-                topicvector_class.objects.bulk_create(batch)
+                MessageTopic.objects.bulk_create(batch)
                 batch = []
 
                 if settings.DEBUG:
@@ -265,7 +271,7 @@ class Dictionary(models.Model):
                 logger.info("Saved topic-vectors for %d / %d documents" % (count, total_documents))
 
         if len(batch):
-            topicvector_class.objects.bulk_create(batch)
+            MessageTopic.objects.bulk_create(batch)
             logger.info("Saved topic-vectors for %d / %d documents" % (count, total_documents))
 
     def _evaluate_lda(self, model, corpus, lda=None):
@@ -279,17 +285,22 @@ class Dictionary(models.Model):
         logger.info("Perplexity: %f" % model.perplexity)
         model.save()
 
+
 class Word(models.Model):
     dictionary = models.ForeignKey(Dictionary, related_name='words')
     index = models.IntegerField()
     text = models.CharField(max_length=100)
     document_frequency = models.IntegerField()
 
+    messages = models.ManyToManyField(Message, through='MessageWord', related_name='words')
+
 
 class TopicModel(models.Model):
     dictionary = models.ForeignKey(Dictionary)
+
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=200)
+
     time = models.DateTimeField(auto_now_add=True)
     perplexity = models.FloatField(default=0)
 
@@ -301,6 +312,21 @@ class TopicModel(models.Model):
     def save_to_file(self, gensim_lda):
         gensim_lda.save("lda_out_%d.model" % self.id)
 
+    def get_probable_topic(self, message):
+        """For this model, get the most likely topic for the message."""
+        message_topics = message.topic_probabilities\
+            .filter(topic_model=self)\
+            .only('topic', 'probability')
+
+        max_prob = -100000
+        probable_topic = None
+        for mt in message_topics:
+            if mt.probability > max_prob:
+                probable_topic = mt.topic
+                max_prob = mt.probability
+
+        return probable_topic
+
 
 class Topic(models.Model):
     model = models.ForeignKey(TopicModel, related_name='topics')
@@ -309,41 +335,43 @@ class Topic(models.Model):
     index = models.IntegerField()
     alpha = models.FloatField()
 
+    messages = models.ManyToManyField(Message, through='MessageTopic', related_name='topics')
+    words = models.ManyToManyField(Word, through='TopicWord', related_name='topics')
+
 
 class TopicWord(models.Model):
     word = models.ForeignKey(Word)
+    topic = models.ForeignKey(Topic)
+
     word_index = models.IntegerField()
     probability = models.FloatField()
-    topic = models.ForeignKey(Topic, related_name='words')
 
 
-class AbstractWordVector(models.Model):
+class MessageWord(models.Model):
     class Meta:
-        abstract = True
-        index_together = ['dictionary', 'source']
+        index_together = ['dictionary', 'message']
 
     dictionary = models.ForeignKey(Dictionary, db_index=False)
-    word = models.ForeignKey(Word)
+
+    word = models.ForeignKey(Word, related_name="message_scores")
+    message = models.ForeignKey(Message, related_name='word_scores')
+
     word_index = models.IntegerField()
     count = models.FloatField()
     tfidf = models.FloatField()
 
-    @classmethod
-    def create(cls, dictionary, word_id, word_index, source_obj, count, tfidf):
-        return cls(dictionary=dictionary,
-                   word_id=word_id, word_index=word_index,
-                   count=count, tfidf=tfidf,
-                   source=source_obj)
 
-
-class AbstractTopicVector(models.Model):
+class MessageTopic(models.Model):
     class Meta:
-        abstract = True
-        index_together = ['topic_model', 'source']
+        index_together = ['topic_model', 'message']
 
     topic_model = models.ForeignKey(TopicModel, db_index=False)
-    topic = models.ForeignKey(Topic)
+
+    topic = models.ForeignKey(Topic, related_name='message_probabilities')
+    message = models.ForeignKey(Message, related_name="topic_probabilities")
+
     probability = models.FloatField()
+
 
     @classmethod
     def get_examples(cls, topic):
@@ -351,15 +379,6 @@ class AbstractTopicVector(models.Model):
         return examples.order_by('-probability')
 
 
-class MessageWord(AbstractWordVector):
-    source = models.ForeignKey(Message, related_name='words')
-
-
-class MessageTopic(AbstractTopicVector):
-    source = models.ForeignKey(Message, related_name='topics')
-
-
 def set_message_sentiment(message):
-
     message.sentiment = int(round(textblob.TextBlob(message.text).sentiment.polarity))
     message.save()

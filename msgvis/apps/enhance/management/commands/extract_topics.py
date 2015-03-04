@@ -25,7 +25,7 @@ class Command(BaseCommand):
         except ValueError:
             raise CommandError("Dataset id must be a number.")
 
-        from msgvis.apps.enhance.tasks import get_message_context,data_pipeline
+        from msgvis.apps.enhance.tasks import default_topic_context, standard_topic_pipeline
 
-        context = get_message_context(name, dataset_id=dataset_id)
-        data_pipeline(context, num_topics=int(num_topics))
+        context = default_topic_context(name, dataset_id=dataset_id)
+        standard_topic_pipeline(context, num_topics=int(num_topics))

@@ -21,49 +21,47 @@ def get_stoplist():
 
 
 class DbTextIterator(object):
-    def __init__(self, queryset, textfield='text'):
+    def __init__(self, queryset):
         self.queryset = queryset
-        self.textfield = textfield
         self.current_position = 0
         self.current = None
 
     def __iter__(self):
         self.current_position = 0
-        for obj in self.queryset.iterator():
-            self.current = obj
+        for msg in self.queryset.iterator():
+            self.current = msg
             self.current_position += 1
             if self.current_position % 10000 == 0:
                 logger.info("Iterating through database texts: item %d" % self.current_position)
 
-            yield getattr(obj, self.textfield)
+            yield msg.text
 
 
 class DbWordVectorIterator(object):
-    def __init__(self, dictionary, wv_class, freq_field='tfidf'):
+    def __init__(self, dictionary, freq_field='tfidf'):
         self.dictionary = dictionary
-        self.wv_class = wv_class
         self.freq_field = freq_field
-        self.current_source_id = None
+        self.current_message_id = None
         self.current_vector = None
 
     def __iter__(self):
-        qset = self.wv_class.objects.filter(dictionary=self.dictionary).order_by('source')
-        self.current_source_id = None
+        qset = MessageWord.objects.filter(dictionary=self.dictionary).order_by('message')
+        self.current_message_id = None
         self.current_vector = []
         current_position = 0
-        for wv in qset.iterator():
-            source_id = wv.source_id
-            word_idx = wv.word_index
-            freq = getattr(wv, self.freq_field)
+        for mw in qset.iterator():
+            message_id = mw.message_id
+            word_idx = mw.word_index
+            freq = getattr(mw, self.freq_field)
 
-            if self.current_source_id is None:
-                self.current_source_id = source_id
+            if self.current_message_id is None:
+                self.current_message_id = message_id
                 self.current_vector = []
 
-            if self.current_source_id != source_id:
+            if self.current_message_id != message_id:
                 yield self.current_vector
                 self.current_vector = []
-                self.current_source_id = source_id
+                self.current_message_id = message_id
                 current_position += 1
 
                 if current_position % 10000 == 0:
@@ -77,9 +75,12 @@ class DbWordVectorIterator(object):
     def __len__(self):
         from django.db.models import Count
 
-        count = self.wv_class.objects.filter(dictionary=self.dictionary).aggregate(Count('source', distinct=True))
+        count = MessageWord.objects \
+            .filter(dictionary=self.dictionary) \
+            .aggregate(Count('message', distinct=True))
+
         if count:
-            return count['source__count']
+            return count['message__count']
 
 
 class Tokenizer(object):
@@ -111,25 +112,21 @@ class Tokenizer(object):
 
 
 class WordTokenizer(Tokenizer):
-
     def __init__(self, texts=None, stoplist=None):
         super(WordTokenizer, self).__init__(texts, stoplist)
 
         import nltk
+
         self._tokenize = nltk.word_tokenize
 
     def split(self, text):
         return self._tokenize(text)
 
 
-class TaskContext(object):
-    def __init__(self, name, queryset, textfield, word_vector_class, topic_vector_class, tokenizer, minimum_frequency=2,
-                 stoplist=None):
+class TopicContext(object):
+    def __init__(self, name, queryset, tokenizer, minimum_frequency=2, stoplist=None):
         self.name = name
         self.queryset = queryset
-        self.textfield = textfield
-        self.word_vector_class = word_vector_class
-        self.topic_vector_class = topic_vector_class
         self.tokenizer = tokenizer
         self.stoplist = stoplist
         self.minimum_frequency = minimum_frequency
@@ -157,7 +154,7 @@ class TaskContext(object):
 
 
     def build_dictionary(self):
-        texts = DbTextIterator(self.queryset, textfield=self.textfield)
+        texts = DbTextIterator(self.queryset)
 
         tokenized_texts = self.tokenizer(texts, stoplist=self.stoplist)
 
@@ -168,32 +165,30 @@ class TaskContext(object):
                                              settings=self.get_dict_settings())
 
     def bows_exist(self, dictionary):
-        return self.word_vector_class.objects.filter(dictionary=dictionary).exists()
+        return MessageWord.objects.filter(dictionary=dictionary).exists()
 
 
     def build_bows(self, dictionary):
-        texts = DbTextIterator(self.queryset, textfield=self.textfield)
+        texts = DbTextIterator(self.queryset)
         tokenized_texts = self.tokenizer(texts, stoplist=self.stoplist)
 
         dictionary._vectorize_corpus(queryset=self.queryset,
-                                     tokenizer=tokenized_texts,
-                                     wv_class=self.word_vector_class,
-                                     textfield=self.textfield)
+                                     tokenizer=tokenized_texts)
 
-    def build_lda(self, dictionary, num_topics=30):
-        corpus = DbWordVectorIterator(dictionary, self.word_vector_class)
-        return dictionary._build_lda(self.name, corpus, num_topics=num_topics)
+    def build_lda(self, dictionary, num_topics=30, **kwargs):
+        corpus = DbWordVectorIterator(dictionary)
+        return dictionary._build_lda(self.name, corpus, num_topics=num_topics, **kwargs)
 
     def apply_lda(self, dictionary, model, lda=None):
-        corpus = DbWordVectorIterator(dictionary, self.word_vector_class)
-        return dictionary._apply_lda(model, corpus, topicvector_class=self.topic_vector_class, lda=lda)
+        corpus = DbWordVectorIterator(dictionary)
+        return dictionary._apply_lda(model, corpus, lda=lda)
 
     def evaluate_lda(self, dictionary, model, lda=None):
-        corpus = DbWordVectorIterator(dictionary, self.word_vector_class)
+        corpus = DbWordVectorIterator(dictionary)
         return dictionary._evaluate_lda(model, corpus, lda=lda)
 
 
-def data_pipeline(context, num_topics):
+def standard_topic_pipeline(context, num_topics, **kwargs):
     dictionary = context.find_dictionary()
     if dictionary is None:
         dictionary = context.build_dictionary()
@@ -201,20 +196,16 @@ def data_pipeline(context, num_topics):
     if not context.bows_exist(dictionary):
         context.build_bows(dictionary)
 
-    model, lda = context.build_lda(dictionary, num_topics=num_topics)
+    model, lda = context.build_lda(dictionary, num_topics=num_topics, **kwargs)
     context.apply_lda(dictionary, model, lda)
     context.evaluate_lda(dictionary, model, lda)
 
 
-def get_message_context(name, dataset_id):
+def default_topic_context(name, dataset_id):
     dataset = Dataset.objects.get(pk=dataset_id)
     queryset = dataset.message_set.filter(language__code='en')
-    textfield = 'text'
 
-    return TaskContext(name=name, queryset=queryset,
-                       textfield=textfield,
-                       word_vector_class=MessageWord,
-                       topic_vector_class=MessageTopic,
-                       tokenizer=WordTokenizer,
-                       stoplist=get_stoplist(),
-                       minimum_frequency=4)
+    return TopicContext(name=name, queryset=queryset,
+                        tokenizer=WordTokenizer,
+                        stoplist=get_stoplist(),
+                        minimum_frequency=4)
