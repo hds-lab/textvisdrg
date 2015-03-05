@@ -99,9 +99,9 @@ class FilterSerializer(serializers.Serializer):
     min_time = serializers.DateTimeField(required=False)
     max_time = serializers.DateTimeField(required=False)
 
-    levels = serializers.ListSerializer(child=serializers.CharField(allow_null=True), required=False)
+    levels = serializers.ListSerializer(child=serializers.CharField(allow_null=True, allow_blank=True), required=False)
 
-    value = serializers.CharField(required=False)
+    value = serializers.CharField(allow_null=True, allow_blank=True, required=False)
 
 
 class PersonSerializer(serializers.ModelSerializer):
