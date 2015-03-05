@@ -113,6 +113,7 @@ class DataTable(object):
             queryset = dimension.filter(queryset, **filter)
         domain = dimension.get_domain(queryset, bins=desired_bins)
         labels = dimension.get_domain_labels(domain)
+
         return domain, labels
 
     def generate(self, dataset, filters=None):

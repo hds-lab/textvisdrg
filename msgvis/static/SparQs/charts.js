@@ -447,7 +447,7 @@
                 mapFn.inverse = function(label) {
                     // find the label in valueLabels.values
                     // or if it isn't there return null;
-                    return valueLabelsInverse[label] || undefined;
+                    return valueLabelsInverse[label] || "";
                 };
 
                 return mapFn;

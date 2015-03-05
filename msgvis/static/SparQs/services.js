@@ -150,10 +150,12 @@
                 set_focus: function(click_point_values){
                     var dimensions = this.dimensions();
                     var focus = dimensions.map(function(d, i){
-                        return {
-                            "dimension": dimensions[i].key,
-                            "value": click_point_values[i]
-                        };
+                        var dim = {};
+                        dim.dimension = dimensions[i].key;
+                        dim.value = click_point_values[i];
+                        if (typeof(dim.value) === "undefined")
+                            dim.value = ""
+                        return dim;
                     });
                     current_focus = focus;
                     this.changed('focus');

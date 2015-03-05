@@ -3,7 +3,7 @@ import math
 from datetime import datetime, timedelta
 
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.conf import settings
 from django.utils import dateformat, timezone
 
@@ -50,8 +50,11 @@ class CategoricalDimension(object):
 
     def _exact_filter(self, queryset, **kwargs):
         """Filtering for exact value"""
-        if kwargs.get('value'):
-            queryset = queryset.filter(Q((self.field_name, kwargs['value'])))
+        if 'value' in kwargs:
+            if kwargs['value'] is None or kwargs['value'] == "":
+                queryset = queryset.filter(Q((self.field_name + "__isnull", True)))
+            else:
+                queryset = queryset.filter(Q((self.field_name, kwargs['value'])))
         return queryset
 
     def get_key_model(self):
@@ -69,7 +72,11 @@ class CategoricalDimension(object):
         if kwargs.get('levels'):
             filter_ors = []
             for level in kwargs.get('levels'):
-                filter_ors.append((self.field_name, level))
+                if level is None or level == "":
+                    filter_ors.append((self.field_name + "__isnull", True))
+                else:
+                    filter_ors.append((self.field_name, level))
+
             queryset = queryset.filter(reduce(operator.or_, [Q(x) for x in filter_ors]))
 
         return queryset
@@ -132,6 +139,7 @@ class CategoricalDimension(object):
         if hasattr(self, 'domain'):
             return self.domain
 
+
         # Type checking
         queryset = find_messages(queryset)
 
@@ -139,7 +147,7 @@ class CategoricalDimension(object):
         queryset = self.group_by(queryset, grouping_key='value')
 
         # Count the messages in each group
-        queryset = queryset.annotate(count=models.Count('id'))
+        queryset = queryset.annotate(count=Count('id'))
 
         queryset = queryset.order_by('-count')
 
