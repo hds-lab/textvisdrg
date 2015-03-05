@@ -3,7 +3,7 @@ import math
 from datetime import datetime, timedelta
 
 from django.db import models
-from django.db.models import Q, Count
+from django.db.models import Q
 from django.conf import settings
 from django.utils import dateformat, timezone
 
@@ -147,7 +147,7 @@ class CategoricalDimension(object):
         queryset = self.group_by(queryset, grouping_key='value')
 
         # Count the messages in each group
-        queryset = queryset.annotate(count=Count('id'))
+        queryset = queryset.annotate(count=models.Count('id'))
 
         queryset = queryset.order_by('-count')
 
