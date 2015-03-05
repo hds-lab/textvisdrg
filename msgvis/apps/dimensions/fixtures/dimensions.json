@@ -1,0 +1,170 @@
+[
+{
+  "fields": {
+    "key": "hashtags"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 1
+},
+{
+  "fields": {
+    "key": "topics"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 2
+},
+{
+  "fields": {
+    "key": "keywords"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 3
+},
+{
+  "fields": {
+    "key": "time"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 4
+},
+{
+  "fields": {
+    "key": "replies"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 5
+},
+{
+  "fields": {
+    "key": "shares"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 6
+},
+{
+  "fields": {
+    "key": "mentions"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 7
+},
+{
+  "fields": {
+    "key": "urls"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 8
+},
+{
+  "fields": {
+    "key": "media"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 9
+},
+{
+  "fields": {
+    "key": "sender_message_count"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 10
+},
+{
+  "fields": {
+    "key": "sender_friend_count"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 11
+},
+{
+  "fields": {
+    "key": "sender_follower_count"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 12
+},
+{
+  "fields": {
+    "key": "sender_reply_count"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 13
+},
+{
+  "fields": {
+    "key": "sender_share_count"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 14
+},
+{
+  "fields": {
+    "key": "sender_mention_count"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 15
+},
+{
+  "fields": {
+    "key": "sender_name"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 16
+},
+{
+  "fields": {
+    "key": "type"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 17
+},
+{
+  "fields": {
+    "key": "location"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 18
+},
+{
+  "fields": {
+    "key": "timezone"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 19
+},
+{
+  "fields": {
+    "key": "sentiment"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 20
+},
+{
+  "fields": {
+    "key": "gender"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 21
+},
+{
+  "fields": {
+    "key": "codes"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 22
+},
+{
+  "fields": {
+    "key": "language"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 23
+},
+{
+  "fields": {
+    "key": "age"
+  },
+  "model": "dimensions.dimensionkey",
+  "pk": 24
+}
+]

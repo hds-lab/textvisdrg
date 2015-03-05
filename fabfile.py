@@ -53,6 +53,8 @@ model_fixtures = (
     ('corpus.Language', 'msgvis/apps/corpus/fixtures/languages.json'),
     ('corpus.MessageType', 'msgvis/apps/corpus/fixtures/messagetypes.json'),
     ('corpus.Timezone', 'msgvis/apps/corpus/fixtures/timezones.json'),
+    ('dimensions', 'msgvis/apps/dimensions/fixtures/dimensions.json'),
+    ('questions', 'msgvis/apps/questions/fixtures/questions.json'),
 )
 
 def generate_fixtures():
