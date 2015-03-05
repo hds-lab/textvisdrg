@@ -116,7 +116,7 @@ def get_or_create_a_tweet_from_json_obj(tweet_data, dataset_obj):
             tweet.hashtags.add(hashtag_obj)
 
     # urls
-    if tweet_data.get('entities') and tweet_data['entities'].get('entities') and len(tweet_data['entities']['urls']) > 0:
+    if tweet_data.get('entities') and tweet_data['entities'].get('urls') and len(tweet_data['entities']['urls']) > 0:
         tweet.contains_url = True
         for url in tweet_data['entities']['urls']:
             urlparse_results = urlparse(url['expanded_url'])
