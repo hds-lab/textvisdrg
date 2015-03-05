@@ -186,7 +186,6 @@
         Selection.changed('dimensions,filters', $scope, $scope.get_data_table);
 
         $scope.onVisClicked = function(data) {
-
             Selection.set_focus(data);
         };
 
