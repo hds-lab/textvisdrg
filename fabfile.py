@@ -49,34 +49,18 @@ load_test_data = factories.load_test_data_task(test_data_path)
 
 
 # Model keys to fixture paths from PROJECT_ROOT
-model_fixtures = {
-    'corpus.Language': 'msgvis/apps/corpus/fixtures/languages.json',
-    'corpus.MessageType': 'msgvis/apps/corpus/fixtures/messagetypes.json',
-    'corpus.Timezone': 'msgvis/apps/corpus/fixtures/timezones.json',
-}
+model_fixtures = (
+    ('corpus.Language', 'msgvis/apps/corpus/fixtures/languages.json'),
+    ('corpus.MessageType', 'msgvis/apps/corpus/fixtures/messagetypes.json'),
+    ('corpus.Timezone', 'msgvis/apps/corpus/fixtures/timezones.json'),
+)
 
-
-def generate_fixtures(app_or_model=None):
+def generate_fixtures():
     """
     Regenerate configured fixtures from the database.
-
-    A Django app name or app model (app.Model) may be given as a parameter.
     """
-    model_filter = None
-    app_filter = None
-    if app_or_model:
-        if '.' in app_or_model:
-            model_filter = app_or_model
-        else:
-            app_filter = '%s.' % app_or_model
-
     generated = []
-    for model, fixturefile in model_fixtures.iteritems():
-        if model_filter and model != model_filter:
-            continue
-        if app_filter and not model.startswith(app_filter):
-            continue
-
+    for model, fixturefile in model_fixtures:
         fabutils.manage_py('dumpdata --indent=2 {model} > {out}'.format(
             model=model,
             out=PROJECT_ROOT / fixturefile,
@@ -88,26 +72,11 @@ def generate_fixtures(app_or_model=None):
         print " - " + '\n - '.join(generated)
 
 
-def load_fixtures(app_or_model=None):
+def load_fixtures():
     """
     Replaces the database tables with the contents of fixtures.
-
-    A Django app name or app model (app.Model) may be given as a parameter.
     """
-
-    model_filter = None
-    app_filter = None
-    if app_or_model:
-        if '.' in app_or_model:
-            model_filter = app_or_model
-        else:
-            app_filter = '%s.' % app_or_model
-
-    for model, fixturefile in model_fixtures.iteritems():
-        if model_filter and model != model_filter:
-            continue
-        if app_filter and not model.startswith(app_filter):
-            continue
+    for model, fixturefile in model_fixtures:
         fabutils.manage_py('syncdata %s' % (PROJECT_ROOT / fixturefile,))
 
 

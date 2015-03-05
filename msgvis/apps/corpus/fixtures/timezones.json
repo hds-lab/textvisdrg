@@ -1,8 +1,1194 @@
-[{
+[
+{
   "fields": {
     "name": "Pacific Time (US & Canada)",
     "olson_code": "America/Los_Angeles"
   },
   "model": "corpus.timezone",
   "pk": 1
-}]
+},
+{
+  "fields": {
+    "name": "Monterrey",
+    "olson_code": "America/Monterrey"
+  },
+  "model": "corpus.timezone",
+  "pk": 2
+},
+{
+  "fields": {
+    "name": "Eastern Time (US & Canada)",
+    "olson_code": "America/New_York"
+  },
+  "model": "corpus.timezone",
+  "pk": 3
+},
+{
+  "fields": {
+    "name": "Paris",
+    "olson_code": "Europe/Paris"
+  },
+  "model": "corpus.timezone",
+  "pk": 4
+},
+{
+  "fields": {
+    "name": "Atlantic Time (Canada)",
+    "olson_code": "America/Halifax"
+  },
+  "model": "corpus.timezone",
+  "pk": 5
+},
+{
+  "fields": {
+    "name": "Seoul",
+    "olson_code": "Asia/Seoul"
+  },
+  "model": "corpus.timezone",
+  "pk": 6
+},
+{
+  "fields": {
+    "name": "Cape Verde Is.",
+    "olson_code": "Atlantic/Cape_Verde"
+  },
+  "model": "corpus.timezone",
+  "pk": 7
+},
+{
+  "fields": {
+    "name": "Perth",
+    "olson_code": "Australia/Perth"
+  },
+  "model": "corpus.timezone",
+  "pk": 8
+},
+{
+  "fields": {
+    "name": "Srednekolymsk",
+    "olson_code": "Asia/Srednekolymsk"
+  },
+  "model": "corpus.timezone",
+  "pk": 9
+},
+{
+  "fields": {
+    "name": "Kuala Lumpur",
+    "olson_code": "Asia/Kuala_Lumpur"
+  },
+  "model": "corpus.timezone",
+  "pk": 10
+},
+{
+  "fields": {
+    "name": "Indiana (East)",
+    "olson_code": "America/Indiana/Indianapolis"
+  },
+  "model": "corpus.timezone",
+  "pk": 11
+},
+{
+  "fields": {
+    "name": "Santiago",
+    "olson_code": "America/Santiago"
+  },
+  "model": "corpus.timezone",
+  "pk": 12
+},
+{
+  "fields": {
+    "name": "Chennai",
+    "olson_code": "Asia/Kolkata"
+  },
+  "model": "corpus.timezone",
+  "pk": 13
+},
+{
+  "fields": {
+    "name": "Azores",
+    "olson_code": "Atlantic/Azores"
+  },
+  "model": "corpus.timezone",
+  "pk": 14
+},
+{
+  "fields": {
+    "name": "Abu Dhabi",
+    "olson_code": "Asia/Muscat"
+  },
+  "model": "corpus.timezone",
+  "pk": 15
+},
+{
+  "fields": {
+    "name": "American Samoa",
+    "olson_code": "Pacific/Pago_Pago"
+  },
+  "model": "corpus.timezone",
+  "pk": 16
+},
+{
+  "fields": {
+    "name": "Mountain Time (US & Canada)",
+    "olson_code": "America/Denver"
+  },
+  "model": "corpus.timezone",
+  "pk": 17
+},
+{
+  "fields": {
+    "name": "Skopje",
+    "olson_code": "Europe/Skopje"
+  },
+  "model": "corpus.timezone",
+  "pk": 18
+},
+{
+  "fields": {
+    "name": "Ekaterinburg",
+    "olson_code": "Asia/Yekaterinburg"
+  },
+  "model": "corpus.timezone",
+  "pk": 19
+},
+{
+  "fields": {
+    "name": "Brussels",
+    "olson_code": "Europe/Brussels"
+  },
+  "model": "corpus.timezone",
+  "pk": 20
+},
+{
+  "fields": {
+    "name": "Kamchatka",
+    "olson_code": "Asia/Kamchatka"
+  },
+  "model": "corpus.timezone",
+  "pk": 21
+},
+{
+  "fields": {
+    "name": "Marshall Is.",
+    "olson_code": "Pacific/Majuro"
+  },
+  "model": "corpus.timezone",
+  "pk": 22
+},
+{
+  "fields": {
+    "name": "Solomon Is.",
+    "olson_code": "Pacific/Guadalcanal"
+  },
+  "model": "corpus.timezone",
+  "pk": 23
+},
+{
+  "fields": {
+    "name": "Dublin",
+    "olson_code": "Europe/Dublin"
+  },
+  "model": "corpus.timezone",
+  "pk": 24
+},
+{
+  "fields": {
+    "name": "Alaska",
+    "olson_code": "America/Juneau"
+  },
+  "model": "corpus.timezone",
+  "pk": 25
+},
+{
+  "fields": {
+    "name": "Rome",
+    "olson_code": "Europe/Rome"
+  },
+  "model": "corpus.timezone",
+  "pk": 26
+},
+{
+  "fields": {
+    "name": "Sri Jayawardenepura",
+    "olson_code": "Asia/Colombo"
+  },
+  "model": "corpus.timezone",
+  "pk": 27
+},
+{
+  "fields": {
+    "name": "Taipei",
+    "olson_code": "Asia/Taipei"
+  },
+  "model": "corpus.timezone",
+  "pk": 28
+},
+{
+  "fields": {
+    "name": "Greenland",
+    "olson_code": "America/Godthab"
+  },
+  "model": "corpus.timezone",
+  "pk": 29
+},
+{
+  "fields": {
+    "name": "Samoa",
+    "olson_code": "Pacific/Apia"
+  },
+  "model": "corpus.timezone",
+  "pk": 30
+},
+{
+  "fields": {
+    "name": "Casablanca",
+    "olson_code": "Africa/Casablanca"
+  },
+  "model": "corpus.timezone",
+  "pk": 31
+},
+{
+  "fields": {
+    "name": "Brisbane",
+    "olson_code": "Australia/Brisbane"
+  },
+  "model": "corpus.timezone",
+  "pk": 32
+},
+{
+  "fields": {
+    "name": "Cairo",
+    "olson_code": "Africa/Cairo"
+  },
+  "model": "corpus.timezone",
+  "pk": 33
+},
+{
+  "fields": {
+    "name": "Osaka",
+    "olson_code": "Asia/Tokyo"
+  },
+  "model": "corpus.timezone",
+  "pk": 34
+},
+{
+  "fields": {
+    "name": "London",
+    "olson_code": "Europe/London"
+  },
+  "model": "corpus.timezone",
+  "pk": 35
+},
+{
+  "fields": {
+    "name": "Vilnius",
+    "olson_code": "Europe/Vilnius"
+  },
+  "model": "corpus.timezone",
+  "pk": 36
+},
+{
+  "fields": {
+    "name": "Vladivostok",
+    "olson_code": "Asia/Vladivostok"
+  },
+  "model": "corpus.timezone",
+  "pk": 37
+},
+{
+  "fields": {
+    "name": "Caracas",
+    "olson_code": "America/Caracas"
+  },
+  "model": "corpus.timezone",
+  "pk": 38
+},
+{
+  "fields": {
+    "name": "Harare",
+    "olson_code": "Africa/Harare"
+  },
+  "model": "corpus.timezone",
+  "pk": 39
+},
+{
+  "fields": {
+    "name": "Guadalajara",
+    "olson_code": "America/Mexico_City"
+  },
+  "model": "corpus.timezone",
+  "pk": 40
+},
+{
+  "fields": {
+    "name": "Midway Island",
+    "olson_code": "Pacific/Midway"
+  },
+  "model": "corpus.timezone",
+  "pk": 41
+},
+{
+  "fields": {
+    "name": "Sydney",
+    "olson_code": "Australia/Sydney"
+  },
+  "model": "corpus.timezone",
+  "pk": 42
+},
+{
+  "fields": {
+    "name": "Kolkata",
+    "olson_code": "Asia/Kolkata"
+  },
+  "model": "corpus.timezone",
+  "pk": 43
+},
+{
+  "fields": {
+    "name": "Sapporo",
+    "olson_code": "Asia/Tokyo"
+  },
+  "model": "corpus.timezone",
+  "pk": 44
+},
+{
+  "fields": {
+    "name": "Vienna",
+    "olson_code": "Europe/Vienna"
+  },
+  "model": "corpus.timezone",
+  "pk": 45
+},
+{
+  "fields": {
+    "name": "Edinburgh",
+    "olson_code": "Europe/London"
+  },
+  "model": "corpus.timezone",
+  "pk": 46
+},
+{
+  "fields": {
+    "name": "Arizona",
+    "olson_code": "America/Phoenix"
+  },
+  "model": "corpus.timezone",
+  "pk": 47
+},
+{
+  "fields": {
+    "name": "Quito",
+    "olson_code": "America/Lima"
+  },
+  "model": "corpus.timezone",
+  "pk": 48
+},
+{
+  "fields": {
+    "name": "Singapore",
+    "olson_code": "Asia/Singapore"
+  },
+  "model": "corpus.timezone",
+  "pk": 49
+},
+{
+  "fields": {
+    "name": "Saskatchewan",
+    "olson_code": "America/Regina"
+  },
+  "model": "corpus.timezone",
+  "pk": 50
+},
+{
+  "fields": {
+    "name": "Moscow",
+    "olson_code": "Europe/Moscow"
+  },
+  "model": "corpus.timezone",
+  "pk": 51
+},
+{
+  "fields": {
+    "name": "Mid-Atlantic",
+    "olson_code": "Atlantic/South_Georgia"
+  },
+  "model": "corpus.timezone",
+  "pk": 52
+},
+{
+  "fields": {
+    "name": "Bratislava",
+    "olson_code": "Europe/Bratislava"
+  },
+  "model": "corpus.timezone",
+  "pk": 53
+},
+{
+  "fields": {
+    "name": "Berlin",
+    "olson_code": "Europe/Berlin"
+  },
+  "model": "corpus.timezone",
+  "pk": 54
+},
+{
+  "fields": {
+    "name": "Tehran",
+    "olson_code": "Asia/Tehran"
+  },
+  "model": "corpus.timezone",
+  "pk": 55
+},
+{
+  "fields": {
+    "name": "Bern",
+    "olson_code": "Europe/Berlin"
+  },
+  "model": "corpus.timezone",
+  "pk": 56
+},
+{
+  "fields": {
+    "name": "Astana",
+    "olson_code": "Asia/Dhaka"
+  },
+  "model": "corpus.timezone",
+  "pk": 57
+},
+{
+  "fields": {
+    "name": "Karachi",
+    "olson_code": "Asia/Karachi"
+  },
+  "model": "corpus.timezone",
+  "pk": 58
+},
+{
+  "fields": {
+    "name": "Brasilia",
+    "olson_code": "America/Sao_Paulo"
+  },
+  "model": "corpus.timezone",
+  "pk": 59
+},
+{
+  "fields": {
+    "name": "Nuku'alofa",
+    "olson_code": "Pacific/Tongatapu"
+  },
+  "model": "corpus.timezone",
+  "pk": 60
+},
+{
+  "fields": {
+    "name": "New Caledonia",
+    "olson_code": "Pacific/Noumea"
+  },
+  "model": "corpus.timezone",
+  "pk": 61
+},
+{
+  "fields": {
+    "name": "Monrovia",
+    "olson_code": "Africa/Monrovia"
+  },
+  "model": "corpus.timezone",
+  "pk": 62
+},
+{
+  "fields": {
+    "name": "Kathmandu",
+    "olson_code": "Asia/Kathmandu"
+  },
+  "model": "corpus.timezone",
+  "pk": 63
+},
+{
+  "fields": {
+    "name": "Central Time (US & Canada)",
+    "olson_code": "America/Chicago"
+  },
+  "model": "corpus.timezone",
+  "pk": 64
+},
+{
+  "fields": {
+    "name": "Pretoria",
+    "olson_code": "Africa/Johannesburg"
+  },
+  "model": "corpus.timezone",
+  "pk": 65
+},
+{
+  "fields": {
+    "name": "Newfoundland",
+    "olson_code": "America/St_Johns"
+  },
+  "model": "corpus.timezone",
+  "pk": 66
+},
+{
+  "fields": {
+    "name": "New Delhi",
+    "olson_code": "Asia/Kolkata"
+  },
+  "model": "corpus.timezone",
+  "pk": 67
+},
+{
+  "fields": {
+    "name": "Lima",
+    "olson_code": "America/Lima"
+  },
+  "model": "corpus.timezone",
+  "pk": 68
+},
+{
+  "fields": {
+    "name": "Madrid",
+    "olson_code": "Europe/Madrid"
+  },
+  "model": "corpus.timezone",
+  "pk": 69
+},
+{
+  "fields": {
+    "name": "Baku",
+    "olson_code": "Asia/Baku"
+  },
+  "model": "corpus.timezone",
+  "pk": 70
+},
+{
+  "fields": {
+    "name": "Tokelau Is.",
+    "olson_code": "Pacific/Fakaofo"
+  },
+  "model": "corpus.timezone",
+  "pk": 71
+},
+{
+  "fields": {
+    "name": "Novosibirsk",
+    "olson_code": "Asia/Novosibirsk"
+  },
+  "model": "corpus.timezone",
+  "pk": 72
+},
+{
+  "fields": {
+    "name": "Adelaide",
+    "olson_code": "Australia/Adelaide"
+  },
+  "model": "corpus.timezone",
+  "pk": 73
+},
+{
+  "fields": {
+    "name": "Mexico City",
+    "olson_code": "America/Mexico_City"
+  },
+  "model": "corpus.timezone",
+  "pk": 74
+},
+{
+  "fields": {
+    "name": "Chihuahua",
+    "olson_code": "America/Chihuahua"
+  },
+  "model": "corpus.timezone",
+  "pk": 75
+},
+{
+  "fields": {
+    "name": "Istanbul",
+    "olson_code": "Europe/Istanbul"
+  },
+  "model": "corpus.timezone",
+  "pk": 76
+},
+{
+  "fields": {
+    "name": "Kuwait",
+    "olson_code": "Asia/Kuwait"
+  },
+  "model": "corpus.timezone",
+  "pk": 77
+},
+{
+  "fields": {
+    "name": "Hanoi",
+    "olson_code": "Asia/Bangkok"
+  },
+  "model": "corpus.timezone",
+  "pk": 78
+},
+{
+  "fields": {
+    "name": "Ulaanbaatar",
+    "olson_code": "Asia/Ulaanbaatar"
+  },
+  "model": "corpus.timezone",
+  "pk": 79
+},
+{
+  "fields": {
+    "name": "St. Petersburg",
+    "olson_code": "Europe/Moscow"
+  },
+  "model": "corpus.timezone",
+  "pk": 80
+},
+{
+  "fields": {
+    "name": "Mazatlan",
+    "olson_code": "America/Mazatlan"
+  },
+  "model": "corpus.timezone",
+  "pk": 81
+},
+{
+  "fields": {
+    "name": "Kyiv",
+    "olson_code": "Europe/Kiev"
+  },
+  "model": "corpus.timezone",
+  "pk": 82
+},
+{
+  "fields": {
+    "name": "Krasnoyarsk",
+    "olson_code": "Asia/Krasnoyarsk"
+  },
+  "model": "corpus.timezone",
+  "pk": 83
+},
+{
+  "fields": {
+    "name": "Ljubljana",
+    "olson_code": "Europe/Ljubljana"
+  },
+  "model": "corpus.timezone",
+  "pk": 84
+},
+{
+  "fields": {
+    "name": "Muscat",
+    "olson_code": "Asia/Muscat"
+  },
+  "model": "corpus.timezone",
+  "pk": 85
+},
+{
+  "fields": {
+    "name": "Auckland",
+    "olson_code": "Pacific/Auckland"
+  },
+  "model": "corpus.timezone",
+  "pk": 86
+},
+{
+  "fields": {
+    "name": "Baghdad",
+    "olson_code": "Asia/Baghdad"
+  },
+  "model": "corpus.timezone",
+  "pk": 87
+},
+{
+  "fields": {
+    "name": "Hobart",
+    "olson_code": "Australia/Hobart"
+  },
+  "model": "corpus.timezone",
+  "pk": 88
+},
+{
+  "fields": {
+    "name": "Hong Kong",
+    "olson_code": "Asia/Hong_Kong"
+  },
+  "model": "corpus.timezone",
+  "pk": 89
+},
+{
+  "fields": {
+    "name": "Rangoon",
+    "olson_code": "Asia/Rangoon"
+  },
+  "model": "corpus.timezone",
+  "pk": 90
+},
+{
+  "fields": {
+    "name": "Helsinki",
+    "olson_code": "Europe/Helsinki"
+  },
+  "model": "corpus.timezone",
+  "pk": 91
+},
+{
+  "fields": {
+    "name": "Islamabad",
+    "olson_code": "Asia/Karachi"
+  },
+  "model": "corpus.timezone",
+  "pk": 92
+},
+{
+  "fields": {
+    "name": "Yakutsk",
+    "olson_code": "Asia/Yakutsk"
+  },
+  "model": "corpus.timezone",
+  "pk": 93
+},
+{
+  "fields": {
+    "name": "Wellington",
+    "olson_code": "Pacific/Auckland"
+  },
+  "model": "corpus.timezone",
+  "pk": 94
+},
+{
+  "fields": {
+    "name": "Stockholm",
+    "olson_code": "Europe/Stockholm"
+  },
+  "model": "corpus.timezone",
+  "pk": 95
+},
+{
+  "fields": {
+    "name": "Guam",
+    "olson_code": "Pacific/Guam"
+  },
+  "model": "corpus.timezone",
+  "pk": 96
+},
+{
+  "fields": {
+    "name": "Nairobi",
+    "olson_code": "Africa/Nairobi"
+  },
+  "model": "corpus.timezone",
+  "pk": 97
+},
+{
+  "fields": {
+    "name": "Yerevan",
+    "olson_code": "Asia/Yerevan"
+  },
+  "model": "corpus.timezone",
+  "pk": 98
+},
+{
+  "fields": {
+    "name": "Bucharest",
+    "olson_code": "Europe/Bucharest"
+  },
+  "model": "corpus.timezone",
+  "pk": 99
+},
+{
+  "fields": {
+    "name": "Beijing",
+    "olson_code": "Asia/Shanghai"
+  },
+  "model": "corpus.timezone",
+  "pk": 100
+},
+{
+  "fields": {
+    "name": "Canberra",
+    "olson_code": "Australia/Melbourne"
+  },
+  "model": "corpus.timezone",
+  "pk": 101
+},
+{
+  "fields": {
+    "name": "Bogota",
+    "olson_code": "America/Bogota"
+  },
+  "model": "corpus.timezone",
+  "pk": 102
+},
+{
+  "fields": {
+    "name": "Volgograd",
+    "olson_code": "Europe/Volgograd"
+  },
+  "model": "corpus.timezone",
+  "pk": 103
+},
+{
+  "fields": {
+    "name": "Kaliningrad",
+    "olson_code": "Europe/Kaliningrad"
+  },
+  "model": "corpus.timezone",
+  "pk": 104
+},
+{
+  "fields": {
+    "name": "Fiji",
+    "olson_code": "Pacific/Fiji"
+  },
+  "model": "corpus.timezone",
+  "pk": 105
+},
+{
+  "fields": {
+    "name": "Mumbai",
+    "olson_code": "Asia/Kolkata"
+  },
+  "model": "corpus.timezone",
+  "pk": 106
+},
+{
+  "fields": {
+    "name": "Riga",
+    "olson_code": "Europe/Riga"
+  },
+  "model": "corpus.timezone",
+  "pk": 107
+},
+{
+  "fields": {
+    "name": "Athens",
+    "olson_code": "Europe/Athens"
+  },
+  "model": "corpus.timezone",
+  "pk": 108
+},
+{
+  "fields": {
+    "name": "Kabul",
+    "olson_code": "Asia/Kabul"
+  },
+  "model": "corpus.timezone",
+  "pk": 109
+},
+{
+  "fields": {
+    "name": "Port Moresby",
+    "olson_code": "Pacific/Port_Moresby"
+  },
+  "model": "corpus.timezone",
+  "pk": 110
+},
+{
+  "fields": {
+    "name": "Tallinn",
+    "olson_code": "Europe/Tallinn"
+  },
+  "model": "corpus.timezone",
+  "pk": 111
+},
+{
+  "fields": {
+    "name": "Darwin",
+    "olson_code": "Australia/Darwin"
+  },
+  "model": "corpus.timezone",
+  "pk": 112
+},
+{
+  "fields": {
+    "name": "Montevideo",
+    "olson_code": "America/Montevideo"
+  },
+  "model": "corpus.timezone",
+  "pk": 113
+},
+{
+  "fields": {
+    "name": "Georgetown",
+    "olson_code": "America/Guyana"
+  },
+  "model": "corpus.timezone",
+  "pk": 114
+},
+{
+  "fields": {
+    "name": "Tashkent",
+    "olson_code": "Asia/Tashkent"
+  },
+  "model": "corpus.timezone",
+  "pk": 115
+},
+{
+  "fields": {
+    "name": "Zagreb",
+    "olson_code": "Europe/Zagreb"
+  },
+  "model": "corpus.timezone",
+  "pk": 116
+},
+{
+  "fields": {
+    "name": "Tokyo",
+    "olson_code": "Asia/Tokyo"
+  },
+  "model": "corpus.timezone",
+  "pk": 117
+},
+{
+  "fields": {
+    "name": "Buenos Aires",
+    "olson_code": "America/Argentina/Buenos_Aires"
+  },
+  "model": "corpus.timezone",
+  "pk": 118
+},
+{
+  "fields": {
+    "name": "Bangkok",
+    "olson_code": "Asia/Bangkok"
+  },
+  "model": "corpus.timezone",
+  "pk": 119
+},
+{
+  "fields": {
+    "name": "West Central Africa",
+    "olson_code": "Africa/Algiers"
+  },
+  "model": "corpus.timezone",
+  "pk": 120
+},
+{
+  "fields": {
+    "name": "Chongqing",
+    "olson_code": "Asia/Chongqing"
+  },
+  "model": "corpus.timezone",
+  "pk": 121
+},
+{
+  "fields": {
+    "name": "Dhaka",
+    "olson_code": "Asia/Dhaka"
+  },
+  "model": "corpus.timezone",
+  "pk": 122
+},
+{
+  "fields": {
+    "name": "UTC",
+    "olson_code": "Etc/UTC"
+  },
+  "model": "corpus.timezone",
+  "pk": 123
+},
+{
+  "fields": {
+    "name": "Budapest",
+    "olson_code": "Europe/Budapest"
+  },
+  "model": "corpus.timezone",
+  "pk": 124
+},
+{
+  "fields": {
+    "name": "Jakarta",
+    "olson_code": "Asia/Jakarta"
+  },
+  "model": "corpus.timezone",
+  "pk": 125
+},
+{
+  "fields": {
+    "name": "Hawaii",
+    "olson_code": "Pacific/Honolulu"
+  },
+  "model": "corpus.timezone",
+  "pk": 126
+},
+{
+  "fields": {
+    "name": "Urumqi",
+    "olson_code": "Asia/Urumqi"
+  },
+  "model": "corpus.timezone",
+  "pk": 127
+},
+{
+  "fields": {
+    "name": "Melbourne",
+    "olson_code": "Australia/Melbourne"
+  },
+  "model": "corpus.timezone",
+  "pk": 128
+},
+{
+  "fields": {
+    "name": "Minsk",
+    "olson_code": "Europe/Minsk"
+  },
+  "model": "corpus.timezone",
+  "pk": 129
+},
+{
+  "fields": {
+    "name": "Sarajevo",
+    "olson_code": "Europe/Sarajevo"
+  },
+  "model": "corpus.timezone",
+  "pk": 130
+},
+{
+  "fields": {
+    "name": "Magadan",
+    "olson_code": "Asia/Magadan"
+  },
+  "model": "corpus.timezone",
+  "pk": 131
+},
+{
+  "fields": {
+    "name": "Almaty",
+    "olson_code": "Asia/Almaty"
+  },
+  "model": "corpus.timezone",
+  "pk": 132
+},
+{
+  "fields": {
+    "name": "Tbilisi",
+    "olson_code": "Asia/Tbilisi"
+  },
+  "model": "corpus.timezone",
+  "pk": 133
+},
+{
+  "fields": {
+    "name": "La Paz",
+    "olson_code": "America/La_Paz"
+  },
+  "model": "corpus.timezone",
+  "pk": 134
+},
+{
+  "fields": {
+    "name": "Tijuana",
+    "olson_code": "America/Tijuana"
+  },
+  "model": "corpus.timezone",
+  "pk": 135
+},
+{
+  "fields": {
+    "name": "Chatham Is.",
+    "olson_code": "Pacific/Chatham"
+  },
+  "model": "corpus.timezone",
+  "pk": 136
+},
+{
+  "fields": {
+    "name": "Belgrade",
+    "olson_code": "Europe/Belgrade"
+  },
+  "model": "corpus.timezone",
+  "pk": 137
+},
+{
+  "fields": {
+    "name": "Riyadh",
+    "olson_code": "Asia/Riyadh"
+  },
+  "model": "corpus.timezone",
+  "pk": 138
+},
+{
+  "fields": {
+    "name": "Central America",
+    "olson_code": "America/Guatemala"
+  },
+  "model": "corpus.timezone",
+  "pk": 139
+},
+{
+  "fields": {
+    "name": "Prague",
+    "olson_code": "Europe/Prague"
+  },
+  "model": "corpus.timezone",
+  "pk": 140
+},
+{
+  "fields": {
+    "name": "Sofia",
+    "olson_code": "Europe/Sofia"
+  },
+  "model": "corpus.timezone",
+  "pk": 141
+},
+{
+  "fields": {
+    "name": "Samara",
+    "olson_code": "Europe/Samara"
+  },
+  "model": "corpus.timezone",
+  "pk": 142
+},
+{
+  "fields": {
+    "name": "International Date Line West",
+    "olson_code": "Pacific/Midway"
+  },
+  "model": "corpus.timezone",
+  "pk": 143
+},
+{
+  "fields": {
+    "name": "Lisbon",
+    "olson_code": "Europe/Lisbon"
+  },
+  "model": "corpus.timezone",
+  "pk": 144
+},
+{
+  "fields": {
+    "name": "Amsterdam",
+    "olson_code": "Europe/Amsterdam"
+  },
+  "model": "corpus.timezone",
+  "pk": 145
+},
+{
+  "fields": {
+    "name": "Copenhagen",
+    "olson_code": "Europe/Copenhagen"
+  },
+  "model": "corpus.timezone",
+  "pk": 146
+},
+{
+  "fields": {
+    "name": "Jerusalem",
+    "olson_code": "Asia/Jerusalem"
+  },
+  "model": "corpus.timezone",
+  "pk": 147
+},
+{
+  "fields": {
+    "name": "Irkutsk",
+    "olson_code": "Asia/Irkutsk"
+  },
+  "model": "corpus.timezone",
+  "pk": 148
+},
+{
+  "fields": {
+    "name": "Warsaw",
+    "olson_code": "Europe/Warsaw"
+  },
+  "model": "corpus.timezone",
+  "pk": 149
+}
+]

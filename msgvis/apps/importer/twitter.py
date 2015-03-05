@@ -75,9 +75,15 @@ def get_languages():
     api = tweepy.API(auth_handler=auth)
     return api.supported_languages()
 
-def ror_installed():
-    """Return True if Ruby on Rails is installed"""
+def get_timezones(time_zones_mapping_file):
+    """Get a list of twitter-supported timezones as name/Olson code pairs."""
 
-def get_timezones():
-    """Get a list of twitter-supported timezones"""
-    # http://api.rubyonrails.org/classes/ActiveSupport/TimeZone.html
+    print "Reading time zones from %s" % time_zones_mapping_file
+
+    with open(time_zones_mapping_file, 'rb') as infile:
+        mapping = infile.read()
+        mapping = mapping.replace(' => ', ':')
+
+        import json
+        mapping = json.loads(mapping)
+        return mapping.items()
