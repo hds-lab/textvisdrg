@@ -1,5 +1,5 @@
 from django.db import models
-
+from msgvis.apps.base import models as base_models
 
 class Dataset(models.Model):
     """A top-level dataset object containing messages."""
@@ -71,7 +71,7 @@ class Url(models.Model):
 class Hashtag(models.Model):
     """A hashtag in a message"""
 
-    text = models.CharField(max_length=100)
+    text = base_models.Utf8CharField(max_length=100)
     """The text of the hashtag, without the hash"""
 
 
@@ -109,10 +109,10 @@ class Person(models.Model):
     original_id = models.BigIntegerField(null=True, blank=True, default=None)
     """An external id for the person, e.g. a user id from Twitter"""
 
-    username = models.CharField(max_length=150, null=True, blank=True, default=None)
+    username = base_models.Utf8CharField(max_length=150, null=True, blank=True, default=None)
     """Username is a short system-y name."""
 
-    full_name = models.CharField(max_length=250, null=True, blank=True, default=None)
+    full_name = base_models.Utf8CharField(max_length=250, null=True, blank=True, default=None)
     """Full name is a longer user-friendly name"""
 
     language = models.ForeignKey(Language, null=True, blank=True, default=None)
@@ -208,6 +208,6 @@ class Message(models.Model):
     mentions = models.ManyToManyField(Person, related_name="mentioned_in", null=True, blank=True, default=None)
     """The set of :class:`Person` mentioned in the message."""
 
-    text = models.TextField(null=True, blank=True, default="")
+    text = base_models.Utf8TextField(null=True, blank=True, default="")
     """The actual text of the message."""
 

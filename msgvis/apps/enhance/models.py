@@ -4,7 +4,7 @@ import textblob
 
 from fields import PositiveBigIntegerField
 from msgvis.apps.corpus.models import Message
-
+from msgvis.apps.base import models as base_models
 
 # Create your models here.
 
@@ -289,7 +289,7 @@ class Dictionary(models.Model):
 class Word(models.Model):
     dictionary = models.ForeignKey(Dictionary, related_name='words')
     index = models.IntegerField()
-    text = models.CharField(max_length=100)
+    text = base_models.Utf8CharField(max_length=100)
     document_frequency = models.IntegerField()
 
     messages = models.ManyToManyField(Message, through='MessageWord', related_name='words')
@@ -330,8 +330,8 @@ class TopicModel(models.Model):
 
 class Topic(models.Model):
     model = models.ForeignKey(TopicModel, related_name='topics')
-    name = models.CharField(max_length=100)
-    description = models.CharField(max_length=200)
+    name = base_models.Utf8CharField(max_length=100)
+    description = base_models.Utf8CharField(max_length=200)
     index = models.IntegerField()
     alpha = models.FloatField()
 
