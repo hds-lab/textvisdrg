@@ -380,8 +380,19 @@
 
             var DEFAULT_VALUE_KEY = 'value';
 
-            function dataClicked() {
-                onClicked();
+            var self = this;
+            function dataClicked(data, element) {
+                console.log(data);
+
+                var primaryValue = self.primaryValueLabel.inverse(data.x);
+                var values = [primaryValue];
+                var secondaryValue = undefined;
+                if (self.secondaryValueLabel){
+                    secondaryValue = self.secondaryValueLabel.inverse(data.id);
+                    values.push(secondaryValue);
+                }
+
+                onClicked(values);
             }
 
             function aggregationLabel(dimension) {
@@ -406,8 +417,9 @@
                 }
             }
 
-            function getValueLabelMap(dimension, domain, domain_labels) {
+            function valueLabelMap(dimension, domain, domain_labels, is_primary) {
                 var valueLabels = {};
+                var valueLabelsInverse = {};
                 domain.forEach(function (value, idx) {
                     //Use the domain label or the value itself as the label
                     var label = value;
@@ -421,30 +433,43 @@
                     }
 
                     valueLabels[value] = label.toString();
+                    if (is_primary && dimension.is_categorical()){
+                        valueLabelsInverse[idx] = value;
+                    }else{
+                        valueLabelsInverse[label.toString()] = value;
+                    }
                 });
-                return function(value) {
+
+                var mapFn = function(value) {
                     return valueLabels[value] || value.toString();
                 };
+
+                mapFn.inverse = function(label) {
+                    // find the label in valueLabels.values
+                    // or if it isn't there return null;
+                    return valueLabelsInverse[label] || undefined;
+                };
+
+                return mapFn;
             }
 
             function buildFullTable(primary, secondary, table, domains, domain_labels) {
                 var rows;
 
                 //Get functions that map from values to labels
-                var primaryValueLabel = getValueLabelMap(primary, domains[primary.key], domain_labels[primary.key]);
-                var secondaryValueLabel;
+                self.primaryValueLabel = valueLabelMap(primary, domains[primary.key], domain_labels[primary.key], true);
+                self.secondaryValueLabel = undefined;
                 if (secondary) {
-                    secondaryValueLabel = getValueLabelMap(secondary, domains[secondary.key], domain_labels[secondary.key]);
+                    self.secondaryValueLabel = valueLabelMap(secondary, domains[secondary.key], domain_labels[secondary.key], false);
                 }
 
                 if (primary.is_quantitative_or_time() && secondary && secondary.is_quantitative_or_time()) {
                     //We're doing a scatter plot which is totally different
                     // and much simpler.
-
                     rows = table.map(function(row) {
                         return [
-                            primaryValueLabel(row[primary.key]),
-                            secondaryValueLabel(row[secondary.key])
+                            self.primaryValueLabel(row[primary.key]),
+                            self.secondaryValueLabel(row[secondary.key])
                         ];
                     });
 
@@ -455,7 +480,7 @@
                 //Otherwise let the fun begin...
 
                 //Use the primary dim values down the left always
-                var rowHeaders = domains[primary.key].map(primaryValueLabel);
+                var rowHeaders = domains[primary.key].map(self.primaryValueLabel);
                 var columnHeaders = [DEFAULT_VALUE_KEY];
 
                 //Names inside the datatable rows
@@ -467,7 +492,7 @@
                 if (secondary){
                     if (!secondary.is_quantitative_or_time()) {
                         //Use the secondary dim values across the top
-                        columnHeaders = domains[secondary.key].map(secondaryValueLabel);
+                        columnHeaders = domains[secondary.key].map(self.secondaryValueLabel);
                     } else {
                         //Leave the header alone but note we need to aggregate
                         columnAggregation = true;
@@ -522,7 +547,7 @@
                 // Now fill in the non-zeros from the table
                 table.forEach(function(row) {
                     var value = row[DEFAULT_VALUE_KEY];
-                    var r = rowIndex[primaryValueLabel(row[primary.key])];
+                    var r = rowIndex[self.primaryValueLabel(row[primary.key])];
                     var c = 1;
                     if (columnAggregation) {
                         //We are aggregating
@@ -532,7 +557,7 @@
                         if (secondary) {
                             //we have secondary dimension values in the headers which means
                             //the column index comes from the data
-                            c = columnIndex[secondaryValueLabel(row[secondary.key])];
+                            c = columnIndex[self.secondaryValueLabel(row[secondary.key])];
                         }
 
                         rows[r][c] = value;
@@ -673,6 +698,7 @@
                     secondary = dimensions[1];
                 }
                 if (primary) {
+                    this.primary_domain = dataTable.domains;
                     var table = buildFullTable(primary, secondary, dataTable.table, dataTable.domains, dataTable.domain_labels);
                     var config = getC3Config(primary, secondary, dataTable.domains);
                     config.data.rows = table;
@@ -685,9 +711,10 @@
         function link(scope, $element, attrs) {
             if (!scope._sparqsVis) {
 
-                var onClicked = function () {
+                var onClicked = function (data) {
+
                     if (scope.onClicked) {
-                        scope.onClicked();
+                        scope.onClicked(data);
                     }
                 };
 

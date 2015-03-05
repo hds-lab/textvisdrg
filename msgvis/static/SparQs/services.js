@@ -94,7 +94,7 @@
         'SparQs.services.Dimensions',
         function selectionFactory($rootScope, Dimensions) {
 
-            var test_focus = [
+            var current_focus = [
                 //{
                 //    "dimension": "time",
                 //    "value": "2015-02-02T01:19:09Z"
@@ -127,7 +127,7 @@
                     })
                 },
                 focus: function () {
-                    return test_focus;
+                    return current_focus;
                 },
                 changed: function (eventType, scope, callback) {
                     // Register for one or more events:
@@ -146,6 +146,17 @@
                             scope.$on('$destroy', unbind);
                         }
                     });
+                },
+                set_focus: function(click_point_values){
+                    var dimensions = this.dimensions();
+                    var focus = dimensions.map(function(d, i){
+                        return {
+                            "dimension": dimensions[i].key,
+                            "value": click_point_values[i]
+                        };
+                    });
+                    current_focus = focus;
+                    this.changed('focus');
                 }
 
             });
