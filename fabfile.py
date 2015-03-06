@@ -138,7 +138,7 @@ def deploy():
 
 def topic_pipeline(dataset, name="my topic model", num_topics=30):
     """Run the topic pipeline on a dataset"""
-    command = "extract_topics --topics %d --name '%s' %s" % (num_topics, name, dataset)
+    command = "extract_topics --topics %d --name '%s' %s" % (int(num_topics), name, dataset)
     fabutils.manage_py(command)
 
 
