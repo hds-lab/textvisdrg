@@ -388,7 +388,67 @@ class QuantitativeDimension(CategoricalDimension):
             min += step
 
 
-class RelatedQuantitativeDimension(QuantitativeDimension):
+class LogQuantitativeDimension(QuantitativeDimension):
+    """
+    A generic quantitative dimension.
+    This works for fields on Message or on related fields,
+    e.g. field_name=sender__message_count
+    """
+
+    grouping_expressions = {
+        'mysql': 'EXP({bin_size} * FLOOR(LOG(`{field_name}` + 1) / {bin_size})) - 1',
+        'sqlite': 'EXP({bin_size} * CAST(LOG(`{field_name}` + 1) / {bin_size} AS INTEGER)) - 1',
+    }
+
+    def get_domain(self, queryset, bins=None, **kwargs):
+        if bins is None:
+            bins = self.default_bins
+
+        queryset = find_messages(queryset)
+
+        min_val, max_val = self.get_range(queryset)
+        if min_val is None:
+            return []
+
+        min_val = math.log(min_val + 1)
+        max_val = math.log(max_val + 1)
+
+        bin_size = self._get_bin_size(min_val, max_val, bins)
+        min_bin = self._bin_value(min_val, bin_size)
+        max_bin = self._bin_value(max_val, bin_size)
+
+        return list(math.exp(x) - 1 for x in self._iter_xrange(min_bin, max_bin, bin_size))
+
+    def get_grouping_expression(self, queryset, bins=None, bin_size=None, **kwargs):
+        """
+        Generate a SQL expression for grouping this dimension.
+        If you already know the bin size you want, you may provide it.
+        Or the number of bins.
+        """
+        if bin_size is None:
+            if bins is None:
+                bins = self.default_bins
+
+            if 'min_val' not in kwargs or 'max_val' not in kwargs:
+                min_val, max_val = self.get_range(queryset)
+            else:
+                min_val, max_val = kwargs['min_val'], kwargs['max_val']
+
+            if min_val is None:
+                return None
+
+            min_val = math.log(min_val + 1)
+            max_val = math.log(max_val + 1)
+
+            bin_size = self._get_bin_size(min_val, max_val, bins)
+
+        # Determine a bin size for this field
+        return self._render_grouping_expression(bin_size)
+
+
+
+
+class RelatedQuantitativeDimension(LogQuantitativeDimension):
     """A quantitative dimension on a related model, e.g. sender message count."""
 
     # Expressions for grouping when we have to join tables
@@ -460,6 +520,24 @@ class RelatedQuantitativeDimension(QuantitativeDimension):
                 bin_size=bin_size
             )
 
+class LogRelatedQuantitativeDimension(RelatedQuantitativeDimension):
+    """A quantitative dimension on a related model, e.g. sender message count."""
+
+    # Expressions for grouping when we have to join tables
+    grouping_expressions_joined = {
+        'mysql': 'EXP({bin_size} * FLOOR(LOG(`{to_table}`.`{target_field_name}` + 1) / {bin_size})) - 1',
+        'sqlite': 'EXP({bin_size} * CAST(LOG(`{to_table}`.`{target_field_name}` + 1) / {bin_size} AS INTEGER)) - 1',
+    }
+
+    def _render_grouping_expression(self, bin_size):
+        """Render the grouping expression, with support for manually joined tables"""
+
+        to_table = self.path_info.to_opts.db_table
+        return self.grouping_expressions_joined[db_vendor()].format(
+            to_table=to_table,
+            target_field_name=self.target_field_name,
+            bin_size=bin_size
+        )
 
 class TimeDimension(QuantitativeDimension):
     """A dimension for time fields on Message"""
@@ -563,6 +641,9 @@ class TimeDimension(QuantitativeDimension):
         while min <= max:
             yield min
             min += step
+
+
+
 
 
 class TextDimension(CategoricalDimension):

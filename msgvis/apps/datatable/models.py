@@ -111,6 +111,7 @@ class DataTable(object):
         """Return the sorted levels in this dimension"""
         if filter is not None:
             queryset = dimension.filter(queryset, **filter)
+        queryset = queryset.exclude(time__isnull=True)
         domain = dimension.get_domain(queryset, bins=desired_bins)
         labels = dimension.get_domain_labels(domain)
 

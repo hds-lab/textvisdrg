@@ -158,14 +158,14 @@ register(models.RelatedCategoricalDimension, dict(
     field_name='type__name',
 ))
 
-register(models.QuantitativeDimension, dict(
+register(models.LogQuantitativeDimension, dict(
     key='replies',
     name='Num. Replies',
     description='How many replies the message received',
     field_name='replied_to_count',
 ))
 
-register(models.QuantitativeDimension, dict(
+register(models.LogQuantitativeDimension, dict(
     key='shares',
     name='Num. Shares',
     description='How many times the message was shared or retweeted',
@@ -197,42 +197,42 @@ register(models.RelatedCategoricalDimension, dict(
     field_name='sender__username',
 ))
 
-register(models.RelatedQuantitativeDimension, dict(
+register(models.LogRelatedQuantitativeDimension, dict(
     key='sender_message_count',
     name='Num. Messages',
     description="The author's total number of messages",
     field_name='sender__message_count',
 ))
 
-register(models.RelatedQuantitativeDimension, dict(
+register(models.LogRelatedQuantitativeDimension, dict(
     key='sender_reply_count',
     name='Num. Replies',
     description="The total replies the author has received",
     field_name='sender__replied_to_count',
 ))
 
-register(models.RelatedQuantitativeDimension, dict(
+register(models.LogRelatedQuantitativeDimension, dict(
     key='sender_mention_count',
     name='Num. Mentions',
     description="The total times the author has been mentioned",
     field_name='sender__mentioned_count',
 ))
 
-register(models.RelatedQuantitativeDimension, dict(
+register(models.LogRelatedQuantitativeDimension, dict(
     key='sender_share_count',
     name='Num. Shares',
     description="The total shares or retweets the author has received",
     field_name='sender__shared_count',
 ))
 
-register(models.RelatedQuantitativeDimension, dict(
+register(models.LogRelatedQuantitativeDimension, dict(
     key='sender_friend_count',
     name='Num. Friends',
     description="The number of people the author has connected to",
     field_name='sender__friend_count',
 ))
 
-register(models.RelatedQuantitativeDimension, dict(
+register(models.LogRelatedQuantitativeDimension, dict(
     key='sender_follower_count',
     name='Num. Followers',
     description="The number of people who have connected to the author",
