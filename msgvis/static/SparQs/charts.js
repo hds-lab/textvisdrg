@@ -332,13 +332,10 @@
                 height: $element.parent().height()
             };
             var $d3_element = d3.select($element[0]);
-            var svg = $d3_element.append("svg");
-            svg.attr("width", elementSize.width);
-            svg.attr("height", elementSize.height);
+            var div = $d3_element.append("div");
+            div.style("width", (dimensionScale[dimension.key](level_value)) + "px");
+            div.style("height", (elementSize.height * 0.7) + "px");
 
-            var rect = svg.append("rect");
-            rect.attr("width", dimensionScale[dimension.key](level_value));
-            rect.attr("height", elementSize.height);
         };
 
         var render_bar = function(scope, $element, attrs){
@@ -349,8 +346,9 @@
                 };
                 if ( typeof(dimensionScale[scope.dimension.key]) === "undefined" ){
                     setup_dimension_scale(scope.dimension, elementSize.width);
+                    create_bar($element, scope.dimension, scope.levelValue);
                 }
-                create_bar($element, scope.dimension, scope.levelValue);
+
             }
         };
 
