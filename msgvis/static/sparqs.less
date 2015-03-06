@@ -511,7 +511,7 @@ body {
         margin: 0;
     }
     .dimension-level .level-name{
-        width: 70%;
+        width: @filter-popup-width * 0.65;
 
     }
     .dimension-level label{
@@ -519,19 +519,18 @@ body {
 
     }
     .dimension-level .level-value{
-        width: 10%;
+        width: @filter-popup-width * 0.1;
         text-align: right;
-        vertical-align: text-top;
     }
     .dimension-level .level-bar{
-        width: 15%;
+        width: @filter-popup-width * 0.08;
         height: 1em;
 
     }
     categorical-histogram{
 
-        rect {
-           fill: steelblue;
+        div {
+           background-color: steelblue;
         }
     }
     .selected-levels{
