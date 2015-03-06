@@ -346,14 +346,14 @@
                 };
                 if ( typeof(dimensionScale[scope.dimension.key]) === "undefined" ){
                     setup_dimension_scale(scope.dimension, elementSize.width);
-                    create_bar($element, scope.dimension, scope.levelValue);
                 }
+                create_bar($element, scope.dimension, scope.levelValue);
 
             }
         };
 
         function link(scope, $element, attrs){
-            scope.$watch('dimension.filtering', function (newVals, oldVals) {
+            scope.$watch('dimension.distribution', function (newVals, oldVals) {
                     if (newVals) return render_bar(scope, $element, attrs);
             }, false);
 
