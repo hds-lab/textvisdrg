@@ -112,8 +112,18 @@ class DataTableView(APIView):
             dimensions = data['dimensions']
             filters = data.get('filters', [])
 
+
             datatable = datatable_models.DataTable(*dimensions)
-            result = datatable.generate(dataset, filters)
+            page_size = 10
+            page = None
+            if data.get('page_size'):
+                page_size = data.get('page_size')
+                page_size = max(1, int(data.get('page_size')))
+            if data.get('page'):
+                page = max(1, int(data.get('page')))
+
+
+            result = datatable.generate(dataset, filters, page_size, page)
 
             # Just add the result key
             response_data = data

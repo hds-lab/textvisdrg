@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Q
+import operator
 
 from msgvis.apps.base.models import MappedValuesQuerySet
 from msgvis.apps.corpus import models as corpus_models
@@ -116,7 +118,7 @@ class DataTable(object):
 
         return domain, labels
 
-    def generate(self, dataset, filters=None):
+    def generate(self, dataset, filters=None, page_size=10, page=None):
         """
         Generate a complete data table response.
 
@@ -144,8 +146,7 @@ class DataTable(object):
                 if dimension == self.secondary_dimension:
                     secondary_filter = filter
 
-        # Render a table
-        table = self.render(queryset)
+        table = None
         domains = {}
         domain_labels = {}
 
@@ -153,6 +154,25 @@ class DataTable(object):
         domain, labels = self.domain(self.primary_dimension,
                                      dataset.message_set.all(),
                                      primary_filter)
+
+
+        # paging the first dimension, this is for the filter distribution
+        if primary_filter is None and self.secondary_dimension is None and page is not None:
+            start = (page - 1) * page_size
+            end = start + page_size
+            domain = domain[start:end]
+            if labels is not None:
+                labels = labels[start:end]
+
+            filter_ors = []
+            for level in domain:
+                if level is None or level == "":
+                    filter_ors.append((self.primary_dimension.field_name + "__isnull", True))
+                else:
+                    filter_ors.append((self.primary_dimension.field_name, level))
+
+            queryset = queryset.filter(reduce(operator.or_, [Q(x) for x in filter_ors]))
+
         domains[self.primary_dimension.key] = domain
         if labels is not None:
             domain_labels[self.primary_dimension.key] = labels
@@ -165,6 +185,9 @@ class DataTable(object):
             domains[self.secondary_dimension.key] = domain
             if labels is not None:
                 domain_labels[self.secondary_dimension.key] = labels
+
+        # Render a table
+        table = self.render(queryset)
 
         return {
             'table': table,

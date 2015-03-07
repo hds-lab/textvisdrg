@@ -207,3 +207,5 @@ class DataTableSerializer(serializers.Serializer):
     dimensions = serializers.ListField(child=DimensionKeySerializer())
     filters = serializers.ListField(child=FilterSerializer(), required=False)
     result = serializers.DictField(required=False, read_only=True)
+    page_size = serializers.IntegerField(required=False)
+    page = serializers.IntegerField(required=False)
