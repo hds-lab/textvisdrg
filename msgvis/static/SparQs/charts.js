@@ -334,7 +334,8 @@
                 var scale = get_scale(scope.dimension, elementSize.width * 0.1);
                 var $d3_element = d3.select($element[0]);
                 var d3_select = $d3_element.selectAll('.level-div')
-                    .data(scope.dimension.distribution);
+                    .data(scope.dimension.distribution)
+                    .classed('active', true);
                 d3_select.enter()
                     .append('div')
                     .classed('level-div', true)
@@ -352,11 +353,12 @@
                     .each(function(d){
                         var self = d3.select(this);
                         self.classed('active', false);
-                        self.hide();
+                        self.style('display', 'none');
                     });
                 $d3_element.selectAll('.level-div.active')
                     .each(function(d){
                         var self = d3.select(this);
+                        self.style('display', 'block');
                         self.select('.level-show').attr('checked', (d.show) ? "checked" : null);
                         self.select('.level-name-text').text(d.label || d.level);
                         self.select('.level-value').text(d.value);
@@ -373,7 +375,6 @@
             scope.$watch('dimension.distribution.length', function (newVals, oldVals) {
                     if (newVals) return render_bar(scope, $element, attrs);
             }, false);
-
         }
 
         return {
