@@ -435,6 +435,8 @@
                         valueLabelsInverse[idx] = value;
                     }else{
                         valueLabelsInverse[label.toString()] = value;
+                        if (valueLabelsInverse[label.toString()] == null)
+                            valueLabelsInverse[label.toString()] = "";
                     }
                 });
 
@@ -597,6 +599,12 @@
                 //Default setup: one-axis bar chart vs. counts
 
                 var config = {
+                    size: {
+                        height: 600
+                    },
+                    padding: {
+                        bottom: 80
+                    },
                     data:{
                         type: 'bar',
                         x: primary.key,
@@ -619,10 +627,12 @@
                                 position: 'outer-middle'
                             }
                         }
+
                     },
                     legend: {
                         show: false
                     }
+
                 };
 
                 //If x is quantitative, use a line chart
@@ -668,15 +678,22 @@
                     } else {
                         // The secondary dimension is categorical, so it
                         // requires a legend to reveal the groups.
-
                         config.legend.show = true;
                         config.legend.position = 'inset';
                         config.legend.inset = {
                             anchor: 'top-right',
                             x: 20,
-                            y: 10,
+                            y: 520,
                             step: 2
                         };
+                        var num_of_levels = domains[secondary.key].length;
+                        if ( num_of_levels > 12 ){
+                            config.legend.inset.step = 5;
+                            config.legend.inset.y = 450;
+                            config.padding.bottom = 150;
+
+
+                        }
                     }
                 }
 

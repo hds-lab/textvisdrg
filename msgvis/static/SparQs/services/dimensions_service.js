@@ -177,6 +177,12 @@
                     }
                     return undefined;
                 },
+                inverse_level: function(level){
+                     var dimension = this;
+                    if ( level == "No " + dimension.key )
+                        return "";
+                    return level;
+                },
                 get_distribution_in_order: function (table, domain, labels) {
                     if (!table || !domain) {
                         return undefined;
@@ -214,16 +220,16 @@
                 },
                 unfilter_level: function (d) {
                     d.show = true;
-                    this.filter.levels().push(d.level);
+                    this.filter.levels().push(this.inverse_level(d.level));
 
                     this.filter.dirty = true;
 
                 },
                 change_level: function (d) {
                     if (d.show == true) {
-                        this.filter.levels().push(d.level);
+                        this.filter.levels().push(this.inverse_level(d.level));
                     } else {
-                        var idx = this.filter.levels().indexOf(d.level);
+                        var idx = this.filter.levels().indexOf(this.inverse_level(d.level));
                         if (idx != -1) {
                             this.filter.levels().splice(idx, 1);
                         }
