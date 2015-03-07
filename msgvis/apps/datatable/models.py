@@ -118,7 +118,20 @@ class DataTable(object):
 
         return domain, labels
 
-    def generate(self, dataset, filters=None, page_size=10, page=None):
+    def filter_search_key(self, domain, labels, search_key):
+        match_domain = []
+        match_labels = []
+        for i in range(len(domain)):
+            level = domain[i]
+            if level is not None and level.lower().find(search_key.lower()) != -1 :
+                match_domain.append(level)
+
+                if labels is not None:
+                    match_labels.append(labels[i])
+
+        return match_domain, match_labels
+
+    def generate(self, dataset, filters=None, page_size=10, page=None, search_key=None):
         """
         Generate a complete data table response.
 
@@ -158,8 +171,20 @@ class DataTable(object):
 
         # paging the first dimension, this is for the filter distribution
         if primary_filter is None and self.secondary_dimension is None and page is not None:
+
+            if search_key is not None:
+                domain, labels = self.filter_search_key(domain, labels, search_key)
             start = (page - 1) * page_size
-            end = start + page_size
+            end = min(start + page_size, len(domain))
+
+            # no level left
+            if len(domain) == 0 or start > len(domain):
+                return {
+                    'table': table,
+                    'domains': domains,
+                    'domain_labels': domain_labels,
+                }
+
             domain = domain[start:end]
             if labels is not None:
                 labels = labels[start:end]

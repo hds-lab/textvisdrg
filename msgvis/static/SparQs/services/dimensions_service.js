@@ -141,7 +141,8 @@
 
                         var request = {
                             dataset: Dataset.id,
-                            dimensions: [this.key]
+                            dimensions: [this.key],
+                            page: 1
                         };
 
                         var apiUrl = djangoUrl.reverse('data-table');
