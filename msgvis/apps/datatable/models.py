@@ -131,7 +131,7 @@ class DataTable(object):
 
         return match_domain, match_labels
 
-    def generate(self, dataset, filters=None, page_size=10, page=None, search_key=None):
+    def generate(self, dataset, filters=None, page_size=30, page=None, search_key=None):
         """
         Generate a complete data table response.
 

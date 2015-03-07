@@ -220,6 +220,7 @@
 
     //Extends DimensionsController
     var FilterController = function ($scope, Filtering, Selection) {
+
         $scope.filtering = Filtering;
 
         $scope.closeFilter = function() {
@@ -249,7 +250,11 @@
 
         $scope.onQuantitativeBrushed = function(min, max) {
             $scope.$digest();
-        }
+        };
+
+        $scope.loadMore = function() {
+            Filtering.dimension.load_categorical_distribution();
+        };
 
 
     };
@@ -278,5 +283,21 @@
           });
         }
       }
+    });
+
+    module.directive('whenScrolled', function() {
+        return function(scope, element, attr) {
+            var raw = element[0];
+
+            var checkBounds = function(evt) {
+                console.log("event fired: " + evt.type);
+                if (raw.scrollTop + $(raw).height() == raw.scrollHeight) {
+                    console.log("reach the bottom");
+                    scope.$apply(attr.whenScrolled);
+                }
+
+            };
+            element.bind('scroll load', checkBounds);
+        };
     });
 })();

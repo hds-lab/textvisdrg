@@ -137,7 +137,7 @@
                     }
                 },
                 load_distribution: function (dataset) {
-                    if (this.is_categorical()){
+                    if (this.is_categorical() && !this.table){
                         return this.load_categorical_distribution(dataset, undefined);
                     }
                     else if (!this._loading && !this.table) {
@@ -201,7 +201,7 @@
                                 var result = data.result;
                                 self._loading = false;
 
-                                if ( typeof(result) !== "undefined" ){
+                                if ( result !== null && typeof(result) !== "undefined" ){
                                     result.table = result.table;
                                     result.domain = result.domains[self.key];
                                     result.domain_labels = result.domain_labels[self.key] || {};

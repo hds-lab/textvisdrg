@@ -249,7 +249,7 @@
                             </div>
 
 
-                            <div class="dimension-levels">
+                            <div class="dimension-levels" when-scrolled="loadMore()">
 
                                 <!--
                                 <div class=dimension-level ng-repeat="d in filtering.dimension.distribution | filter: filtering.dimension.search">
@@ -266,7 +266,7 @@
                                 </div>
                                 -->
                                 <categorical-histogram
-                                    dimension="filtering.dimension">
+                                    dimension="filtering.dimension" >
                                 </categorical-histogram>
                             </div>
                             <hr />

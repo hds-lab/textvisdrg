@@ -316,7 +316,7 @@
     });
 
     module.directive('categoricalHistogram', function () {
-        
+
         var get_scale = function(dimension, width){
             var values = dimension.table.map(function(d){ return d.value; });
             var scale = d3.scale.linear();
@@ -387,7 +387,6 @@
 
         }
     });
-
 
     module.directive('sparqsVis', function () {
 

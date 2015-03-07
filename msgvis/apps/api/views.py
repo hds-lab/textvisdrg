@@ -113,7 +113,7 @@ class DataTableView(APIView):
             filters = data.get('filters', [])
             search_key = data.get('search_key')
 
-            page_size = 10
+            page_size = 30
             page = None
             if data.get('page_size'):
                 page_size = data.get('page_size')
