@@ -315,84 +315,14 @@
         };
     });
 
-    /*module.directive('categoricalHistogram', function () {
-
-
-        var dimensionScale = {};
-        var setup_dimension_scale = function(dimension, width){
-            var values = dimension.table.map(function(d){ return d.value; });
-            var scale = d3.scale.linear();
-            scale.domain([0, d3.max(values)]);
-            scale.range([0, width]);
-            dimensionScale[dimension.key] = scale;
-        };
-        var create_bar = function($element, dimension, level_value) {
-            var elementSize = {
-                width: $element.parent().width(),
-                height: $element.parent().height()
-            };
-            var $d3_element = d3.select($element[0]);
-            var div = $d3_element.append("div");
-            div.style("width", (dimensionScale[dimension.key](level_value)) + "px");
-            div.style("height", (elementSize.height * 0.7) + "px");
-
-        };
-
-        var render_bar = function(scope, $element, attrs){
-            if ( typeof(scope.dimension) !== "undefined" ){
-                var elementSize = {
-                    width: $element.parent().width(),
-                    height: $element.parent().height()
-                };
-                if ( typeof(dimensionScale[scope.dimension.key]) === "undefined" ){
-                    setup_dimension_scale(scope.dimension, elementSize.width);
-                }
-                create_bar($element, scope.dimension, scope.levelValue);
-
-            }
-        };
-
-        function link(scope, $element, attrs){
-            scope.$watch('dimension.distribution', function (newVals, oldVals) {
-                    if (newVals) return render_bar(scope, $element, attrs);
-            }, false);
-
-        }
-
-        return {
-            restrict: 'E',
-            replace: false,
-
-            scope: {
-                dimension: '=dimension',
-                levelValue: '=levelValue'
-            },
-            link: link
-
-        }
-    });*/
-
     module.directive('categoricalHistogram', function () {
-
-
-        var dimensionScale = {};
-        var setup_dimension_scale = function(dimension, width){
+        
+        var get_scale = function(dimension, width){
             var values = dimension.table.map(function(d){ return d.value; });
             var scale = d3.scale.linear();
             scale.domain([0, d3.max(values)]);
             scale.range([0, width]);
-            dimensionScale[dimension.key] = scale;
-        };
-        var create_bar = function($element, dimension, level_value) {
-            var elementSize = {
-                width: $element.parent().width(),
-                height: $element.parent().height()
-            };
-            var $d3_element = d3.select($element[0]);
-            var div = $d3_element.append("div");
-            div.style("width", (dimensionScale[dimension.key](level_value)) + "px");
-            div.style("height", (elementSize.height * 0.7) + "px");
-
+            return scale;
         };
 
         var render_bar = function(scope, $element, attrs){
@@ -401,16 +331,46 @@
                     width: $element.parent().width(),
                     height: $element.parent().height()
                 };
-                if ( typeof(dimensionScale[scope.dimension.key]) === "undefined" ){
-                    setup_dimension_scale(scope.dimension, elementSize.width);
-                }
-                create_bar($element, scope.dimension, scope.levelValue);
+                var scale = get_scale(scope.dimension, elementSize.width * 0.1);
+                var $d3_element = d3.select($element[0]);
+                var d3_select = $d3_element.selectAll('.level-div')
+                    .data(scope.dimension.distribution);
+                d3_select.enter()
+                    .append('div')
+                    .classed('level-div', true)
+                    .each(function(d){
+                        var self = d3.select(this);
+                        self.classed('active', true);
+                        var level_name = self.append('div').classed('level-name', true);
+                        var label = level_name.append('label');
+                        label.append('input').attr('type', 'checkbox').classed('level-show', true);
+                        label.append('span').classed('level-name-text', true);
+                        self.append('div').classed('level-value', true);
+                        self.append('div').classed('level-bar', true);
+                    });
+                d3_select.exit()
+                    .each(function(d){
+                        var self = d3.select(this);
+                        self.classed('active', false);
+                        self.hide();
+                    });
+                $d3_element.selectAll('.level-div.active')
+                    .each(function(d){
+                        var self = d3.select(this);
+                        self.select('.level-show').attr('checked', (d.show) ? "checked" : null);
+                        self.select('.level-name-text').text(d.label || d.level);
+                        self.select('.level-value').text(d.value);
+                        self.select('.level-bar')
+                            .style("width", (scale(d.value)) + "px")
+                            .style("height", "0.7em");
+                    });
+
 
             }
         };
 
         function link(scope, $element, attrs){
-            scope.$watch('dimension.distribution', function (newVals, oldVals) {
+            scope.$watch('dimension.distribution.length', function (newVals, oldVals) {
                     if (newVals) return render_bar(scope, $element, attrs);
             }, false);
 
@@ -421,8 +381,7 @@
             replace: false,
 
             scope: {
-                dimension: '=dimension',
-                levelValue: '=levelValue'
+                dimension: '=dimension'
             },
             link: link
 

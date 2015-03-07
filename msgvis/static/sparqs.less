@@ -639,39 +639,37 @@ body {
         overflow-y: auto;
 
     }
-    .dimension-level{
-        text-align: left;
-        height: 1.1em;
-    }
-    .dimension-level div{
-        display: inline-block;
-        font-weight: normal;
-        font-size: 0.9em;
-        line-height: 1em;
-        padding: 0;
-        margin: 0;
-    }
-    .dimension-level .level-name{
-        width: @filter-popup-width * 0.65;
-
-    }
-    .dimension-level label{
-        font-weight: normal;
-
-    }
-    .dimension-level .level-value{
-        width: @filter-popup-width * 0.1;
-        text-align: right;
-    }
-    .dimension-level .level-bar{
-        width: @filter-popup-width * 0.08;
-        height: 1em;
-
-    }
+    
     categorical-histogram{
+        .level-div{
+            text-align: left;
+            height: 1.1em;
+            div{
+                display: inline-block;
+                font-weight: normal;
+                font-size: 0.9em;
+                line-height: 1em;
+                padding: 0;
+                margin: 0 1px;
+            }
+            .level-name{
+                width: @filter-popup-width * 0.60;
 
-        div {
-           background-color: steelblue;
+            }
+            label{
+                font-weight: normal;
+
+            }
+            .level-value{
+                width: @filter-popup-width * 0.1;
+                text-align: right;
+            }
+            .level-bar{
+                width: @filter-popup-width * 0.1;
+                height: 1em;
+                background-color: steelblue;
+
+            }
         }
     }
     .selected-levels{
