@@ -241,10 +241,10 @@
                             <hr />
                             <div class="level-select-button-group">
                                 <button type=button class="level-select-button"
-                                        ng-click="filtering.dimension.filtered_all(false)"
+                                        ng-click="filtering.dimension.switch_mode('exclude')"
                                         ng-disabled="filtering.dimension.is_not_filtered()">Select All</button>
                                 <button type=button class="level-select-button"
-                                        ng-click="filtering.dimension.filtered_all(true)"
+                                        ng-click="filtering.dimension.switch_mode('filter')"
                                         ng-disabled="filtering.dimension.is_all_filtered()">Unselected All</button>
                             </div>
 

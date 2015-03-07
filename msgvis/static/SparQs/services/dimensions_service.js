@@ -272,8 +272,6 @@
                         distribution_map[level] = d.value;
                     });
 
-                    dimension.num_default_show = 5;
-
                     return domain.map(function(level, i) {
                         var value = distribution_map[level] || 0;
 
@@ -289,7 +287,7 @@
                             level: level,
                             label: label,
                             value: value,
-                            show: (i < dimension.num_default_show)
+                            show: dimension.mode == "exclude" ? true : false
                         };
                     });
                 },
@@ -307,38 +305,34 @@
                         this.filter_type[this.mode].remove_from_levels(this.inverse_level(d.level));
                     }
                 },
+                switch_mode: function(mode){
+                    if ( mode !== 'exclude' && mode !== "filter" ) return;
+                    this.mode = mode;
+                    for (var m in this.filter_type){
+                        this.filter_type[m].reset();
+                    }
+
+                },
                 /*unfilter_level: function (d) {
                     d.show = true;
                     this.filter.levels().push(this.inverse_level(d.level));
 
                     this.filter_dirty = true;
 
-                },
-                change_level: function (d) {
-                    if (d.show == true) {
-                        this.filter.levels().push(this.inverse_level(d.level));
-                    } else {
-                        var idx = this.filter.levels().indexOf(this.inverse_level(d.level));
-                        if (idx != -1) {
-                            this.filter.levels().splice(idx, 1);
-                        }
-                    }
-                    this.filter_dirty = true;
-
-                },
+                }*/
                 is_all_filtered: function () {
-                    if (typeof (this.filter.levels()) !== "undefined") {
+                    /*if (typeof (this.filter.levels()) !== "undefined") {
                         return this.is_categorical() && this.filter.levels().length == 0;
-                    }
+                    }*/
                     return false;
                 },
                 is_not_filtered: function () {
-                    if (typeof (this.filter.levels()) !== "undefined") {
+                    /*if (typeof (this.filter.levels()) !== "undefined") {
                         return this.is_categorical() && this.filter.levels().length == this.domain.length;
-                    }
+                    }*/
                     return false;
                 },
-                filtered_all: function (flag) {
+                /*filtered_all: function (flag) {
                     var dimension = this;
                     if (typeof (dimension.filter.levels()) !== "undefined") {
                         if (flag == true) {

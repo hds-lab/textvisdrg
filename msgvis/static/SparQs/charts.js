@@ -381,9 +381,38 @@
             }
         };
 
+        var reset_levels = function(scope, $element, attrs){
+            if ( typeof(scope.dimension) !== "undefined" ){
+                var reset_value = {'filter': false, 'exclude': true};
+                var $d3_element = d3.select($element[0]);
+                scope.dimension.distribution.forEach(function(d){
+                    d.show = reset_value[scope.dimension.mode];
+                });
+
+                $d3_element.selectAll('.level-div.active')
+                    .each(function(d){
+                        var self = d3.select(this);
+
+                        // turn of the event handler first
+                        self.select('.level-show').on('change', null);
+                        $(this).find('.level-show').prop('checked', reset_value[scope.dimension.mode]);
+                        self.select('.level-show').on('change', function(d){
+                                var checked = $(this).prop("checked");
+                                d.show = checked;
+                                scope.dimension.change_level(d);
+                            });
+                    });
+
+
+            }
+        };
+
         function link(scope, $element, attrs){
             scope.$watch('dimension.distribution.length', function (newVals, oldVals) {
                     if (newVals) return render_bar(scope, $element, attrs);
+            }, false);
+            scope.$watch('dimension.mode', function (newVals, oldVals) {
+                    if (newVals) return reset_levels(scope, $element, attrs);
             }, false);
         }
 
