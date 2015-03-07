@@ -162,6 +162,7 @@ class DataTable(object):
         table = None
         domains = {}
         domain_labels = {}
+        max_page = None
 
         # Include the domains for primary and (secondary) dimensions
         domain, labels = self.domain(self.primary_dimension,
@@ -176,14 +177,11 @@ class DataTable(object):
                 domain, labels = self.filter_search_key(domain, labels, search_key)
             start = (page - 1) * page_size
             end = min(start + page_size, len(domain))
+            max_page = (len(domain) / page_size) + 1
 
             # no level left
             if len(domain) == 0 or start > len(domain):
-                return {
-                    'table': table,
-                    'domains': domains,
-                    'domain_labels': domain_labels,
-                }
+                return None
 
             domain = domain[start:end]
             if labels is not None:
@@ -214,9 +212,12 @@ class DataTable(object):
         # Render a table
         table = self.render(queryset)
 
-        return {
+        results = {
             'table': table,
             'domains': domains,
-            'domain_labels': domain_labels,
+            'domain_labels': domain_labels
         }
+        if max_page is not None:
+            results['max_page'] = max_page
 
+        return results

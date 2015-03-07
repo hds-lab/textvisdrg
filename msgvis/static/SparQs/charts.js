@@ -315,6 +315,63 @@
         };
     });
 
+    /*module.directive('categoricalHistogram', function () {
+
+
+        var dimensionScale = {};
+        var setup_dimension_scale = function(dimension, width){
+            var values = dimension.table.map(function(d){ return d.value; });
+            var scale = d3.scale.linear();
+            scale.domain([0, d3.max(values)]);
+            scale.range([0, width]);
+            dimensionScale[dimension.key] = scale;
+        };
+        var create_bar = function($element, dimension, level_value) {
+            var elementSize = {
+                width: $element.parent().width(),
+                height: $element.parent().height()
+            };
+            var $d3_element = d3.select($element[0]);
+            var div = $d3_element.append("div");
+            div.style("width", (dimensionScale[dimension.key](level_value)) + "px");
+            div.style("height", (elementSize.height * 0.7) + "px");
+
+        };
+
+        var render_bar = function(scope, $element, attrs){
+            if ( typeof(scope.dimension) !== "undefined" ){
+                var elementSize = {
+                    width: $element.parent().width(),
+                    height: $element.parent().height()
+                };
+                if ( typeof(dimensionScale[scope.dimension.key]) === "undefined" ){
+                    setup_dimension_scale(scope.dimension, elementSize.width);
+                }
+                create_bar($element, scope.dimension, scope.levelValue);
+
+            }
+        };
+
+        function link(scope, $element, attrs){
+            scope.$watch('dimension.distribution', function (newVals, oldVals) {
+                    if (newVals) return render_bar(scope, $element, attrs);
+            }, false);
+
+        }
+
+        return {
+            restrict: 'E',
+            replace: false,
+
+            scope: {
+                dimension: '=dimension',
+                levelValue: '=levelValue'
+            },
+            link: link
+
+        }
+    });*/
+
     module.directive('categoricalHistogram', function () {
 
 
@@ -371,6 +428,7 @@
 
         }
     });
+
 
     module.directive('sparqsVis', function () {
 

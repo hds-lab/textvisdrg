@@ -250,6 +250,7 @@
 
 
                             <div class="dimension-levels">
+
                                 <div class=dimension-level ng-repeat="d in filtering.dimension.distribution | filter: filtering.dimension.search">
                                     <div class="level-name">
                                         <label><input type="checkbox" ng-model="d.show" ng-change="filtering.dimension.change_level(d)" /> {$ d.label || d.level $} </label>
@@ -262,6 +263,7 @@
                                         </categorical-histogram>
                                     </div>
                                 </div>
+
                             </div>
                             <hr />
                             <div class="selected-levels">

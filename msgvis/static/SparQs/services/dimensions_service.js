@@ -90,6 +90,7 @@
                 this.table = undefined;
                 this.domain = undefined;
                 this.distribution = undefined;
+                this.search_results = {};
             };
 
             angular.extend(Dimension.prototype, {
@@ -136,13 +137,15 @@
                     }
                 },
                 load_distribution: function (dataset) {
-                    if (!this._loading && !this.table) {
+                    if (this.is_categorical()){
+                        return this.load_categorical_distribution(dataset, undefined);
+                    }
+                    else if (!this._loading && !this.table) {
                         this._loading = true;
 
                         var request = {
                             dataset: Dataset.id,
-                            dimensions: [this.key],
-                            page: 1
+                            dimensions: [this.key]
                         };
 
                         var apiUrl = djangoUrl.reverse('data-table');
@@ -156,15 +159,66 @@
                                 self.table = result.table;
                                 self.domain = result.domains[self.key];
                                 self.domain_labels = result.domain_labels[self.key] || {};
+                            });
+                    }
+                },
+                load_categorical_distribution: function (dataset, search_key) {
+                    var self = this;
+                    if (!self._loading) {
+                        self._loading = true;
+                        var target = self;
+                        if ( typeof(search_key) !== "undefined" && search_key !== "" &&
+                             typeof(self.search_results[search_key]) === "undefined" ){
+                            target = {}
+                            target.table = [];
+                            target.domain = [];
+                            target.domain_labels = {};
+                            target.distribution = [];
+                            target.page = 0;
+                            self.search_results[search_key] = target;
 
-                                self.distribution = self.get_distribution_in_order(self.table, self.domain, self.domain_labels);
+                        }
+                        else if( !self.table ){
+                            self.table = [];
+                            self.domain = [];
+                            self.domain_labels = {};
+                            self.distribution = [];
+                            self.page = 0;
+                        }
 
-                                if (self.is_categorical()) {
-                                    self.filter.levels(self.get_categorical_levels().slice(0, self.num_default_show));
-                                    self.search = {level: ""}
+                        var request = {
+                            dataset: Dataset.id,
+                            dimensions: [self.key],
+                            page: target.page + 1,
+                            search_key: search_key
+                        };
+
+                        var apiUrl = djangoUrl.reverse('data-table');
+
+
+                        return $http.post(apiUrl, request)
+                            .success(function (data) {
+                                var result = data.result;
+                                self._loading = false;
+
+                                if ( typeof(result) !== "undefined" ){
+                                    result.table = result.table;
+                                    result.domain = result.domains[self.key];
+                                    result.domain_labels = result.domain_labels[self.key] || {};
+                                    result.distribution = self.get_distribution_in_order(result.table, result.domain, result.domain_labels);
+
+                                    self.add_categorical_distribution(target, result);
+
                                 }
                             });
                     }
+                },
+                add_categorical_distribution: function(target, result){
+                    $.merge(target.table, result.table);
+                    $.merge(target.domain, result.domain);
+                    $.extend(target.domain_labels, result.domain_labels);
+                    $.merge(target.distribution, result.distribution);
+                    target.page += 1;
                 },
                 get_categorical_levels: function () {
                     var dimension = this;
