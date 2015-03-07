@@ -99,8 +99,9 @@
 
         $scope.get_example_messages = function () {
             var filters = Selection.filters();
+            var exclude = Selection.exclude();
             var focus = Selection.focus();
-            ExampleMessages.load(Dataset.id, filters, focus);
+            ExampleMessages.load(Dataset.id, filters, focus, exclude);
         };
 
         Selection.changed('filters,focus', $scope, $scope.get_example_messages);
@@ -165,7 +166,8 @@
         $scope.get_data_table = function () {
             var dimensions = Selection.dimensions();
             var filters = Selection.filters();
-            DataTables.load(Dataset.id, dimensions, filters);
+            var exclude = Selection.exclude();
+            DataTables.load(Dataset.id, dimensions, filters, exclude);
         };
 
         $scope.get_data_table();
@@ -228,23 +230,22 @@
         };
 
         $scope.saveFilter = function () {
-            if (Filtering.dimension.filter.dirty) {
+            if (Filtering.dimension.is_dirty()) {
                 Selection.changed('filters');
-                Filtering.dimension.filter.saved();
+                Filtering.dimension.current_filter().saved();
             }
         };
 
         $scope.resetFilter = function () {
-            if (!Filtering.dimension.filter.is_empty()) {
+            if (!Filtering.dimension.current_filter().is_empty()) {
                 if (Filtering.dimension.is_categorical()){
-                    Filtering.dimension.filtered_all(false);
                     if ( typeof(Filtering.dimension.search) != "undefined")
                         Filtering.dimension.search.level = "";
                 }else{
-                    Filtering.dimension.filter.reset();
+                    Filtering.dimension.current_filter().reset();
                 }
                 Selection.changed('filters');
-                Filtering.dimension.filter.saved();
+                Filtering.dimension.current_filter().saved();
             }
         };
 

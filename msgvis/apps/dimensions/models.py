@@ -101,6 +101,9 @@ class CategoricalDimension(object):
         for level in kwargs.get('levels'):
             if level is None or level == "":
                 queryset = queryset.exclude(Q((self.field_name + "__isnull", True)))
+
+                # TODO: Should not need this, but the language data contains empty str
+                queryset = queryset.exclude(Q((self.field_name, "")))
             else:
                 queryset = queryset.exclude(Q((self.field_name, level)))
 

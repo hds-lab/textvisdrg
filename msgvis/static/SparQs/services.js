@@ -136,7 +136,15 @@
 
                     //Prepare filter data
                     return with_filter.map(function (dim) {
-                        return dim.serialize_filter();
+                        return dim.serialize_filter('filter');
+                    })
+                },
+                exclude: function () {
+                    var with_exclude = Dimensions.get_with_exclude();
+
+                    //Prepare filter data
+                    return with_exclude.map(function (dim) {
+                        return dim.serialize_filter('exclude');
                     })
                 },
                 focus: function () {
@@ -166,6 +174,7 @@
                         var dim = {};
                         dim.dimension = dimensions[i].key;
                         dim.value = click_point_values[i];
+
                         if (typeof(dim.value) === "undefined") {
                             dim.value = "";
                         }
@@ -197,11 +206,12 @@
             };
 
             angular.extend(ExampleMessages.prototype, {
-                load: function (dataset, filters, focus) {
+                load: function (dataset, filters, focus, exclude) {
 
                     var request = {
                         dataset: dataset,
                         filters: filters,
+                        exclude: exclude,
                         focus: focus
                     };
 
@@ -234,7 +244,7 @@
             };
 
             angular.extend(DataTables.prototype, {
-                load: function (dataset, dimensions, filters) {
+                load: function (dataset, dimensions, filters, exclude) {
                     if (!dimensions.length) {
                         return;
                     }
@@ -246,6 +256,7 @@
                     var request = {
                         dataset: dataset,
                         filters: filters,
+                        exclude: exclude,
                         dimensions: dimension_keys
                     };
 

@@ -342,10 +342,20 @@
                     .each(function(d){
                         var self = d3.select(this);
                         self.classed('active', true);
-                        var level_name = self.append('div').classed('level-name', true);
-                        var label = level_name.append('label');
-                        label.append('input').attr('type', 'checkbox').classed('level-show', true);
+
+                        var label = self.append('div')
+                            .classed('level-name', true)
+                            .append('label');
+                        label.append('input')
+                            .attr('type', 'checkbox')
+                            .classed('level-show', true)
+                            .on('change', function(d){
+                                var checked = $(this).prop("checked");
+                                d.show = checked;
+                                scope.dimension.change_level(d);
+                            });
                         label.append('span').classed('level-name-text', true);
+
                         self.append('div').classed('level-value', true);
                         self.append('div').classed('level-bar', true);
                     });
@@ -359,7 +369,7 @@
                     .each(function(d){
                         var self = d3.select(this);
                         self.style('display', 'block');
-                        self.select('.level-show').attr('checked', (d.show) ? "checked" : null);
+                        $(this).find('.level-show').prop('checked', (d.show) ? true : false);
                         self.select('.level-name-text').text(d.label || d.level);
                         self.select('.level-value').text(d.value);
                         self.select('.level-bar')

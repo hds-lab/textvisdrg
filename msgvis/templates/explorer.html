@@ -270,16 +270,18 @@
                                 </categorical-histogram>
                             </div>
                             <hr />
+                            <!--
                             <div class="selected-levels">
                                 <strong>Filter out levels:</strong> <br />
                                 <span class=dimension-level-filter
                                       ng-repeat="d in filtering.dimension.distribution"
-                                      ng-click="filtering.dimension.unfilter_level(d)"
                                       ng-show="!d.show">
+                                    ng-click="filtering.dimension.unfilter_level(d)"
                                     {$ d.level $}
                                 </span>
 
                             </div>
+                            -->
 
 
 
@@ -291,7 +293,6 @@
 
                     <div class="form-group form-buttons">
                         <button type="submit" class="btn btn-sm btn-primary apply-button"
-                                ng-disabled="!filtering.dimension.filter.dirty"
                                 ng-click="saveFilter()">Update</button>
                         <button type="button" class="btn btn-sm btn-default clear-button"
                                 ng-disabled="filtering.dimension.filter.is_empty()"

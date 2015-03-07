@@ -74,6 +74,21 @@
                 saved: function () {
                     this.old_data = angular.copy(this.data);
                     this.dirty = false;
+                },
+                add_to_levels: function(level){
+                    if (!this.levels())
+                        this.levels([]);
+                    this.levels().push(level);
+                    this.dirty = true;
+                },
+                remove_from_levels: function(level){
+                    if (this.levels()){
+                        var idx = this.levels().indexOf(level);
+                        if (idx != -1) {
+                            this.levels().splice(idx, 1);
+                        }
+                        this.dirty = true;
+                    }
                 }
             });
 
@@ -84,7 +99,12 @@
                 this.zone = undefined;
                 this.draggable = this;
 
-                this.filter = new Filter(this.filter);
+                this.token_holder = {};
+                this.filter_type = {};
+                this.filter_type['filter'] = new Filter(this.filter_type['filter']);
+                this.filter_type['exclude'] = new Filter(this.filter_type['exclude']);
+                this.mode = this.is_categorical() ? "exclude" : "filter";
+
                 this.filtering = false; //true if currently being filtered
                 this.description = [this.name, this.name, this.name].join(', ') + '!';
                 this.table = undefined;
@@ -122,10 +142,13 @@
                 is_categorical: function () {
                     return this.type == 'CategoricalDimension';
                 },
-                serialize_filter: function () {
+                current_filter: function(){
+                    return this.filter_type[this.mode];
+                },
+                serialize_filter: function (mode) {
                     return angular.extend({
                         dimension: this.key
-                    }, this.filter.data);
+                    }, this.filter_type[mode].data);
                 },
                 set_filtering: function (filtering) {
                     if (this.filtering != filtering) {
@@ -273,11 +296,22 @@
                 show_search: function () {
                     return this.is_categorical() && this.domain && this.domain.length > 10;
                 },
-                unfilter_level: function (d) {
+                change_level: function (d) {
+                    var criteria = {
+                        filter: { include: true, exclude: false },
+                        exclude: { include: false, exclude: true }
+                    };
+                    if ( d.show == criteria[this.mode].include ) {
+                        this.filter_type[this.mode].add_to_levels(this.inverse_level(d.level));
+                    } else {
+                        this.filter_type[this.mode].remove_from_levels(this.inverse_level(d.level));
+                    }
+                },
+                /*unfilter_level: function (d) {
                     d.show = true;
                     this.filter.levels().push(this.inverse_level(d.level));
 
-                    this.filter.dirty = true;
+                    this.filter_dirty = true;
 
                 },
                 change_level: function (d) {
@@ -289,7 +323,7 @@
                             this.filter.levels().splice(idx, 1);
                         }
                     }
-                    this.filter.dirty = true;
+                    this.filter_dirty = true;
 
                 },
                 is_all_filtered: function () {
@@ -319,10 +353,10 @@
                                 d.show = true;
                             });
                         }
-                        dimension.filter.dirty = true;
+                        dimension.filter_dirty = true;
                     }
                     return false;
-                },
+                },*/
                 reset_search: function () {
                     var dimension = this;
                     if (dimension.is_categorical()) {
