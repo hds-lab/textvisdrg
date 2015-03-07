@@ -111,6 +111,7 @@ class DataTableView(APIView):
             dataset = data['dataset']
             dimensions = data['dimensions']
             filters = data.get('filters', [])
+            exclude = data.get('exclude', [])
             search_key = data.get('search_key')
 
             page_size = 30
@@ -122,7 +123,7 @@ class DataTableView(APIView):
                 page = max(1, int(data.get('page')))
 
             datatable = datatable_models.DataTable(*dimensions)
-            result = datatable.generate(dataset, filters, page_size, page, search_key)
+            result = datatable.generate(dataset, filters, exclude, page_size, page, search_key)
 
             # Just add the result key
             response_data = data

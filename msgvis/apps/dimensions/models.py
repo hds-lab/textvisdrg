@@ -57,6 +57,15 @@ class CategoricalDimension(object):
                 queryset = queryset.filter(Q((self.field_name, kwargs['value'])))
         return queryset
 
+    def _exact_exclude(self, queryset, **kwargs):
+        """Excluding an exact value"""
+        if 'value' in kwargs:
+            if kwargs['value'] is None or kwargs['value'] == "":
+                queryset = queryset.exclude(Q((self.field_name + "__isnull", True)))
+            else:
+                queryset = queryset.exclude(Q((self.field_name, kwargs['value'])))
+        return queryset
+
     def get_key_model(self):
         dimension_key_model, created = DimensionKey.objects.get_or_create(key=self.key)
         return dimension_key_model
@@ -78,6 +87,22 @@ class CategoricalDimension(object):
                     filter_ors.append((self.field_name, level))
 
             queryset = queryset.filter(reduce(operator.or_, [Q(x) for x in filter_ors]))
+
+        return queryset
+
+    def exclude(self, queryset, **kwargs):
+        """Exclude some points from a queryset and return the new queryset."""
+
+        # Type checking
+        queryset = find_messages(queryset)
+
+        queryset = self._exact_exclude(queryset, **kwargs)
+
+        for level in kwargs.get('levels'):
+            if level is None or level == "":
+                queryset = queryset.exclude(Q((self.field_name + "__isnull", True)))
+            else:
+                queryset = queryset.exclude(Q((self.field_name, level)))
 
         return queryset
 

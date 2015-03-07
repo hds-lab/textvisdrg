@@ -109,10 +109,15 @@ class DataTable(object):
             else:
                 return queryset
 
-    def domain(self, dimension, queryset, filter=None, desired_bins=None):
+    def domain(self, dimension, queryset, filter=None, exclude=None, desired_bins=None):
         """Return the sorted levels in this dimension"""
         if filter is not None:
             queryset = dimension.filter(queryset, **filter)
+
+        if exclude is not None:
+            queryset = dimension.exclude(queryset, **exclude)
+
+        queryset = queryset.exclude(time__isnull=True)
         domain = dimension.get_domain(queryset, bins=desired_bins)
         labels = dimension.get_domain_labels(domain)
 
@@ -131,7 +136,7 @@ class DataTable(object):
 
         return match_domain, match_labels
 
-    def generate(self, dataset, filters=None, page_size=30, page=None, search_key=None):
+    def generate(self, dataset, filters=None, exclude=None, page_size=30, page=None, search_key=None):
         """
         Generate a complete data table response.
 
@@ -159,6 +164,19 @@ class DataTable(object):
                 if dimension == self.secondary_dimension:
                     secondary_filter = filter
 
+        primary_exclude = None
+        secondary_exclude = None
+        if exclude is not None:
+            for exclude_filter in exclude:
+                dimension = exclude_filter['dimension']
+                queryset = dimension.exclude(queryset, **exclude_filter)
+
+                if dimension == self.primary_dimension:
+                    primary_exclude = exclude_filter
+                if dimension == self.secondary_dimension:
+                    secondary_exclude = exclude_filter
+
+
         table = None
         domains = {}
         domain_labels = {}
@@ -167,7 +185,7 @@ class DataTable(object):
         # Include the domains for primary and (secondary) dimensions
         domain, labels = self.domain(self.primary_dimension,
                                      dataset.message_set.all(),
-                                     primary_filter)
+                                     primary_filter, primary_exclude)
 
 
         # paging the first dimension, this is for the filter distribution
@@ -203,7 +221,7 @@ class DataTable(object):
         if self.secondary_dimension:
             domain, labels = self.domain(self.secondary_dimension,
                                          dataset.message_set.all(),
-                                         secondary_filter)
+                                         secondary_filter, secondary_exclude)
 
             domains[self.secondary_dimension.key] = domain
             if labels is not None:
