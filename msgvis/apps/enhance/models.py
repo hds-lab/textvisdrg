@@ -222,7 +222,7 @@ class Dictionary(models.Model):
                 .order_by('-probability')\
                 .prefetch_related('word')
                 
-            topicm.name = ', '.join([score.word for score in most_likely_word_scores[:3]])
+            topicm.name = ', '.join([score.word.text for score in most_likely_word_scores[:3]])
             topicm.save()
 
             if settings.DEBUG:
