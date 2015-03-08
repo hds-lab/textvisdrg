@@ -133,4 +133,8 @@ class TopicsTest(TestCase):
             topic_b: n_messages / 2,
         })
 
+        # The words should be in the default topic names
+        for word in topic_a_vocab + topic_b_vocab:
+            self.assertTrue(word in topic_a.name or word in topic_b.name)
+            
 
