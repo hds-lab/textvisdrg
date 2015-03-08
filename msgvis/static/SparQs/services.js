@@ -90,6 +90,14 @@
                         this._stop();
                     }
                 },
+                filter_height_for: function(dimension) {
+                    if (dimension.is_quantitative_or_time()) {
+                        return 220;
+                    } else if (dimension.is_categorical()) {
+                        return 381;
+                    }
+                    return 0;
+                },
                 get_filtered: function () {
                     return Dimensions.list.filter(function (dim) {
                         return !dim.filter_type['filter'].is_empty();
