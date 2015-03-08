@@ -211,3 +211,4 @@ class DataTableSerializer(serializers.Serializer):
     page_size = serializers.IntegerField(required=False)
     page = serializers.IntegerField(required=False)
     search_key = serializers.CharField(allow_null=True, allow_blank=True, required=False)
+    mode = serializers.CharField(allow_null=True, allow_blank=True, required=False)
