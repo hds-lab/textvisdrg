@@ -26,7 +26,7 @@ django-filter
 docutils
 
 # angular
-django-angular
+django-angular==0.7.10
 
 # TextBlob
 textblob
