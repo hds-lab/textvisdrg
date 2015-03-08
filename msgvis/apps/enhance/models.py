@@ -218,7 +218,7 @@ class Dictionary(models.Model):
                 words.append(tw)
             TopicWord.objects.bulk_create(words)
 
-            most_likely_words = topicm.words.orderby('-probability')[:3]
+            most_likely_words = topicm.words.order_by('-probability')[:3]
             topicm.name = ', '.join(most_likely_words)
             topicm.save()
 
