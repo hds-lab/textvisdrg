@@ -99,8 +99,9 @@
 
         $scope.get_example_messages = function () {
             var filters = Selection.filters();
+            var exclude = Selection.exclude();
             var focus = Selection.focus();
-            ExampleMessages.load(Dataset.id, filters, focus);
+            ExampleMessages.load(Dataset.id, filters, focus, exclude);
         };
 
         Selection.changed('filters,focus', $scope, $scope.get_example_messages);
@@ -165,7 +166,8 @@
         $scope.get_data_table = function () {
             var dimensions = Selection.dimensions();
             var filters = Selection.filters();
-            DataTables.load(Dataset.id, dimensions, filters);
+            var exclude = Selection.exclude();
+            DataTables.load(Dataset.id, dimensions, filters, exclude);
         };
 
         $scope.get_data_table();
@@ -220,6 +222,7 @@
 
     //Extends DimensionsController
     var FilterController = function ($scope, Filtering, Selection) {
+
         $scope.filtering = Filtering;
 
         $scope.closeFilter = function() {
@@ -227,29 +230,43 @@
         };
 
         $scope.saveFilter = function () {
-            if (Filtering.dimension.filter.dirty) {
+            if (Filtering.dimension.is_dirty()) {
                 Selection.changed('filters');
-                Filtering.dimension.filter.saved();
+                Filtering.dimension.current_filter().saved();
             }
         };
 
         $scope.resetFilter = function () {
-            if (!Filtering.dimension.filter.is_empty()) {
+            if (!Filtering.dimension.current_filter().is_empty()) {
                 if (Filtering.dimension.is_categorical()){
-                    Filtering.dimension.filtered_all(false);
-                    if ( typeof(Filtering.dimension.search) != "undefined")
-                        Filtering.dimension.search.level = "";
+                    Filtering.dimension.search_key = "";
+                    Filtering.dimension.search_key_tmp = "";
                 }else{
-                    Filtering.dimension.filter.reset();
+                    Filtering.dimension.current_filter().reset();
                 }
                 Selection.changed('filters');
-                Filtering.dimension.filter.saved();
+                Filtering.dimension.current_filter().saved();
             }
         };
 
         $scope.onQuantitativeBrushed = function(min, max) {
             $scope.$digest();
-        }
+        };
+
+        $scope.loadMore = function() {
+            Filtering.dimension.load_categorical_distribution();
+        };
+
+        $scope.search = function() {
+            Filtering.dimension.search_key = Filtering.dimension.search_key_tmp;
+            Filtering.dimension.load_categorical_distribution();
+        };
+        $scope.set_back_cur_search = function() {
+            if ( Filtering.dimension.search_key_tmp !== Filtering.dimension.search_key )
+                Filtering.dimension.search_key_tmp = Filtering.dimension.search_key;
+
+        };
+
 
 
     };
@@ -279,4 +296,33 @@
         }
       }
     });
+
+    module.directive('whenScrolled', function() {
+        return function(scope, element, attr) {
+            var raw = element[0];
+
+            var checkBounds = function(evt) {
+                if (raw.scrollTop + $(raw).height() == raw.scrollHeight) {
+                    scope.$apply(attr.whenScrolled);
+                }
+
+            };
+            element.bind('scroll load', checkBounds);
+        };
+    });
+
+    module.directive('ngEnter', function () {
+        return function (scope, element, attrs) {
+            element.bind("keydown keypress", function (event) {
+                if(event.which === 13) {
+                    scope.$apply(function (){
+                        scope.$eval(attrs.ngEnter);
+                    });
+
+                    event.preventDefault();
+                }
+            });
+        };
+    });
+
 })();

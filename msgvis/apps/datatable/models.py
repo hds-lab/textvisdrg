@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Q
+import operator
 
 from msgvis.apps.base.models import MappedValuesQuerySet
 from msgvis.apps.corpus import models as corpus_models
@@ -107,16 +109,34 @@ class DataTable(object):
             else:
                 return queryset
 
-    def domain(self, dimension, queryset, filter=None, desired_bins=None):
+    def domain(self, dimension, queryset, filter=None, exclude=None, desired_bins=None):
         """Return the sorted levels in this dimension"""
         if filter is not None:
             queryset = dimension.filter(queryset, **filter)
+
+        if exclude is not None:
+            queryset = dimension.exclude(queryset, **exclude)
+
+        queryset = queryset.exclude(time__isnull=True)
         domain = dimension.get_domain(queryset, bins=desired_bins)
         labels = dimension.get_domain_labels(domain)
 
         return domain, labels
 
-    def generate(self, dataset, filters=None):
+    def filter_search_key(self, domain, labels, search_key):
+        match_domain = []
+        match_labels = []
+        for i in range(len(domain)):
+            level = domain[i]
+            if level is not None and level.lower().find(search_key.lower()) != -1 :
+                match_domain.append(level)
+
+                if labels is not None:
+                    match_labels.append(labels[i])
+
+        return match_domain, match_labels
+
+    def generate(self, dataset, filters=None, exclude=None, page_size=30, page=None, search_key=None):
         """
         Generate a complete data table response.
 
@@ -144,15 +164,56 @@ class DataTable(object):
                 if dimension == self.secondary_dimension:
                     secondary_filter = filter
 
-        # Render a table
-        table = self.render(queryset)
+        primary_exclude = None
+        secondary_exclude = None
+        if exclude is not None:
+            for exclude_filter in exclude:
+                dimension = exclude_filter['dimension']
+                queryset = dimension.exclude(queryset, **exclude_filter)
+
+                if dimension == self.primary_dimension:
+                    primary_exclude = exclude_filter
+                if dimension == self.secondary_dimension:
+                    secondary_exclude = exclude_filter
+
+
+        table = None
         domains = {}
         domain_labels = {}
+        max_page = None
 
         # Include the domains for primary and (secondary) dimensions
         domain, labels = self.domain(self.primary_dimension,
                                      dataset.message_set.all(),
-                                     primary_filter)
+                                     primary_filter, primary_exclude)
+
+
+        # paging the first dimension, this is for the filter distribution
+        if primary_filter is None and self.secondary_dimension is None and page is not None:
+
+            if search_key is not None:
+                domain, labels = self.filter_search_key(domain, labels, search_key)
+            start = (page - 1) * page_size
+            end = min(start + page_size, len(domain))
+            max_page = (len(domain) / page_size) + 1
+
+            # no level left
+            if len(domain) == 0 or start > len(domain):
+                return None
+
+            domain = domain[start:end]
+            if labels is not None:
+                labels = labels[start:end]
+
+            filter_ors = []
+            for level in domain:
+                if level is None or level == "":
+                    filter_ors.append((self.primary_dimension.field_name + "__isnull", True))
+                else:
+                    filter_ors.append((self.primary_dimension.field_name, level))
+
+            queryset = queryset.filter(reduce(operator.or_, [Q(x) for x in filter_ors]))
+
         domains[self.primary_dimension.key] = domain
         if labels is not None:
             domain_labels[self.primary_dimension.key] = labels
@@ -160,15 +221,21 @@ class DataTable(object):
         if self.secondary_dimension:
             domain, labels = self.domain(self.secondary_dimension,
                                          dataset.message_set.all(),
-                                         secondary_filter)
+                                         secondary_filter, secondary_exclude)
 
             domains[self.secondary_dimension.key] = domain
             if labels is not None:
                 domain_labels[self.secondary_dimension.key] = labels
 
-        return {
+        # Render a table
+        table = self.render(queryset)
+
+        results = {
             'table': table,
             'domains': domains,
-            'domain_labels': domain_labels,
+            'domain_labels': domain_labels
         }
+        if max_page is not None:
+            results['max_page'] = max_page
 
+        return results

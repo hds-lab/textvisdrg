@@ -18,7 +18,7 @@
             ];
 
             var Filter = function (data) {
-                this.data = data || {};
+                this.data = data || { };
                 this.old_data = angular.copy(this.data);
 
                 this.dirty = false; //true if has unsaved filter changes
@@ -74,6 +74,21 @@
                 saved: function () {
                     this.old_data = angular.copy(this.data);
                     this.dirty = false;
+                },
+                add_to_levels: function(level){
+                    if (!this.levels())
+                        this.levels([]);
+                    this.levels().push(level);
+                    this.dirty = true;
+                },
+                remove_from_levels: function(level){
+                    if (this.levels()){
+                        var idx = this.levels().indexOf(level);
+                        if (idx != -1) {
+                            this.levels().splice(idx, 1);
+                        }
+                        this.dirty = true;
+                    }
                 }
             });
 
@@ -84,12 +99,20 @@
                 this.zone = undefined;
                 this.draggable = this;
 
-                this.filter = new Filter(this.filter);
+                this.token_holder = {};
+                this.filter_type = {};
+                this.filter_type['filter'] = new Filter(this.filter_type['filter']);
+                this.filter_type['exclude'] = new Filter(this.filter_type['exclude']);
+                this.mode = this.is_categorical() ? "exclude" : "filter";
+
                 this.filtering = false; //true if currently being filtered
                 this.description = [this.name, this.name, this.name].join(', ') + '!';
                 this.table = undefined;
                 this.domain = undefined;
                 this.distribution = undefined;
+                this.search_key = "";
+                this.search_results = {"": this};
+
             };
 
             angular.extend(Dimension.prototype, {
@@ -100,7 +123,7 @@
                         cls += 'dimension-' + this.zone.name;
                     }
 
-                    if (!this.filter.is_empty()) {
+                    if (!this.is_not_applying_filters()) {
                         cls += ' filter-applied';
                     }
 
@@ -121,10 +144,13 @@
                 is_categorical: function () {
                     return this.type == 'CategoricalDimension';
                 },
-                serialize_filter: function () {
+                current_filter: function(){
+                    return this.filter_type[this.mode];
+                },
+                serialize_filter: function (mode) {
                     return angular.extend({
                         dimension: this.key
-                    }, this.filter.data);
+                    }, this.filter_type[mode].data);
                 },
                 set_filtering: function (filtering) {
                     if (this.filtering != filtering) {
@@ -135,8 +161,21 @@
                         }
                     }
                 },
+                is_not_applying_filters: function(){
+                    return this.filter_type['filter'].is_empty() &&
+                           this.filter_type['exclude'].is_empty();
+                },
+                is_dirty: function(){
+                    return this.filter_type['filter'].dirty ||
+                           this.filter_type['exclude'].dirty;
+                },
                 load_distribution: function (dataset) {
-                    if (!this._loading && !this.table) {
+                    if (this.is_categorical() && !this.table){
+                        //$('.level-select-button.all').prop('disabled', true);
+                        //$('.level-select-button.none').prop('disabled', false);
+                        return this.load_categorical_distribution(dataset);
+                    }
+                    else if (!this._loading && !this.table) {
                         this._loading = true;
 
                         var request = {
@@ -155,15 +194,70 @@
                                 self.table = result.table;
                                 self.domain = result.domains[self.key];
                                 self.domain_labels = result.domain_labels[self.key] || {};
+                            });
+                    }
+                },
+                get_current_distribution: function(){
+                    return this.search_results[this.search_key].distribution;
+                },
+                load_categorical_distribution: function (dataset) {
+                    var self = this;
+                    if (!self._loading) {
+                        self._loading = true;
+                        var target = self;
+                        if ( typeof(self.search_key) !== "undefined" && self.search_key !== "" &&
+                             typeof(self.search_results[self.search_key]) === "undefined" ){
+                            target = {}
+                            target.table = [];
+                            target.domain = [];
+                            target.domain_labels = {};
+                            target.distribution = [];
+                            target.page = 0;
+                            self.search_results[self.search_key] = target;
 
-                                self.distribution = self.get_distribution_in_order(self.table, self.domain, self.domain_labels);
+                        }
+                        else if( !self.table ){
+                            self.table = [];
+                            self.domain = [];
+                            self.domain_labels = {};
+                            self.distribution = [];
+                            self.page = 0;
 
-                                if (self.is_categorical()) {
-                                    self.filter.levels(self.get_categorical_levels().slice(0, self.num_default_show));
-                                    self.search = {level: ""}
+                        }
+
+                        var request = {
+                            dataset: Dataset.id,
+                            dimensions: [self.key],
+                            page: target.page + 1,
+                            search_key: (self.search_key !== "") ? self.search_key : undefined
+                        };
+
+                        var apiUrl = djangoUrl.reverse('data-table');
+
+
+                        return $http.post(apiUrl, request)
+                            .success(function (data) {
+                                var result = data.result;
+                                self._loading = false;
+
+                                if ( result !== null && typeof(result) !== "undefined" ){
+                                    result.table = result.table;
+                                    result.domain = result.domains[self.key];
+                                    result.domain_labels = result.domain_labels[self.key] || {};
+                                    result.distribution = self.get_distribution_in_order(result.table, result.domain, result.domain_labels);
+
+                                    self.add_categorical_distribution(target, result);
+
                                 }
                             });
                     }
+                },
+                add_categorical_distribution: function(target, result){
+                    $.merge(target.table, result.table);
+                    $.merge(target.domain, result.domain);
+                    $.extend(target.domain_labels, result.domain_labels);
+                    $.merge(target.distribution, result.distribution);
+                    target.page += 1;
                 },
                 get_categorical_levels: function () {
                     var dimension = this;
@@ -177,24 +271,28 @@
                     }
                     return undefined;
                 },
+                inverse_level: function(level){
+                     var dimension = this;
+                    if ( level == "No " + dimension.key )
+                        return "";
+                    return level;
+                },
                 get_distribution_in_order: function (table, domain, labels) {
                     if (!table || !domain) {
                         return undefined;
                     }
-                    var dimension = this;
+                    var self = this;
                     var distribution_map = {};
                     table.forEach(function (d) {
-                        var level = d[dimension.key];
+                        var level = d[self.key];
                         distribution_map[level] = d.value;
                     });
-
-                    dimension.num_default_show = 5;
 
                     return domain.map(function(level, i) {
                         var value = distribution_map[level] || 0;
 
                         if (level === null || level === "")
-                            level = "No " + dimension.key;
+                            level = "No " + self.key;
 
                         var label;
                         if (labels && labels.length > i) {
@@ -205,67 +303,77 @@
                             level: level,
                             label: label,
                             value: value,
-                            show: (i < dimension.num_default_show)
+                            show: self.current_show_state(level)
                         };
                     });
                 },
                 show_search: function () {
                     return this.is_categorical() && this.domain && this.domain.length > 10;
                 },
-                unfilter_level: function (d) {
-                    d.show = true;
-                    this.filter.levels().push(d.level);
-
-                    this.filter.dirty = true;
-
+                current_show_state: function(level){
+                    var self = this;
+                    var levels = self.current_filter().levels();
+                    if ( levels && levels.indexOf(level) != -1 ){
+                        return self.mode == "exclude" ? false : true
+                    }
+                    return self.mode == "exclude" ? true : false;
+                },
+                check_original_list_when_change: function(data_point){
+                    var self = this;
+                    self.distribution.forEach(function(d){
+                        if (d.level === data_point.level){
+                            d.show = data_point.show;
+                        }
+                    });
                 },
                 change_level: function (d) {
-                    if (d.show == true) {
-                        this.filter.levels().push(d.level);
+                    var criteria = {
+                        filter: { include: true, exclude: false },
+                        exclude: { include: false, exclude: true }
+                    };
+                    if ( d.show == criteria[this.mode].include ) {
+                        this.filter_type[this.mode].add_to_levels(this.inverse_level(d.level));
                     } else {
-                        var idx = this.filter.levels().indexOf(d.level);
-                        if (idx != -1) {
-                            this.filter.levels().splice(idx, 1);
-                        }
+                        this.filter_type[this.mode].remove_from_levels(this.inverse_level(d.level));
                     }
-                    this.filter.dirty = true;
+                    if ( this.search_key != "")
+                        this.check_original_list_when_change(d);
+
+                    // TODO: rewrite it by a better way, though several methods all seem not working.
+                    //$('.level-select-button.all').prop('disabled', this.check_if_all_selected());
+                    //$('.level-select-button.none').prop('disabled', this.check_if_all_unselected());
 
                 },
-                is_all_filtered: function () {
-                    if (typeof (this.filter.levels()) !== "undefined") {
-                        return this.is_categorical() && this.filter.levels().length == 0;
+                switch_mode: function(mode){
+                    if ( mode !== 'exclude' && mode !== "filter" ) return;
+                    this.mode = mode;
+                    for (var m in this.filter_type){
+                        this.filter_type[m].reset();
+                    }
+                    // TODO: rewrite it by a better way, though several methods all seem not working.
+                    //$('.level-select-button.all').prop('disabled', this.check_if_all_selected());
+                    //$('.level-select-button.none').prop('disabled', this.check_if_all_unselected());
+
+                },
+                check_if_all_selected: function () {
+                    var self = this;
+                    if (self.mode == "exclude" && (!self.current_filter().levels() || self.current_filter().levels().length == 0)) {
+                        return true
                     }
                     return false;
                 },
-                is_not_filtered: function () {
-                    if (typeof (this.filter.levels()) !== "undefined") {
-                        return this.is_categorical() && this.filter.levels().length == this.domain.length;
-                    }
-                    return false;
-                },
-                filtered_all: function (flag) {
-                    var dimension = this;
-                    if (typeof (dimension.filter.levels()) !== "undefined") {
-                        if (flag == true) {
-                            dimension.filter.levels([]);
-                            dimension.distribution.forEach(function (d) {
-                                d.show = false;
-                            });
-                        }
-                        else {
-                            dimension.filter.levels(dimension.get_categorical_levels());
-                            dimension.distribution.forEach(function (d) {
-                                d.show = true;
-                            });
-                        }
-                        dimension.filter.dirty = true;
+                check_if_all_unselected: function () {
+                    var self = this;
+                    if (self.mode == "filter" && (!self.current_filter().levels() || self.current_filter().levels().length == 0)) {
+                        return true
                     }
                     return false;
                 },
                 reset_search: function () {
-                    var dimension = this;
-                    if (dimension.is_categorical()) {
-                        dimension.search = {level: ""};
+                    var self = this;
+                    if (self.is_categorical()) {
+                        self.search_key = "";
+                        self.search_key_tmp = "";
                     }
                 }
             });

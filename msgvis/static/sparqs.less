@@ -377,9 +377,23 @@ body {
         left: @secondary-dropzone-width + @dropzone-buffer;
         bottom: @primary-dropzone-height + @dropzone-buffer;
 
-        svg {
-            background: white;
+        .c3-axis-y tspan,.c3-axis-x tspan,.c3-axis-x-label,.c3-axis-y-label{
+            fill: white;
         }
+        .domain,.tick line{
+            stroke: #999;
+        }
+        .c3-area{
+            opacity: 0.75;
+        }
+        .c3-legend-background{
+            stroke: none;
+            fill: none;
+        }
+        .c3-legend-item text{
+                fill: white;
+        }
+
     }
 
     .dropzones {
@@ -486,8 +500,13 @@ body {
 //                }
 //            }
         }
-
-
+        .c3-legend-background{
+            stroke: none;
+            fill: none;
+        }
+        .c3-legend-item text{
+                fill: white;
+        }
     }
 }
 
@@ -634,39 +653,37 @@ body {
         overflow-y: auto;
 
     }
-    .dimension-level{
-        text-align: left;
-        height: 1.1em;
-    }
-    .dimension-level div{
-        display: inline-block;
-        font-weight: normal;
-        font-size: 0.9em;
-        line-height: 1em;
-        padding: 0;
-        margin: 0;
-    }
-    .dimension-level .level-name{
-        width: @filter-popup-width * 0.65;
-
-    }
-    .dimension-level label{
-        font-weight: normal;
-
-    }
-    .dimension-level .level-value{
-        width: @filter-popup-width * 0.1;
-        text-align: right;
-    }
-    .dimension-level .level-bar{
-        width: @filter-popup-width * 0.08;
-        height: 1em;
-
-    }
+    
     categorical-histogram{
+        .level-div{
+            text-align: left;
+            height: 1.1em;
+            div{
+                display: inline-block;
+                font-weight: normal;
+                font-size: 0.9em;
+                line-height: 1em;
+                padding: 0;
+                margin: 0 1px;
+            }
+            .level-name{
+                width: @filter-popup-width * 0.60;
 
-        div {
-           background-color: steelblue;
+            }
+            label{
+                font-weight: normal;
+
+            }
+            .level-value{
+                width: @filter-popup-width * 0.1;
+                text-align: right;
+            }
+            .level-bar{
+                width: @filter-popup-width * 0.1;
+                height: 1em;
+                background-color: steelblue;
+
+            }
         }
     }
     .selected-levels{
@@ -696,17 +713,17 @@ body {
     .level-select-button:disabled{
         color: #333;
     }
-    .search{
+    .search {
         font-size: 0.5em;
         text-align: left;
         margin-top: 1.5em;
-    }
-    .search input{
-        color: black;
-        line-height: 0.5em;
-    }
-    .search .glyphicon-remove:hover{
-        cursor: pointer;
+        input {
+          color: black;
+          line-height: 0.5em;
+        }
+        .glyphicon:hover {
+          cursor: pointer;
+        }
     }
 
 }

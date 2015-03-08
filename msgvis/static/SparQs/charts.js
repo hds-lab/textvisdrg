@@ -317,46 +317,117 @@
 
     module.directive('categoricalHistogram', function () {
 
-
-        var dimensionScale = {};
-        var setup_dimension_scale = function(dimension, width){
+        var get_scale = function(dimension, width){
             var values = dimension.table.map(function(d){ return d.value; });
             var scale = d3.scale.linear();
             scale.domain([0, d3.max(values)]);
             scale.range([0, width]);
-            dimensionScale[dimension.key] = scale;
-        };
-        var create_bar = function($element, dimension, level_value) {
-            var elementSize = {
-                width: $element.parent().width(),
-                height: $element.parent().height()
-            };
-            var $d3_element = d3.select($element[0]);
-            var div = $d3_element.append("div");
-            div.style("width", (dimensionScale[dimension.key](level_value)) + "px");
-            div.style("height", (elementSize.height * 0.7) + "px");
-
+            return scale;
         };
 
-        var render_bar = function(scope, $element, attrs){
+        var render_bar = function(scope, $element, attrs, distribution){
             if ( typeof(scope.dimension) !== "undefined" ){
                 var elementSize = {
                     width: $element.parent().width(),
                     height: $element.parent().height()
                 };
-                if ( typeof(dimensionScale[scope.dimension.key]) === "undefined" ){
-                    setup_dimension_scale(scope.dimension, elementSize.width);
-                }
-                create_bar($element, scope.dimension, scope.levelValue);
+                var scale = get_scale(scope.dimension, elementSize.width * 0.1);
+                var $d3_element = d3.select($element[0]);
+                var d3_select = $d3_element.selectAll('.level-div')
+                    .data(distribution)
+                    .classed('active', true);
+
+                d3_select.enter()
+                    .append('div')
+                    .classed('level-div', true)
+                    .each(function(d){
+                        var self = d3.select(this);
+                        self.classed('active', true);
+
+                        var label = self.append('div')
+                            .classed('level-name', true)
+                            .append('label');
+                        label.append('input')
+                            .attr('type', 'checkbox')
+                            .classed('level-show', true);
+                        label.append('span').classed('level-name-text', true);
+
+                        self.append('div').classed('level-value', true);
+                        self.append('div').classed('level-bar', true);
+                    });
+
+                d3_select.exit()
+                    .each(function(d){
+                        var self = d3.select(this);
+                        self.classed('active', false);
+                        self.style('display', 'none');
+                    });
+
+                $d3_element.selectAll('.level-div.active')
+                    .each(function(d){
+                        var self = d3.select(this);
+                        self.style('display', 'block');
+
+                        $(this).find('.level-show').prop('checked', (d.show));
+                        self.select('.level-show').on('change', function(d){
+                                var checked = $(this).prop("checked");
+                                d.show = checked;
+                                scope.dimension.change_level(d);
+                            });
+                        self.select('.level-name-text').text(d.label || d.level);
+                        self.select('.level-value').text(d.value);
+                        self.select('.level-bar')
+                            .style("width", (scale(d.value)) + "px")
+                            .style("height", "0.7em");
+                    });
+
+
+            }
+        };
+
+        var reset_levels = function(scope, $element, attrs){
+            if ( typeof(scope.dimension) !== "undefined" ){
+                var reset_value = {'filter': false, 'exclude': true};
+                var $d3_element = d3.select($element[0]);
+                scope.dimension.distribution.forEach(function(d){
+                    d.show = reset_value[scope.dimension.mode];
+                });
+
+                $d3_element.selectAll('.level-div')
+                    .each(function(d){
+                        var self = d3.select(this);
+
+                        // turn off the event handler first
+                        self.select('.level-show').on('change', null);
+                        $(this).find('.level-show').prop('checked', reset_value[scope.dimension.mode]);
+                        self.select('.level-show').on('change', function(d){
+                                var checked = $(this).prop("checked");
+                                d.show = checked;
+                                scope.dimension.change_level(d);
+                            });
+                    });
+
 
             }
         };
 
         function link(scope, $element, attrs){
-            scope.$watch('dimension.distribution', function (newVals, oldVals) {
-                    if (newVals) return render_bar(scope, $element, attrs);
+            scope.$watch('dimension.mode', function (newVals, oldVals) {
+                    if (newVals) return reset_levels(scope, $element, attrs);
             }, false);
+            scope.$watch('dimension.get_current_distribution().length', function (newVals, oldVals) {
+                    if (newVals) {
+                        // Note:
+                        // For unknown reasons, the show will be reset to the original state (in filter mode is false, exclude mode is true.)
+                        // So it need to be set to its real state based on filter/exclude.
+                        var distribution = scope.dimension.get_current_distribution();
+                        distribution.forEach(function(d){
+                            d.show = scope.dimension.current_show_state(d.level);
+                        });
 
+                        return render_bar(scope, $element, attrs, distribution);
+                    }
+            }, false);
         }
 
         return {
@@ -364,8 +435,7 @@
             replace: false,
 
             scope: {
-                dimension: '=dimension',
-                levelValue: '=levelValue'
+                dimension: '=dimension'
             },
             link: link
 
@@ -435,6 +505,8 @@
                         valueLabelsInverse[idx] = value;
                     }else{
                         valueLabelsInverse[label.toString()] = value;
+                        if (valueLabelsInverse[label.toString()] == null)
+                            valueLabelsInverse[label.toString()] = "";
                     }
                 });
 
@@ -597,6 +669,12 @@
                 //Default setup: one-axis bar chart vs. counts
 
                 var config = {
+                    size: {
+                        height: 500
+                    },
+                    padding: {
+                        //bottom: 80
+                    },
                     data:{
                         type: 'bar',
                         x: primary.key,
@@ -619,10 +697,12 @@
                                 position: 'outer-middle'
                             }
                         }
+
                     },
                     legend: {
                         show: false
                     }
+
                 };
 
                 //If x is quantitative, use a line chart
@@ -668,15 +748,22 @@
                     } else {
                         // The secondary dimension is categorical, so it
                         // requires a legend to reveal the groups.
-
                         config.legend.show = true;
                         config.legend.position = 'inset';
                         config.legend.inset = {
                             anchor: 'top-right',
                             x: 20,
-                            y: 10,
+                            y: 20,
                             step: 2
                         };
+                        var num_of_levels = domains[secondary.key].length;
+                        if ( num_of_levels > 12 ){
+                            config.legend.inset.step = 6;
+                            //config.legend.inset.y = 450;
+                            //config.padding.bottom = 150;
+
+
+                        }
                     }
                 }
 
