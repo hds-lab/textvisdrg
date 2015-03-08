@@ -11,7 +11,7 @@
         $interpolateProvider.endSymbol('$}');
     });
 
-    var DimensionController = function ($scope, Dimensions, Filtering, Tokens, Selection) {
+    var DimensionController = function ($scope, Dimensions, Filtering) {
 
         //Hierarchy of dimensions
         $scope.dimension_groups = [
@@ -65,23 +65,6 @@
             }
         ];
 
-        //The token tray is a list of token placeholders, which may contain tokens.
-        $scope.tokenTray = Tokens.map(function (token) {
-            return {
-                token: token
-            };
-        });
-
-        $scope.onTokenTrayDrop = function () {
-            console.log("Dropped on tray");
-            Selection.changed('dimensions');
-        };
-
-        $scope.onTokenDimensionDrop = function () {
-            console.log("Dropped on dimension");
-            Selection.changed('dimensions');
-        };
-
         $scope.openFilter = function(dimension, $event) {
             var offset;
             if ($event) {
@@ -92,17 +75,23 @@
             }
 
             Filtering.toggle(dimension, offset);
-        }
+        };
+
+        $scope.dropped = undefined;
+        $scope.onDimensionDrop = function() {
+            //Unselect the dimension
+            if ($scope.dropped) {
+                $scope.dropped.zone = undefined;
+            }
+            $scope.dropped = undefined; // remove the dropped dimension
+        };
     };
 
     DimensionController.$inject = [
         '$scope',
         'SparQs.services.Dimensions',
-        'SparQs.services.Filtering',
-        'SparQs.services.Tokens',
-        'SparQs.services.Selection'];
+        'SparQs.services.Filtering'];
     module.controller('SparQs.controllers.DimensionController', DimensionController);
-
 
     var ExampleMessageController = function ($scope, ExampleMessages, Selection, Dataset) {
 
@@ -115,6 +104,8 @@
         };
 
         Selection.changed('filters,focus', $scope, $scope.get_example_messages);
+
+        $scope.get_example_messages();
 
     };
     ExampleMessageController.$inject = [
@@ -143,11 +134,11 @@
             //should be colored which way.
             //The timeout ensures that this runs *after* the new questions have been rendered.
             $timeout(function() {
-                $('.question-dim.token-primary').removeClass('token-primary');
-                $('.question-dim.token-secondary').removeClass('token-secondary');
+                $('.question-dim').removeClass('zone-primary zone-secondary');
                 var dims = $scope.selection.dimensions();
                 dims.forEach(function(dim) {
-                    $('.question-dim.' + dim.key).addClass(dim.token_class());
+                    //we already know these dimensions are in zones
+                    $('.question-dim.' + dim.key).addClass(dim.zone.zone_class());
                 });
             }, 0);
 
@@ -156,10 +147,6 @@
         $scope.get_sample_questions();
 
         Selection.changed('dimensions', $scope, $scope.get_sample_questions);
-
-        //$scope.$watch('selection.dimensions()', function() {
-        //    $scope.get_sample_questions();
-        //}, true);
     };
 
     SampleQuestionController.$inject = [
@@ -198,6 +185,38 @@
         'SparQs.services.Dataset'
     ];
     module.controller('SparQs.controllers.VisualizationController', VisualizationController);
+
+    //Extends VisualizationController scope
+    var DropzonesController = function($scope, Dimensions, Dropzones, Selection) {
+        $scope.dropzones = Dropzones;
+
+        $scope.onDimensionDrop = function() {
+
+            // Remove the zone setting from no-longer selected dimensions
+            Dimensions.list.forEach(function(dim) {
+                if (dim.zone && dim.zone.dimension != dim) {
+                    dim.zone = undefined;
+                }
+            });
+
+            Dropzones.zones.forEach(function(zone) {
+                if (zone.dimension && !zone.dimension.zone != zone) {
+                    zone.dimension.zone = zone;
+                }
+            });
+
+            Selection.changed('dimensions');
+        };
+    };
+
+    DropzonesController.$inject = [
+        '$scope',
+        'SparQs.services.Dimensions',
+        'SparQs.services.Dropzones',
+        'SparQs.services.Selection'
+    ];
+    module.controller('SparQs.controllers.DropzonesController', DropzonesController);
+
 
     //Extends DimensionsController
     var FilterController = function ($scope, Filtering, Selection) {

@@ -16,33 +16,42 @@
         }
     ]);
 
-    //The collection of tokens.
-    module.factory('SparQs.services.Tokens', [
-        'token_images',
-        function tokensFactory(token_images) {
+    //The dimension drop zones
+    module.factory('SparQs.services.Dropzones', [
+        function dropzonesFactory() {
 
-            var Token = function (data) {
+            var Dropzone = function (data) {
                 angular.extend(this, data);
+
+                this.dimension = undefined;
             };
 
-            angular.extend(Token.prototype, {
-                token_class: function () {
-                    return "token-" + this.name;
+            angular.extend(Dropzone.prototype, {
+                zone_class: function () {
+                    return "dropzone-" + this.name;
                 }
             });
 
-            return [
-                new Token({
-                    order: 0,
-                    name: 'primary',
-                    image: token_images['primary']
-                }),
-                new Token({
-                    order: 1,
-                    name: 'secondary',
-                    image: token_images['secondary']
-                })
-            ];
+            var primary = new Dropzone({
+                order: 0,
+                name: 'primary',
+                text: "Drop a dimension here"
+            });
+
+            var secondary = new Dropzone({
+                order: 1,
+                name: 'secondary',
+                text: "Drop another dimension here"
+            });
+
+            return {
+                zones: [
+                    primary,
+                    secondary
+                ],
+                primary: primary,
+                secondary: secondary
+            };
         }
     ]);
 
@@ -80,6 +89,11 @@
                     } else {
                         this._stop();
                     }
+                },
+                get_filtered: function () {
+                    return Dimensions.list.filter(function (dim) {
+                        return !dim.filter.is_empty();
+                    });
                 }
             });
 
@@ -91,8 +105,9 @@
     //including selected dimensions, filters, and focus.
     module.factory('SparQs.services.Selection', [
         '$rootScope',
-        'SparQs.services.Dimensions',
-        function selectionFactory($rootScope, Dimensions) {
+        'SparQs.services.Filtering',
+        'SparQs.services.Dropzones',
+        function selectionFactory($rootScope, Filtering, Dropzones) {
 
             var current_focus = [
                 //{
@@ -110,16 +125,14 @@
 
             angular.extend(Selection.prototype, {
                 dimensions: function () {
-                    var with_token = Dimensions.get_with_token();
-
-                    //Sort by the token order
-                    with_token.sort(function (d1, d2) {
-                        return d1.token().order - d2.token().order;
+                    return Dropzones.zones.map(function(z) {
+                        return z.dimension;
+                    }).filter(function(dim) {
+                        return dim;
                     });
-                    return with_token;
                 },
                 filters: function () {
-                    var with_filter = Dimensions.get_with_filters();
+                    var with_filter = Filtering.get_filtered();
 
                     //Prepare filter data
                     return with_filter.map(function (dim) {
@@ -149,15 +162,15 @@
                 },
                 set_focus: function(click_point_values){
                     var dimensions = this.dimensions();
-                    var focus = dimensions.map(function(d, i){
+                    current_focus = dimensions.map(function (d, i) {
                         var dim = {};
                         dim.dimension = dimensions[i].key;
                         dim.value = click_point_values[i];
-                        if (typeof(dim.value) === "undefined")
-                            dim.value = ""
+                        if (typeof(dim.value) === "undefined") {
+                            dim.value = "";
+                        }
                         return dim;
                     });
-                    current_focus = focus;
                     this.changed('focus');
                 }
 
