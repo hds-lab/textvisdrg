@@ -82,6 +82,12 @@ def load_fixtures():
         fabutils.manage_py('syncdata %s' % (PROJECT_ROOT / fixturefile,))
 
 
+def import_corpus(dataset_file):
+    """Import a dataset from a file"""
+    dataset_file = path(dataset_file).abspath().realpath()
+    fabutils.manage_py('import_corpus %s' % dataset_file)
+
+
 def restart_webserver():
     """Restart a local gunicorn process"""
     print green("Restarting gunicorn...")

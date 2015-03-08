@@ -71,6 +71,15 @@
                 var $el = $($event.target).parents('.dimension');
                 if ($el) {
                     offset = $el.offset();
+
+                    var filterHeight = Filtering.filter_height_for(dimension) + 20; //for buffer
+                    var windowHeight = $(window).height();
+
+                    //no hanging out the bottom
+                    offset.top = Math.min(windowHeight - filterHeight, offset.top);
+
+                    //no sticking out the top either
+                    offset.top = Math.max(0, offset.top);
                 }
             }
 
@@ -81,6 +90,13 @@
         $scope.onDimensionDrop = function() {
             //Unselect the dimension
             if ($scope.dropped) {
+
+                //Turn off its zone's dimension just in case
+                if ($scope.dropped.zone) {
+                    $scope.dropped.zone.dimension = undefined;
+                }
+
+                //Turn of its zone
                 $scope.dropped.zone = undefined;
             }
             $scope.dropped = undefined; // remove the dropped dimension
