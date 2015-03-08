@@ -17,6 +17,21 @@
                 'levels'
             ];
 
+            var djangoDateFormat = d3.time.format('%Y-%m-%dT%H:%M:%SZ');
+            var userDateFormat = d3.time.format('%Y/%m/%d %H:%M:%S');
+
+            var formatDate = function(val) {
+                if (val) return userDateFormat(val);
+                else return val;
+            };
+            var parseDate = function(str) {
+                if (str instanceof Date) return str;
+
+                if (str && str !== '') return userDateFormat.parse(str);
+
+                else return undefined;
+            };
+
             var Filter = function (data) {
                 this.data = data || { };
                 this.old_data = angular.copy(this.data);
@@ -32,8 +47,10 @@
                             value = undefined;
                         }
 
+                        value = parse ? parse(value) : value;
+
                         if (this.data[prop] !== value) {
-                            this.data[prop] = parse ? parse(value) : value;
+                            this.data[prop] = value;
                             this.dirty = true;
                         }
                     }
@@ -314,9 +331,9 @@
                     var self = this;
                     var levels = self.current_filter().levels();
                     if ( levels && levels.indexOf(level) != -1 ){
-                        return self.mode == "exclude" ? false : true
+                        return self.mode != "exclude"
                     }
-                    return self.mode == "exclude" ? true : false;
+                    return self.mode == "exclude";
                 },
                 check_original_list_when_change: function(data_point){
                     var self = this;
@@ -414,7 +431,7 @@
                     "type": "CategoricalDimension"
                 },
                 {
-                    "key": "keywords",
+                    "key": "words",
                     "name": "Keywords",
                     "type": "CategoricalDimension"
                 },

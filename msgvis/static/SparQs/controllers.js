@@ -26,7 +26,7 @@
                 "group_name": "Contents",
                 "dimensions": [
                     Dimensions.get_by_key('topics'),
-                    Dimensions.get_by_key('keywords'),
+                    Dimensions.get_by_key('words'),
                     Dimensions.get_by_key('hashtags'),
                     Dimensions.get_by_key('contains_hashtag'),
                     Dimensions.get_by_key('urls'),
@@ -300,13 +300,14 @@
         link: function(scope, element, attrs, ngModelController) {
           ngModelController.$parsers.push(function(data) {
             //convert data from view format to model format
-            return data; //converted
+            data = moment(data, "YYYY-MM-DD HH:mm:ss");
+            if (data.isValid()) return data.utc().toDate();
+            else return undefined;
           });
 
           ngModelController.$formatters.push(function(data) {
             //convert data from model format to view format
-              if ( typeof(data) !== "undefined" )
-                return moment(data).utc().format("YYYY-MM-DD HH:mm:ss"); //converted
+              if (data !== undefined) return moment(data).utc().format("YYYY-MM-DD HH:mm:ss"); //converted
               return data;
           });
         }
