@@ -1,6 +1,3 @@
-/**
- * Created by mjbrooks on 2/25/2015.
- */
 (function () {
     'use strict';
 
@@ -84,7 +81,9 @@
             var Dimension = function (data) {
                 angular.extend(this, data);
 
-                this.token_holder = {};
+                this.zone = undefined;
+                this.draggable = this;
+
                 this.filter = new Filter(this.filter);
                 this.filtering = false; //true if currently being filtered
                 this.description = [this.name, this.name, this.name].join(', ') + '!';
@@ -94,16 +93,17 @@
             };
 
             angular.extend(Dimension.prototype, {
-                token: function () {
-                    // Get the token on this dimension, or null.
-                    return this.token_holder.token;
-                },
-                token_class: function () {
-                    var token = this.token();
-                    return token ? token.token_class() : "";
-                },
-                filter_class: function () {
-                    var cls = this.filter.is_empty() ? '' : 'filter-applied';
+                dimension_class: function() {
+                    var cls = "";
+
+                    if (this.zone) {
+                        cls += 'dimension-' + this.zone.name;
+                    }
+
+                    if (!this.filter.is_empty()) {
+                        cls += ' filter-applied';
+                    }
+
                     if (this.filtering) {
                         cls += ' filtering-open';
                     }
@@ -286,16 +286,6 @@
             angular.extend(Dimensions.prototype, {
                 get_by_key: function (key) {
                     return this.by_key[key];
-                },
-                get_with_token: function () {
-                    return this.list.filter(function (dim) {
-                        return dim.token();
-                    });
-                },
-                get_with_filters: function () {
-                    return this.list.filter(function (dim) {
-                        return !dim.filter.is_empty();
-                    });
                 }
             });
 

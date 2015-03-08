@@ -1,12 +1,15 @@
 @import 'bower/components-bootstrap/less/mixins';
 
+@primary-color: #680F37;
+@secondary-color: #022D47;
+
 @section-margin: 5px;
 
-.background-gradient() {
-    background: -webkit-linear-gradient(right, rgb(1, 16, 40), #000); /* For Safari 5.1 to 6.0 */
-    background: -o-linear-gradient(left, rgb(1, 16, 40), #000); /* For Opera 11.1 to 12.0 */
-    background: -moz-linear-gradient(left, rgb(1, 16, 40), #000); /* For Firefox 3.6 to 15 */
-    background: linear-gradient(to left, rgb(1, 16, 40), #000); /* Standard syntax */
+.background-gradient(@left: #000, @right: rgb(1, 16, 40)) {
+    background: -webkit-linear-gradient(right, @right, @left); /* For Safari 5.1 to 6.0 */
+    background: -o-linear-gradient(left, @right, @left); /* For Opera 11.1 to 12.0 */
+    background: -moz-linear-gradient(left, @right, @left); /* For Firefox 3.6 to 15 */
+    background: linear-gradient(to left, @right, @left); /* Standard syntax */
 }
 
 /* Full page application */
@@ -113,7 +116,7 @@ body {
 
 /* setting content boxes */
 @left-col-width: 255px;
-@right-col-width: 255px;
+@right-col-width: 300px;
 #left {
     left: 0;
     width: @left-col-width;
@@ -240,118 +243,251 @@ body {
         height: @token-size;
         background-position: center;
         background-repeat: no-repeat;
-
-        &.token-primary {
-            background-image: url('images/part2_red.png');
-        }
-
-        &.token-secondary {
-            background-image: url('images/part2_blue.png');
-        }
     }
 
-    .token-placeholder {
+}
+
+.dimension {
+    .user-select(none);
+    cursor: default;
+
+    position: relative;
+    height: @dimension-height;
+    width: @dimension-group-width - 2;
+
+    font-size: 12pt;
+    line-height: @dimension-height;
+    .background-gradient();
+
+    color: #999;
+
+    // Interior borders only
+    border-bottom: 1px solid @dimension-border-color;
+    border-top-width: 0;
+    &:last-child {
+        border-bottom-width: 0;
+    }
+
+//    .transition(border 200ms linear);
+
+    &.ui-draggable-dragging {
+        cursor: hand;
+        cursor: -webkit-grab;
+        cursor: -moz-grab;
+
+        .box-shadow(1px 3px 10px rgba(0, 0, 0, 0.5));
+
+        .dimension-token();
+    }
+
+    &.dimension-primary {
+        .background-gradient(@left: darken(@primary-color, 5%), @right: @primary-color);
+    }
+
+    &.dimension-secondary {
+        .background-gradient(@left: darken(@secondary-color, 5%), @right: @secondary-color);
+    }
+
+    .dimension-name {
+        margin-left: 10px;
+    }
+
+    .dimension-filter {
+        position: absolute;
+        right: 5px;
+        top: 0;
         width: @token-size;
         height: @token-size;
-        background: url('images/part2_placeholder.png') no-repeat center;
-    }
+        background: url('images/part2_filter.png') no-repeat center;
+        cursor: pointer;
 
-    .dimension {
-        position: relative;
-        height: @dimension-height;
+        .opacity(0.1);
 
-        // Interior borders only
-        border-bottom: 1px solid @dimension-border-color;
-        border-top-width: 0;
-        &:last-child {
-            border-bottom-width: 0;
+        &:hover {
+            .opacity(0.8);
         }
-
-        font-size: 12pt;
-        .background-gradient();
-
-        color: #999;
-
-        .dimension-placeholder {
-            .token-placeholder();
-            position: absolute;
-            left: 5px;
-            top: 0;
-        }
-
-        .dimension-name {
-            margin-left: @token-size + 10px;
-            line-height: @dimension-height;
-        }
-
-        .dimension-filter {
-            position: absolute;
-            right: 5px;
-            top: 0;
-            width: @token-size;
-            height: @token-size;
-            background: url('images/part2_filter.png') no-repeat center;
-            cursor: pointer;
-
-            .opacity(0.1);
-
-            &:hover {
-                .opacity(0.8);
-            }
-            &:active {
-                .opacity(1);
-            }
-
-            .transition(linear 0.2s);
-            .transition-property(transform opacity);
-        }
-
-        &.filter-applied .dimension-filter {
+        &:active {
             .opacity(1);
         }
 
-        &.filtering-open .dimension-filter {
-            .opacity(1);
-            transform: rotate(-90deg);
-        }
-
-        &.token-primary {
-            background: #680F37;
-            color: white;
-        }
-
-        &.token-secondary {
-            background: #022D47;
-            color: white;
-        }
-
-
+        .transition(linear 0.2s);
+        .transition-property(transform opacity);
     }
 
-    #token-tray {
+    &.filter-applied .dimension-filter {
+        .opacity(1);
+    }
 
-        //A position in the token tray
-        .token-tray-zone {
-            .token-placeholder();
-            display: inline-block;
-            margin: 5px;
-        }
+    &.filtering-open .dimension-filter {
+        .opacity(1);
+        transform: rotate(-90deg);
     }
 }
 
+
 @questions-row-height: 170px;
+@dropzone-buffer: 20px;
+@secondary-dropzone-width: 150px;
+@primary-dropzone-height: 80px;
+
+.dimension-token() {
+    /* For when the dimension is being dragged around */
+
+    width: auto;
+    height: 1.5 * @dimension-height;
+
+    font-size: 16px;
+    padding: 6px 12px;
+    color: #eee;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+
+    .dimension-name {
+        margin: 0;
+    }
+
+    &.ui-draggable-dragging {
+        color: #999;
+    }
+}
 
 /* visualization */
+#middle, #viz {
+    /* to show the dimensions being dragged out */
+    overflow: visible;
+}
 #viz {
     top: 0;
     bottom: @questions-row-height + @section-margin;
 
     .background-gradient();
 
+    #viz-content {
+        position: absolute;
+        top: 40px;
+        left: 20px;
+        right: 20px;
+        bottom: 20px;
+        margin: 0;
+    }
+
     sparqs-vis {
+        position: absolute;
+        top: 0;
+        right: 0;
+        left: @secondary-dropzone-width + @dropzone-buffer;
+        bottom: @primary-dropzone-height + @dropzone-buffer;
+
         svg {
             background: white;
         }
+    }
+
+    .dropzones {
+        .dropzone {
+            .user-select(none);
+            position: absolute;
+
+            .dropzone-droppable {
+                width: 100%;
+                height: 100%;
+
+                text-align: center;
+
+                .dropzone-background {
+                    position: absolute;
+                    width: 100%;
+                    height: 100%;
+
+                    opacity: 0.4;
+
+                    border: 6px dashed white;
+                    background: white;
+
+                    .transition('opacity 200ms');
+                }
+
+                &.ui-droppable-hover {
+
+                    .dropzone-background {
+                        opacity: 0.9;
+                    }
+
+                    .zone-placeholder {
+                        opacity: 0.8;
+                    }
+                }
+
+                &.has-dimension {
+                    .dropzone-background {
+                        opacity: 0.7;
+                    }
+                }
+
+
+                .zone-placeholder {
+                    position: absolute;
+                    top: 50%;
+                    margin-top: -10px;
+                    text-align: center;
+                    width: 100%;
+
+                    font-size: 18px;
+                    opacity: 0.4;
+                    color: white;
+                }
+            }
+        }
+
+        .dimension-wrapper {
+            display: block;
+            position: absolute;
+            top: 50%;
+            margin-top: -1.5 * @dimension-height / 2;
+            width: 100%;
+            height: 1.5 * @dimension-height;
+
+            text-align: center;
+        }
+
+        .dimension {
+            .dimension-token();
+
+            display: inline-block;
+        }
+
+        .dropzone-primary {
+            bottom: 0;
+            left: @secondary-dropzone-width + @dropzone-buffer;
+            right: 0;
+            height: @primary-dropzone-height;
+
+            .dropzone-droppable .dropzone-background {
+                background-color: fadeout(@primary-color, 20%);
+                border-color: fadeout(@primary-color, 10%);
+            }
+        }
+
+        .dropzone-secondary {
+            bottom: @primary-dropzone-height + @dropzone-buffer;
+            left: 0;
+            top: 0;
+            width: @secondary-dropzone-width;
+
+            .dropzone-droppable .dropzone-background {
+                background-color: fadeout(@secondary-color, 20%);
+                border-color: fadeout(@secondary-color, 10%);
+            }
+
+//            .dimension {
+//                transform: rotate(-90deg);
+//                .transition(transform 300ms);
+//                &.ui-draggable-dragging {
+//                    transform: none;
+//                }
+//            }
+        }
+
+
     }
 }
 
@@ -367,14 +503,14 @@ body {
             color: #cfcfcf;
             list-style-image: url("images/part4_step1.png");
 
-            .token-primary {
+            .tag-primary {
                 color: #FF174E;
             }
 
-            .token-secondary {
+            .tag-secondary {
                 color: #5A82F2;
             }
-            .token-primary.token-secondary {
+            .tag-primary.tag-secondary {
                 color: #BB8DEA;
             }
 

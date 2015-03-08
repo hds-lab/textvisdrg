@@ -35,6 +35,7 @@
 <script src="{% static 'SparQs/controllers.js' %}"></script>
 <script src="{% static 'SparQs/services.js' %}"></script>
 <script src="{% static 'SparQs/services/dimensions_service.js' %}"></script>
+<script src="{% static 'SparQs/services/questions_service.js' %}"></script>
 <script src="{% static 'SparQs/charts.js' %}"></script>
 {% endblock %}
 
@@ -50,11 +51,6 @@
     angular.module('SparQs.bootstrap')
         .constant('SparQs.bootstrap.dataset', 1);
 
-    angular.module('SparQs.services')
-        .constant('token_images', {
-            'primary': "{% static 'images/part2_red.png' %}",
-            'secondary': "{% static 'images/part2_blue.png' %}"
-        });
 </script>
 {% endblock %}
 
@@ -74,7 +70,10 @@
             <div id="left" class="col">
                 {% verbatim %}
                 <div id="dimensions" class="app-panel row"
-                     ng-controller="SparQs.controllers.DimensionController">
+                     ng-controller="SparQs.controllers.DimensionController"
+                     data-drop="true"
+                     ng-model="dropped"
+                     jqyoui-droppable="{onDrop: 'onDimensionDrop'}">
                     <div id="dimension-groups">
                         <div ng-repeat="group in dimension_groups"
                              class="dimension-group"
@@ -84,46 +83,19 @@
                             </div>
                             <div class="group-members">
                                 <div ng-repeat="dimension in group.dimensions"
-                                     class='dimension'
-                                     ng-class="dimension.token_class() + ' ' + dimension.filter_class()">
-                                    <div class="dimension-placeholder"
-                                         data-drop="true"
-                                         ng-model="dimension.token_holder"
-                                         jqyoui-droppable="{onDrop: 'onTokenDimensionDrop'}"
-                                         data-jqyoui-options="{accept: '.token'}">
+                                     class="dimension"
+                                     ng-class="dimension.dimension_class()"
+                                     ng-model="dimension.draggable"
+                                     data-drag="true"
+                                     jqyoui-draggable="{placeholder: 'keep'}"
+                                     data-jqyoui-options="{revert: 'invalid', helper: 'clone', appendTo: 'body', cursorAt: {left: 60, top: 20}}">
 
-                                        <div class="token"
-                                             ng-class="dimension.token_class()"
-                                             ng-model="dimension.token_holder"
-                                             ng-hide="!dimension.token()"
-                                             data-drag="true"
-                                             jqyoui-draggable="{placeholder: true}"
-                                             data-jqyoui-options="{revert: 'invalid'}">
-                                        </div>
-
-                                    </div>
                                     <span class="dimension-name" ng-bind="dimension.name"></span>
 
                                     <div class="dimension-filter"
                                          ng-click="openFilter(dimension, $event)"></div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                    <div id="token-tray">
-                        <div ng-repeat="token_holder in tokenTray"
-                             class="token-tray-zone"
-                             data-drop="true"
-                             ng-model="tokenTray"
-                             jqyoui-droppable="{index: {$ $index $}, containment:'position', onDrop: 'onTokenTrayDrop'}"
-                             data-jqyoui-options="{accept: '.token'}">
-
-                            <div class="token" ng-class="token_holder.token.token_class()"
-                                 ng-show="token_holder.token"
-                                 data-drag="true"
-                                 ng-model="tokenTray"
-                                 jqyoui-draggable="{index: {$ $index $}, placeholder: true}"
-                                 data-jqyoui-options="{revert: 'invalid'}"></div>
                         </div>
                     </div>
                 </div>
@@ -137,6 +109,38 @@
                                         on-clicked="onVisClicked">
 
                         </sparqs-vis>
+
+                        <div class="dropzones"
+                             ng-controller="SparQs.controllers.DropzonesController">
+                            <div ng-repeat="zone in dropzones.zones"
+                                 class="dropzone"
+                                 ng-class="zone.zone_class()">
+                                <div class="dropzone-droppable"
+                                     ng-class="zone.dimension ? 'has-dimension' : ''"
+                                     ng-model="zone.dimension"
+                                     data-drop="true"
+                                     jqyoui-droppable="{onDrop: 'onDimensionDrop'}"
+                                     data-jqyoui-options="{tolerance: 'touch', hoverClass: 'ui-droppable-hover'}">
+                                    <div class="dropzone-background"></div>
+                                    <!-- This shows if there is a dimension occupying the zone -->
+                                    <div class="dimension-wrapper" ng-hide="!zone.dimension">
+                                        <div class="dimension dropzone-draggable"
+                                             ng-class="zone.dimension.dimension_class()"
+                                             ng-model="zone.dimension"
+                                             data-drag="true"
+                                             jqyoui-draggable="{placeholder: false}"
+                                             data-jqyoui-options="{appendTo: body, revert: 'invalid'}">
+                                            <span class="dimension-name">
+                                                {$ zone.dimension.name $}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="zone-placeholder"
+                                        ng-hide="zone.dimension">{$ zone.text $}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div id="questions" class="row app-panel"
