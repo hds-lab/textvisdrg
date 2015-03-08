@@ -670,10 +670,10 @@
 
                 var config = {
                     size: {
-                        height: 600
+                        height: 500
                     },
                     padding: {
-                        bottom: 80
+                        //bottom: 80
                     },
                     data:{
                         type: 'bar',
@@ -753,14 +753,14 @@
                         config.legend.inset = {
                             anchor: 'top-right',
                             x: 20,
-                            y: 520,
+                            y: 20,
                             step: 2
                         };
                         var num_of_levels = domains[secondary.key].length;
                         if ( num_of_levels > 12 ){
-                            config.legend.inset.step = 5;
-                            config.legend.inset.y = 450;
-                            config.padding.bottom = 150;
+                            config.legend.inset.step = 6;
+                            //config.legend.inset.y = 450;
+                            //config.padding.bottom = 150;
 
 
                         }

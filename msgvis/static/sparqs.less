@@ -377,9 +377,23 @@ body {
         left: @secondary-dropzone-width + @dropzone-buffer;
         bottom: @primary-dropzone-height + @dropzone-buffer;
 
-        svg {
-            background: white;
+        .c3-axis-y tspan,.c3-axis-x tspan,.c3-axis-x-label,.c3-axis-y-label{
+            fill: white;
         }
+        .domain,.tick line{
+            stroke: #999;
+        }
+        .c3-area{
+            opacity: 0.75;
+        }
+        .c3-legend-background{
+            stroke: none;
+            fill: none;
+        }
+        .c3-legend-item text{
+                fill: white;
+        }
+
     }
 
     .dropzones {

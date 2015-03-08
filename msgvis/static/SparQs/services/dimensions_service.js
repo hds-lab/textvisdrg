@@ -123,7 +123,7 @@
                         cls += 'dimension-' + this.zone.name;
                     }
 
-                    if (!this.filter.is_empty()) {
+                    if (!this.is_not_applying_filters()) {
                         cls += ' filter-applied';
                     }
 
@@ -160,6 +160,14 @@
                             this.load_distribution()
                         }
                     }
+                },
+                is_not_applying_filters: function(){
+                    return this.filter_type['filter'].is_empty() &&
+                           this.filter_type['exclude'].is_empty();
+                },
+                is_dirty: function(){
+                    return this.filter_type['filter'].dirty ||
+                           this.filter_type['exclude'].dirty;
                 },
                 load_distribution: function (dataset) {
                     if (this.is_categorical() && !this.table){

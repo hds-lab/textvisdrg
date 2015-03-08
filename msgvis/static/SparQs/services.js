@@ -92,7 +92,12 @@
                 },
                 get_filtered: function () {
                     return Dimensions.list.filter(function (dim) {
-                        return !dim.filter.is_empty();
+                        return !dim.filter_type['filter'].is_empty();
+                    });
+                },
+                get_exclude: function () {
+                    return Dimensions.list.filter(function (dim) {
+                        return !dim.filter_type['exclude'].is_empty();
                     });
                 }
             });
@@ -140,7 +145,7 @@
                     })
                 },
                 exclude: function () {
-                    var with_exclude = Dimensions.get_with_exclude();
+                    var with_exclude = Filtering.get_exclude();
 
                     //Prepare filter data
                     return with_exclude.map(function (dim) {
