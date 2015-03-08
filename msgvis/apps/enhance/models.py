@@ -218,6 +218,10 @@ class Dictionary(models.Model):
                 words.append(tw)
             TopicWord.objects.bulk_create(words)
 
+            most_likely_words = topicm.words.orderby('-probability')[:3]
+            topicm.name = ', '.join(most_likely_words)
+            topicm.save()
+
             if settings.DEBUG:
                 # prevent memory leaks
                 from django.db import connection
