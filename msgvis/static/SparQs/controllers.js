@@ -90,6 +90,13 @@
         $scope.onDimensionDrop = function() {
             //Unselect the dimension
             if ($scope.dropped) {
+
+                //Turn off its zone's dimension just in case
+                if ($scope.dropped.zone) {
+                    $scope.dropped.zone.dimension = undefined;
+                }
+
+                //Turn of its zone
                 $scope.dropped.zone = undefined;
             }
             $scope.dropped = undefined; // remove the dropped dimension
