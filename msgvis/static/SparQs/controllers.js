@@ -129,16 +129,16 @@
         $scope.$watch('questions.list', function(){
             //When the question list changes, we are going to manually (jQuery)
             //update the token classes so that they end up the right color.
-            //.question-dim are the dimension tags inside the research questions.
-            //The .token-primary and .toke-secondary tags indicate which .question-dim
+            //.question-tag are the dimension tags inside the research questions.
+            //The .tag-primary and .tag-secondary tags indicate which .question-tag
             //should be colored which way.
             //The timeout ensures that this runs *after* the new questions have been rendered.
             $timeout(function() {
-                $('.question-dim').removeClass('zone-primary zone-secondary');
+                $('.question-tag').removeClass('tag-primary tag-secondary');
                 var dims = $scope.selection.dimensions();
                 dims.forEach(function(dim) {
                     //we already know these dimensions are in zones
-                    $('.question-dim.' + dim.key).addClass(dim.zone.zone_class());
+                    $('.question-tag.' + dim.key).addClass('tag-' + dim.zone.name);
                 });
             }, 0);
 
