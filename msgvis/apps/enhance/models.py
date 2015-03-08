@@ -218,8 +218,11 @@ class Dictionary(models.Model):
                 words.append(tw)
             TopicWord.objects.bulk_create(words)
 
-            most_likely_words = topicm.words.order_by('-probability')[:3]
-            topicm.name = ', '.join(most_likely_words)
+            most_likely_word_scores = topicm.word_scores\
+                .order_by('-probability')\
+                .prefetch_related('word')
+                
+            topicm.name = ', '.join([score.word for score in most_likely_word_scores[:3]])
             topicm.save()
 
             if settings.DEBUG:
@@ -344,8 +347,8 @@ class Topic(models.Model):
 
 
 class TopicWord(models.Model):
-    word = models.ForeignKey(Word)
-    topic = models.ForeignKey(Topic)
+    word = models.ForeignKey(Word, related_name='topic_scores')
+    topic = models.ForeignKey(Topic, related_name='word_scores')
 
     word_index = models.IntegerField()
     probability = models.FloatField()
