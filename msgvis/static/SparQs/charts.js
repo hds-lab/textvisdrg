@@ -325,7 +325,7 @@
             return scale;
         };
 
-        var render_bar = function(scope, $element, attrs){
+        var render_bar = function(scope, $element, attrs, distribution){
             if ( typeof(scope.dimension) !== "undefined" ){
                 var elementSize = {
                     width: $element.parent().width(),
@@ -334,8 +334,9 @@
                 var scale = get_scale(scope.dimension, elementSize.width * 0.1);
                 var $d3_element = d3.select($element[0]);
                 var d3_select = $d3_element.selectAll('.level-div')
-                    .data(scope.dimension.distribution)
+                    .data(distribution)
                     .classed('active', true);
+
                 d3_select.enter()
                     .append('div')
                     .classed('level-div', true)
@@ -354,17 +355,20 @@
                         self.append('div').classed('level-value', true);
                         self.append('div').classed('level-bar', true);
                     });
+
                 d3_select.exit()
                     .each(function(d){
                         var self = d3.select(this);
                         self.classed('active', false);
                         self.style('display', 'none');
                     });
+
                 $d3_element.selectAll('.level-div.active')
                     .each(function(d){
                         var self = d3.select(this);
                         self.style('display', 'block');
-                        $(this).find('.level-show').prop('checked', (d.show) ? true : false);
+
+                        $(this).find('.level-show').prop('checked', (d.show));
                         self.select('.level-show').on('change', function(d){
                                 var checked = $(this).prop("checked");
                                 d.show = checked;
@@ -389,11 +393,11 @@
                     d.show = reset_value[scope.dimension.mode];
                 });
 
-                $d3_element.selectAll('.level-div.active')
+                $d3_element.selectAll('.level-div')
                     .each(function(d){
                         var self = d3.select(this);
 
-                        // turn of the event handler first
+                        // turn off the event handler first
                         self.select('.level-show').on('change', null);
                         $(this).find('.level-show').prop('checked', reset_value[scope.dimension.mode]);
                         self.select('.level-show').on('change', function(d){
@@ -408,11 +412,21 @@
         };
 
         function link(scope, $element, attrs){
-            scope.$watch('dimension.distribution.length', function (newVals, oldVals) {
-                    if (newVals) return render_bar(scope, $element, attrs);
-            }, false);
             scope.$watch('dimension.mode', function (newVals, oldVals) {
                     if (newVals) return reset_levels(scope, $element, attrs);
+            }, false);
+            scope.$watch('dimension.get_current_distribution().length', function (newVals, oldVals) {
+                    if (newVals) {
+                        // Note:
+                        // For unknown reasons, the show will be reset to the original state (in filter mode is false, exclude mode is true.)
+                        // So it need to be set to its real state based on filter/exclude.
+                        var distribution = scope.dimension.get_current_distribution();
+                        distribution.forEach(function(d){
+                            d.show = scope.dimension.current_show_state(d.level);
+                        });
+
+                        return render_bar(scope, $element, attrs, distribution);
+                    }
             }, false);
         }
 

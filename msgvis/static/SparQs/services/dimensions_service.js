@@ -18,7 +18,7 @@
             ];
 
             var Filter = function (data) {
-                this.data = data || {};
+                this.data = data || { };
                 this.old_data = angular.copy(this.data);
 
                 this.dirty = false; //true if has unsaved filter changes
@@ -110,7 +110,9 @@
                 this.table = undefined;
                 this.domain = undefined;
                 this.distribution = undefined;
-                this.search_results = {};
+                this.search_key = "";
+                this.search_results = {"": this};
+
             };
 
             angular.extend(Dimension.prototype, {
@@ -161,7 +163,9 @@
                 },
                 load_distribution: function (dataset) {
                     if (this.is_categorical() && !this.table){
-                        return this.load_categorical_distribution(dataset, undefined);
+                        //$('.level-select-button.all').prop('disabled', true);
+                        //$('.level-select-button.none').prop('disabled', false);
+                        return this.load_categorical_distribution(dataset);
                     }
                     else if (!this._loading && !this.table) {
                         this._loading = true;
@@ -185,20 +189,23 @@
                             });
                     }
                 },
-                load_categorical_distribution: function (dataset, search_key) {
+                get_current_distribution: function(){
+                    return this.search_results[this.search_key].distribution;
+                },
+                load_categorical_distribution: function (dataset) {
                     var self = this;
                     if (!self._loading) {
                         self._loading = true;
                         var target = self;
-                        if ( typeof(search_key) !== "undefined" && search_key !== "" &&
-                             typeof(self.search_results[search_key]) === "undefined" ){
+                        if ( typeof(self.search_key) !== "undefined" && self.search_key !== "" &&
+                             typeof(self.search_results[self.search_key]) === "undefined" ){
                             target = {}
                             target.table = [];
                             target.domain = [];
                             target.domain_labels = {};
                             target.distribution = [];
                             target.page = 0;
-                            self.search_results[search_key] = target;
+                            self.search_results[self.search_key] = target;
 
                         }
                         else if( !self.table ){
@@ -207,13 +214,14 @@
                             self.domain_labels = {};
                             self.distribution = [];
                             self.page = 0;
+
                         }
 
                         var request = {
                             dataset: Dataset.id,
                             dimensions: [self.key],
                             page: target.page + 1,
-                            search_key: search_key
+                            search_key: (self.search_key !== "") ? self.search_key : undefined
                         };
 
                         var apiUrl = djangoUrl.reverse('data-table');
@@ -265,10 +273,10 @@
                     if (!table || !domain) {
                         return undefined;
                     }
-                    var dimension = this;
+                    var self = this;
                     var distribution_map = {};
                     table.forEach(function (d) {
-                        var level = d[dimension.key];
+                        var level = d[self.key];
                         distribution_map[level] = d.value;
                     });
 
@@ -276,7 +284,7 @@
                         var value = distribution_map[level] || 0;
 
                         if (level === null || level === "")
-                            level = "No " + dimension.key;
+                            level = "No " + self.key;
 
                         var label;
                         if (labels && labels.length > i) {
@@ -287,12 +295,28 @@
                             level: level,
                             label: label,
                             value: value,
-                            show: dimension.mode == "exclude" ? true : false
+                            show: self.current_show_state(level)
                         };
                     });
                 },
                 show_search: function () {
                     return this.is_categorical() && this.domain && this.domain.length > 10;
+                },
+                current_show_state: function(level){
+                    var self = this;
+                    var levels = self.current_filter().levels();
+                    if ( levels && levels.indexOf(level) != -1 ){
+                        return self.mode == "exclude" ? false : true
+                    }
+                    return self.mode == "exclude" ? true : false;
+                },
+                check_original_list_when_change: function(data_point){
+                    var self = this;
+                    self.distribution.forEach(function(d){
+                        if (d.level === data_point.level){
+                            d.show = data_point.show;
+                        }
+                    });
                 },
                 change_level: function (d) {
                     var criteria = {
@@ -304,6 +328,13 @@
                     } else {
                         this.filter_type[this.mode].remove_from_levels(this.inverse_level(d.level));
                     }
+                    if ( this.search_key != "")
+                        this.check_original_list_when_change(d);
+
+                    // TODO: rewrite it by a better way, though several methods all seem not working.
+                    //$('.level-select-button.all').prop('disabled', this.check_if_all_selected());
+                    //$('.level-select-button.none').prop('disabled', this.check_if_all_unselected());
+
                 },
                 switch_mode: function(mode){
                     if ( mode !== 'exclude' && mode !== "filter" ) return;
@@ -311,50 +342,30 @@
                     for (var m in this.filter_type){
                         this.filter_type[m].reset();
                     }
+                    // TODO: rewrite it by a better way, though several methods all seem not working.
+                    //$('.level-select-button.all').prop('disabled', this.check_if_all_selected());
+                    //$('.level-select-button.none').prop('disabled', this.check_if_all_unselected());
 
                 },
-                /*unfilter_level: function (d) {
-                    d.show = true;
-                    this.filter.levels().push(this.inverse_level(d.level));
-
-                    this.filter_dirty = true;
-
-                }*/
-                is_all_filtered: function () {
-                    /*if (typeof (this.filter.levels()) !== "undefined") {
-                        return this.is_categorical() && this.filter.levels().length == 0;
-                    }*/
-                    return false;
-                },
-                is_not_filtered: function () {
-                    /*if (typeof (this.filter.levels()) !== "undefined") {
-                        return this.is_categorical() && this.filter.levels().length == this.domain.length;
-                    }*/
-                    return false;
-                },
-                /*filtered_all: function (flag) {
-                    var dimension = this;
-                    if (typeof (dimension.filter.levels()) !== "undefined") {
-                        if (flag == true) {
-                            dimension.filter.levels([]);
-                            dimension.distribution.forEach(function (d) {
-                                d.show = false;
-                            });
-                        }
-                        else {
-                            dimension.filter.levels(dimension.get_categorical_levels());
-                            dimension.distribution.forEach(function (d) {
-                                d.show = true;
-                            });
-                        }
-                        dimension.filter_dirty = true;
+                check_if_all_selected: function () {
+                    var self = this;
+                    if (self.mode == "exclude" && (!self.current_filter().levels() || self.current_filter().levels().length == 0)) {
+                        return true
                     }
                     return false;
-                },*/
+                },
+                check_if_all_unselected: function () {
+                    var self = this;
+                    if (self.mode == "filter" && (!self.current_filter().levels() || self.current_filter().levels().length == 0)) {
+                        return true
+                    }
+                    return false;
+                },
                 reset_search: function () {
-                    var dimension = this;
-                    if (dimension.is_categorical()) {
-                        dimension.search = {level: ""};
+                    var self = this;
+                    if (self.is_categorical()) {
+                        self.search_key = "";
+                        self.search_key_tmp = "";
                     }
                 }
             });

@@ -239,8 +239,8 @@
         $scope.resetFilter = function () {
             if (!Filtering.dimension.current_filter().is_empty()) {
                 if (Filtering.dimension.is_categorical()){
-                    if ( typeof(Filtering.dimension.search) != "undefined")
-                        Filtering.dimension.search.level = "";
+                    Filtering.dimension.search_key = "";
+                    Filtering.dimension.search_key_tmp = "";
                 }else{
                     Filtering.dimension.current_filter().reset();
                 }
@@ -256,6 +256,17 @@
         $scope.loadMore = function() {
             Filtering.dimension.load_categorical_distribution();
         };
+
+        $scope.search = function() {
+            Filtering.dimension.search_key = Filtering.dimension.search_key_tmp;
+            Filtering.dimension.load_categorical_distribution();
+        };
+        $scope.set_back_cur_search = function() {
+            if ( Filtering.dimension.search_key_tmp !== Filtering.dimension.search_key )
+                Filtering.dimension.search_key_tmp = Filtering.dimension.search_key;
+
+        };
+
 
 
     };
@@ -291,9 +302,7 @@
             var raw = element[0];
 
             var checkBounds = function(evt) {
-                console.log("event fired: " + evt.type);
                 if (raw.scrollTop + $(raw).height() == raw.scrollHeight) {
-                    console.log("reach the bottom");
                     scope.$apply(attr.whenScrolled);
                 }
 
@@ -301,4 +310,19 @@
             element.bind('scroll load', checkBounds);
         };
     });
+
+    module.directive('ngEnter', function () {
+        return function (scope, element, attrs) {
+            element.bind("keydown keypress", function (event) {
+                if(event.which === 13) {
+                    scope.$apply(function (){
+                        scope.$eval(attrs.ngEnter);
+                    });
+
+                    event.preventDefault();
+                }
+            });
+        };
+    });
+
 })();

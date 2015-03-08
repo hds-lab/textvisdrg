@@ -233,38 +233,29 @@
 
                         <div class="form-group" ng-switch-when="CategoricalDimension">
                             <div class="search" ng-show="filtering.dimension.show_search()">
-                                Search: <input type="text" ng-model="filtering.dimension.search.level" />
+                                Search: <input type="text"
+                                               ng-enter="search()"
+                                               ng-blur="set_back_cur_search()"
+                                               ng-model="filtering.dimension.search_key_tmp" />
+                                <span class="glyphicon glyphicon-search"
+                                      ng-show="filtering.dimension.search_key_tmp"
+                                      ng-click="search()"   ></span>
                                 <span class="glyphicon glyphicon-remove"
-                                      ng-show="filtering.dimension.search.level"
+                                      ng-show="filtering.dimension.search_key_tmp"
                                       ng-click="filtering.dimension.reset_search()"   ></span>
                             </div>
                             <hr />
                             <div class="level-select-button-group">
-                                <button type=button class="level-select-button"
+                                <button type=button class="level-select-button all"
                                         ng-click="filtering.dimension.switch_mode('exclude')"
-                                        ng-disabled="filtering.dimension.is_not_filtered()">Select All</button>
-                                <button type=button class="level-select-button"
+                                        >Select All</button>
+                                <button type=button class="level-select-button none"
                                         ng-click="filtering.dimension.switch_mode('filter')"
-                                        ng-disabled="filtering.dimension.is_all_filtered()">Unselected All</button>
+                                        >Unselected All</button>
                             </div>
 
 
                             <div class="dimension-levels" when-scrolled="loadMore()">
-
-                                <!--
-                                <div class=dimension-level ng-repeat="d in filtering.dimension.distribution | filter: filtering.dimension.search">
-                                    <div class="level-name">
-                                        <label><input type="checkbox" ng-model="d.show" ng-change="filtering.dimension.change_level(d)" /> {$ d.label || d.level $} </label>
-                                    </div>
-                                    <div class="level-value">{$ d.value $}</div>
-                                    <div class="level-bar">
-                                        <categorical-histogram
-                                                dimension="filtering.dimension"
-                                                level-value="d.value">
-                                        </categorical-histogram>
-                                    </div>
-                                </div>
-                                -->
                                 <categorical-histogram
                                     dimension="filtering.dimension" >
                                 </categorical-histogram>
@@ -282,9 +273,6 @@
 
                             </div>
                             -->
-
-
-
                         </div>
 
 
