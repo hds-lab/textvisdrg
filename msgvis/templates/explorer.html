@@ -232,6 +232,18 @@
                         </div>
 
                         <div class="form-group" ng-switch-when="CategoricalDimension">
+
+                            <div class="level-select-button-group">
+                                <button type=button class="level-select-button all"
+                                        ng-click="filtering.dimension.switch_mode('exclude')"
+                                        ng-disabled="filtering.dimension.is_all_selected()"
+                                        >Select All</button>
+                                <button type=button class="level-select-button none"
+                                        ng-click="filtering.dimension.switch_mode('filter')"
+                                        ng-disabled="filtering.dimension.is_all_unselected()"
+                                        >Unselected All</button>
+                            </div>
+                            <hr />
                             <div class="search" ng-show="filtering.dimension.show_search()">
                                 Search: <input type="text"
                                                ng-enter="search()"
@@ -243,15 +255,6 @@
                                 <span class="glyphicon glyphicon-remove"
                                       ng-show="filtering.dimension.search_key_tmp"
                                       ng-click="filtering.dimension.reset_search()"   ></span>
-                            </div>
-                            <hr />
-                            <div class="level-select-button-group">
-                                <button type=button class="level-select-button all"
-                                        ng-click="filtering.dimension.switch_mode('exclude')"
-                                        >Select All</button>
-                                <button type=button class="level-select-button none"
-                                        ng-click="filtering.dimension.switch_mode('filter')"
-                                        >Unselected All</button>
                             </div>
 
 
