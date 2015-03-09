@@ -49,7 +49,7 @@
         .constant('patterns', {% load_djng_urls %});
 
     angular.module('SparQs.bootstrap')
-        .constant('SparQs.bootstrap.dataset', 1);
+        .constant('SparQs.bootstrap.dataset', {{ object.pk }});
 </script>
 {% endblock %}
 
