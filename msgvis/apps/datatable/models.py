@@ -125,7 +125,7 @@ class DataTable(object):
 
 
 
-    def render_others(self, queryset_for_others, domains):
+    def render_others(self, queryset_for_others, domains, desired_primary_bins=None, desired_secondary_bins=None):
         """
         Given a set of messages (already filtered as necessary),
         calculate the data table.
@@ -153,6 +153,8 @@ class DataTable(object):
             return [{self.primary_dimension.key: u'others', 'value': queryset_for_others.count()}]
 
         elif self.secondary_dimension:
+
+            # both dimensions are categorical
             if self.primary_dimension.is_categorical() and self.secondary_dimension.is_categorical():
                 original_queryset = queryset_for_others
                 others_results = []
@@ -195,47 +197,31 @@ class DataTable(object):
 
                 return others_results
 
+            # primary categorical and secondary quantitative
+            elif self.primary_dimension.is_categorical() and not self.secondary_dimension.is_categorical():
+                queryset_for_others = queryset_for_others.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
+                domains[self.primary_dimension.key].append(u'others')
+                queryset_for_others = self.secondary_dimension.group_by(queryset_for_others,
+                                                                        grouping_key=self.secondary_dimension.key,
+                                                                        bins=desired_secondary_bins)
+                queryset_for_others = queryset_for_others.annotate(value=models.Count('id'))
+                secondary_results = list(queryset_for_others)
+                for r in secondary_results:
+                    r[self.primary_dimension.key] = u'others'
+                return secondary_results
 
-        """
+            elif not self.primary_dimension.is_categorical() and self.secondary_dimension.is_categorical():
+                queryset_for_others = queryset_for_others.exclude(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
+                domains[self.secondary_dimension.key].append(u'others')
+                queryset_for_others = self.primary_dimension.group_by(queryset_for_others,
+                                                                      grouping_key=self.primary_dimension.key,
+                                                                      bins=desired_primary_bins)
+                queryset_for_others = queryset_for_others.annotate(value=models.Count('id'))
+                primary_results = list(queryset_for_others)
+                for r in primary_results:
+                    r[self.secondary_dimension.key] = u'others'
+                return primary_results
 
-            # Now it gets nasty...
-            primary_group = self.primary_dimension.get_grouping_expression(queryset,
-                                                                           bins=desired_primary_bins)
-
-            secondary_group = self.secondary_dimension.get_grouping_expression(queryset,
-                                                                               bins=desired_secondary_bins)
-
-            if primary_group is None or secondary_group is None:
-                # There is no data to group
-                return queryset.values()
-
-            queryset, internal_primary_key = self.primary_dimension.select_grouping_expression(
-                queryset,
-                primary_group)
-
-            queryset, internal_secondary_key = self.secondary_dimension.select_grouping_expression(
-                queryset,
-                secondary_group)
-
-            # Group the data
-            queryset = queryset.values(internal_primary_key,
-                                       internal_secondary_key)
-
-            # Count the messages
-            queryset = queryset.annotate(value=models.Count('id'))
-
-            # We may need to remap some fields
-            mapping = {}
-            if internal_primary_key != self.primary_dimension.key:
-                mapping[internal_primary_key] = self.primary_dimension.key
-            if internal_secondary_key != self.secondary_dimension.key:
-                mapping[internal_secondary_key] = self.secondary_dimension.key
-
-            if len(mapping) > 0:
-                return MappedValuesQuerySet.create_from(queryset, mapping)
-            else:
-                return queryset
-    """
 
     def domain(self, dimension, queryset, filter=None, exclude=None, desired_bins=None):
         """Return the sorted levels in this dimension"""
