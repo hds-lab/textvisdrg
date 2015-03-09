@@ -248,9 +248,11 @@
                             <div class="level-select-button-group">
                                 <button type=button class="level-select-button all"
                                         ng-click="filtering.dimension.switch_mode('exclude')"
+                                        ng-disabled="filtering.dimension.is_all_selected()"
                                         >Select All</button>
                                 <button type=button class="level-select-button none"
                                         ng-click="filtering.dimension.switch_mode('filter')"
+                                        ng-disabled="filtering.dimension.is_all_unselected()"
                                         >Unselected All</button>
                             </div>
 

@@ -120,6 +120,7 @@
                 this.filter_type['filter'] = new Filter(this.filter_type['filter']);
                 this.filter_type['exclude'] = new Filter(this.filter_type['exclude']);
                 this.mode = this.is_categorical() ? "exclude" : "filter";
+                this.group_action = false;
 
                 this.filtering = false; //true if currently being filtered
                 this.description = [this.name, this.name, this.name].join(', ') + '!';
@@ -182,6 +183,8 @@
                            this.filter_type['exclude'].is_empty();
                 },
                 is_dirty: function(){
+                    console.log("is_dirty is called");
+                    console.log(this.filter_type['filter'].dirty || this.filter_type['exclude'].dirty);
                     return this.filter_type['filter'].dirty ||
                            this.filter_type['exclude'].dirty;
                 },
@@ -354,11 +357,6 @@
                     }
                     if ( this.search_key != "")
                         this.check_original_list_when_change(d);
-
-                    // TODO: rewrite it by a better way, though several methods all seem not working.
-                    //$('.level-select-button.all').prop('disabled', this.check_if_all_selected());
-                    //$('.level-select-button.none').prop('disabled', this.check_if_all_unselected());
-
                 },
                 switch_mode: function(mode){
                     if ( mode !== 'exclude' && mode !== "filter" ) return;
@@ -366,19 +364,16 @@
                     for (var m in this.filter_type){
                         this.filter_type[m].reset();
                     }
-                    // TODO: rewrite it by a better way, though several methods all seem not working.
-                    //$('.level-select-button.all').prop('disabled', this.check_if_all_selected());
-                    //$('.level-select-button.none').prop('disabled', this.check_if_all_unselected());
-
+                    this.group_action = true;
                 },
-                check_if_all_selected: function () {
+                is_all_selected: function () {
                     var self = this;
                     if (self.mode == "exclude" && (!self.current_filter().levels() || self.current_filter().levels().length == 0)) {
                         return true
                     }
                     return false;
                 },
-                check_if_all_unselected: function () {
+                is_all_unselected: function () {
                     var self = this;
                     if (self.mode == "filter" && (!self.current_filter().levels() || self.current_filter().levels().length == 0)) {
                         return true
