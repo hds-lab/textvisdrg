@@ -152,9 +152,9 @@ class DataTable(object):
             # on that dimension's group_by() implementation.
 
             queryset_for_others = queryset_for_others.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
-            domains[self.primary_dimension.key].append(u'others')
+            domains[self.primary_dimension.key].append(u'Other ' + self.primary_dimension.key)
 
-            return [{self.primary_dimension.key: u'others', 'value': queryset_for_others.count()}]
+            return [{self.primary_dimension.key: u'Other ' + self.primary_dimension.key, 'value': queryset_for_others.count()}]
 
         elif self.secondary_dimension:
 
@@ -162,15 +162,15 @@ class DataTable(object):
             if self.primary_dimension.is_categorical() and self.secondary_dimension.is_categorical():
                 original_queryset = queryset_for_others
                 others_results = []
-                domains[self.primary_dimension.key].append(u'others')
-                domains[self.secondary_dimension.key].append(u'others')
+                domains[self.primary_dimension.key].append(u'Other ' + self.primary_dimension.key)
+                domains[self.secondary_dimension.key].append(u'Other ' + self.secondary_dimension.key)
 
                 # primary others x secondary others
                 queryset_for_others = queryset_for_others.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
                 queryset_for_others = queryset_for_others.exclude(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
 
-                others_results.append({self.primary_dimension.key: u'others',
-                                       self.secondary_dimension.key: u'others',
+                others_results.append({self.primary_dimension.key: u'Other ' + self.primary_dimension.key,
+                                       self.secondary_dimension.key: u'Other ' + self.secondary_dimension.key,
                                        'value': queryset_for_others.count()})
 
                 # primary top ones x secondary others
@@ -182,10 +182,10 @@ class DataTable(object):
                                                                       grouping_key=self.primary_dimension.key)
 
                 queryset_for_others = queryset_for_others.annotate(value=models.Count('id'))
-                primary_top_results = list(queryset_for_others)
-                for r in primary_top_results:
-                    r[self.secondary_dimension.key] = u'others'
-                others_results.extend(primary_top_results)
+                results = list(queryset_for_others)
+                for r in results:
+                    r[self.secondary_dimension.key] = u'Other ' + self.secondary_dimension.key
+                others_results.extend(results)
 
                 # primary others x secondary top ones
                 queryset_for_others = original_queryset
@@ -196,38 +196,38 @@ class DataTable(object):
                                                                         grouping_key=self.secondary_dimension.key)
 
                 queryset_for_others = queryset_for_others.annotate(value=models.Count('id'))
-                secondary_top_results = list(queryset_for_others)
-                for r in secondary_top_results:
-                    r[self.primary_dimension.key] = u'others'
-                others_results.extend(secondary_top_results)
+                results = list(queryset_for_others)
+                for r in results:
+                    r[self.primary_dimension.key] = u'Other ' + self.primary_dimension.key
+                others_results.extend(results)
 
                 return others_results
 
             # primary categorical and secondary quantitative
             elif self.primary_dimension.is_categorical() and not self.secondary_dimension.is_categorical():
                 queryset_for_others = queryset_for_others.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
-                domains[self.primary_dimension.key].append(u'others')
+                domains[self.primary_dimension.key].append(u'Other ' + self.primary_dimension.key)
                 queryset_for_others = self.secondary_dimension.group_by(queryset_for_others,
                                                                         grouping_key=self.secondary_dimension.key,
                                                                         bins=desired_secondary_bins)
                 queryset_for_others = queryset_for_others.annotate(value=models.Count('id'))
-                secondary_results = list(queryset_for_others)
-                for r in secondary_results:
-                    r[self.primary_dimension.key] = u'others'
-                return secondary_results
+                results = list(queryset_for_others)
+                for r in results:
+                    r[self.primary_dimension.key] = u'Other ' + self.primary_dimension.key
+                return results
 
             # primary quantitative and secondary categorical
             elif not self.primary_dimension.is_categorical() and self.secondary_dimension.is_categorical():
                 queryset_for_others = queryset_for_others.exclude(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
-                domains[self.secondary_dimension.key].append(u'others')
+                domains[self.secondary_dimension.key].append(u'Other ' + self.secondary_dimension.key)
                 queryset_for_others = self.primary_dimension.group_by(queryset_for_others,
                                                                       grouping_key=self.primary_dimension.key,
                                                                       bins=desired_primary_bins)
                 queryset_for_others = queryset_for_others.annotate(value=models.Count('id'))
-                primary_results = list(queryset_for_others)
-                for r in primary_results:
-                    r[self.secondary_dimension.key] = u'others'
-                return primary_results
+                results = list(queryset_for_others)
+                for r in results:
+                    r[self.secondary_dimension.key] = u'Other ' + self.secondary_dimension.key
+                return results
 
 
     def domain(self, dimension, queryset, filter=None, exclude=None, desired_bins=None):
