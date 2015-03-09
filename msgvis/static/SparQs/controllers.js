@@ -88,15 +88,12 @@
 
         $scope.dropped = undefined;
         $scope.onDimensionDrop = function() {
-            //Unselect the dimension
-            if ($scope.dropped) {
+            //Unselect the dimension if it is on a zone
+            if ($scope.dropped && $scope.dropped.zone &&
+                    //And make sure the dropzone it was on has agreed to part with it
+                $scope.dropped.zone.dimension != $scope.dropped) {
 
-                //Turn off its zone's dimension just in case
-                if ($scope.dropped.zone) {
-                    $scope.dropped.zone.dimension = undefined;
-                }
-
-                //Turn of its zone
+                //Turn off the zone of this dimension
                 $scope.dropped.zone = undefined;
             }
             $scope.dropped = undefined; // remove the dropped dimension
@@ -208,21 +205,32 @@
     var DropzonesController = function($scope, Dimensions, Dropzones, Selection) {
         $scope.dropzones = Dropzones;
 
+        var dropzoneChanged = function(zone, new_dimension, old_dimension) {
+            if (new_dimension && new_dimension.zone != zone) {
+
+                //If the old dimension still thinks it is here, unset it
+                if (old_dimension && old_dimension.zone == zone) {
+                    old_dimension.zone = undefined;
+                }
+
+                //If the dimension's current zone thinks it still owns this dimension
+                //then make sure to remove it
+                if (new_dimension.zone && new_dimension.zone.dimension == new_dimension) {
+                    new_dimension.zone.dimension = undefined;
+                }
+
+                new_dimension.zone = zone;
+            }
+        };
+
+        $scope.$watch('dropzones.primary.dimension', function(newDim, oldDim) {
+            dropzoneChanged(Dropzones.primary, newDim, oldDim);
+        });
+        $scope.$watch('dropzones.secondary.dimension', function(newDim, oldDim) {
+            dropzoneChanged(Dropzones.secondary, newDim, oldDim);
+        });
+
         $scope.onDimensionDrop = function() {
-
-            // Remove the zone setting from no-longer selected dimensions
-            Dimensions.list.forEach(function(dim) {
-                if (dim.zone && dim.zone.dimension != dim) {
-                    dim.zone = undefined;
-                }
-            });
-
-            Dropzones.zones.forEach(function(zone) {
-                if (zone.dimension && !zone.dimension.zone != zone) {
-                    zone.dimension.zone = zone;
-                }
-            });
-
             Selection.changed('dimensions');
         };
     };
