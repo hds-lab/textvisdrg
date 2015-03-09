@@ -645,7 +645,7 @@
                                 else if ( primary.is_time()) rowList.sort();
 
                                 for ( var i = 0 ; i < columnList.length ; i++ ){
-                                    if ( columnList[i] < row[secondaryy.key] ){
+                                    if ( columnList[i] < row[secondary.key] ){
                                         c = columnIndex["" + columnList[i]];
                                         break;
                                     }
