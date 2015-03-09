@@ -497,7 +497,7 @@
                     }
 
                     if (label === null || label === '') {
-                        label = "No " + dimension.key;
+                        label = "No " + dimension.name;
                     }
 
                     valueLabels[value] = label.toString();

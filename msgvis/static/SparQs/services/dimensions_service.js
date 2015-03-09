@@ -265,7 +265,7 @@
                         var list = dimension.domain.slice(0);
                         for (var i = 0; i < list.length; i++) {
                             if (list[i] == null)
-                                list[i] = "No " + dimension.key;
+                                list[i] = "No " + dimension.name;
                         }
                         return list;
                     }
@@ -273,7 +273,7 @@
                 },
                 inverse_level: function(level){
                      var dimension = this;
-                    if ( level == "No " + dimension.key )
+                    if ( level == "No " + dimension.name )
                         return "";
                     return level;
                 },
@@ -425,7 +425,7 @@
                 },
                 {
                     "key": "contains_hashtag",
-                    "name": "Contains a hashtag",
+                    "name": "Contains a Hashtag",
                     "type": "CategoricalDimension"
                 },
                 {
@@ -435,12 +435,12 @@
                 },
                 {
                     "key": "contains_url",
-                    "name": "Contains a url",
+                    "name": "Contains a Url",
                     "type": "CategoricalDimension"
                 },
                 {
                     "key": "contains_media",
-                    "name": "Contains a photo",
+                    "name": "Contains a Photo",
                     "type": "CategoricalDimension"
                 },
                 {
@@ -475,12 +475,12 @@
                 },
                 {
                     "key": "contains_mention",
-                    "name": "Contains a mention",
+                    "name": "Contains a Mention",
                     "type": "CategoricalDimension"
                 },
                 {
                     "key": "sender_name",
-                    "name": "Author name",
+                    "name": "Author Name",
                     "type": "CategoricalDimension"
                 },
                 {
