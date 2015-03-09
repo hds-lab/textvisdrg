@@ -140,6 +140,9 @@
 
         $scope.get_sample_questions = function () {
             SampleQuestions.load(Selection.dimensions());
+        };
+
+        $scope.get_authors = function(question){
 
         };
 

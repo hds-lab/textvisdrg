@@ -102,6 +102,18 @@
                 {% endverbatim %}
             </div>
             <div id="middle" class="col">
+                <div id="questions" class="row app-panel"
+                     ng-controller="SparQs.controllers.SampleQuestionController" ng-class="selection.dimensions_class()">
+                    <div class="heading">From the literature...</div>
+                    <ul class="questions-list heading-body">
+                        <li ng-repeat="question in questions.list">
+                            <span ng-bind-html="question.text"></span> ({$ get_authors(question.source.authors) $}, {$ question.source.year $})
+                            <!--Dimensions: <span ng-repeat="dimension in question.dimensions">
+                                <span ng-class="dimension.token_class()" ng-bind="dimension.name"></span>
+                            </span>-->
+                        </li>
+                    </ul>
+                </div>
                 <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
                     <div class="heading">Visualization</div>
                     <div id="viz-content" class="heading-body">
@@ -143,18 +155,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="questions" class="row app-panel"
-                     ng-controller="SparQs.controllers.SampleQuestionController" ng-class="selection.dimensions_class()">
-                    <div class="heading">From the literature...</div>
-                    <ul class="questions-list heading-body">
-                        <li ng-repeat="question in questions.list">
-                            <span ng-bind-html="question.text"></span>
-                            <!--Dimensions: <span ng-repeat="dimension in question.dimensions">
-                                <span ng-class="dimension.token_class()" ng-bind="dimension.name"></span>
-                            </span>-->
-                        </li>
-                    </ul>
-                </div>
+
             </div>
             <div id="right" class="col">
                 <div id="messages" class="row app-panel" ng-controller="SparQs.controllers.ExampleMessageController">

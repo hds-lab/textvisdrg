@@ -356,8 +356,8 @@ body {
     overflow: visible;
 }
 #viz {
-    top: 0;
-    bottom: @questions-row-height + @section-margin;
+    top: @questions-row-height + @section-margin;
+    bottom: 0;
 
     .background-gradient();
 
@@ -517,7 +517,7 @@ body {
 /* research questions */
 #questions {
     height: @questions-row-height;
-    bottom: 0;
+    top: 0;
 
     .questions-list {
         padding-left: 22px;
