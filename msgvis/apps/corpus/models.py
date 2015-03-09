@@ -1,4 +1,6 @@
 from django.db import models
+from caching.base import CachingManager, CachingMixin
+
 from msgvis.apps.base import models as base_models
 
 class Dataset(models.Model):
@@ -32,17 +34,19 @@ class Dataset(models.Model):
         return messages.order_by('?')[:10]
 
 
-class MessageType(models.Model):
+class MessageType(CachingMixin, models.Model):
     """The type of a message, e.g. retweet, reply, original, system..."""
 
     name = models.CharField(max_length=100, unique=True)
     """The name of the message type"""
 
+    objects = CachingManager()
+
     def __unicode__(self):
         return self.name
 
 
-class Language(models.Model):
+class Language(CachingMixin, models.Model):
     """Represents the language of a message or a user"""
 
     code = models.SlugField(max_length=10, unique=True)
@@ -50,6 +54,8 @@ class Language(models.Model):
 
     name = models.CharField(max_length=100)
     """The full name of the language"""
+
+    objects = CachingManager()
 
     def __unicode__(self):
         return "%s:%s" % (self.code, self.name)
@@ -87,7 +93,7 @@ class Media(models.Model):
     """A url where the media may be accessed"""
 
 
-class Timezone(models.Model):
+class Timezone(CachingMixin, models.Model):
     """
     The timezone of a message or user
     """
@@ -97,6 +103,9 @@ class Timezone(models.Model):
 
     name = models.CharField(max_length=150)
     """Another name for the timezone, perhaps the country where it is located?"""
+
+    objects = CachingManager()
+
 
 class Person(models.Model):
     """
