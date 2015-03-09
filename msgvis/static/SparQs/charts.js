@@ -694,9 +694,9 @@
                     size: {
                         height: 500
                     },
-                    padding: {
-                        //bottom: 80
-                    },
+                    /*padding: {
+                        bottom: 30
+                    },*/
                     data:{
                         type: 'bar',
                         x: primary.key,
@@ -711,7 +711,8 @@
                             label: {
                                 text: primary.name,
                                 position: 'outer-center'
-                            }
+                            },
+                            height: 60
                         },
                         y: {
                             label: {
