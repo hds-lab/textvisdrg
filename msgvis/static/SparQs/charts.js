@@ -647,12 +647,9 @@
                                 }
                             }
                         }
-                        try{
-                            rows[r][c] = value;
-                        }
-                        catch(e){
-                            debugger;
-                        }
+
+                        rows[r][c] = value;
+
                     }
                 });
 
