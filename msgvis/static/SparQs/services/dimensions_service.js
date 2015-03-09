@@ -134,10 +134,15 @@
 
             angular.extend(Dimension.prototype, {
                 dimension_class: function() {
-                    var cls = "";
+                    var cls = "primary-enabled";
+
+                    if (this.key != 'time') {
+                        //Time cannot be a secondary axis
+                        cls += ' secondary-enabled'
+                    }
 
                     if (this.zone) {
-                        cls += 'dimension-' + this.zone.name;
+                        cls += ' dimension-' + this.zone.name;
                     }
 
                     if (!this.is_not_applying_filters()) {
@@ -147,6 +152,7 @@
                     if (this.filtering) {
                         cls += ' filtering-open';
                     }
+
                     return cls;
                 },
                 is_quantitative: function () {

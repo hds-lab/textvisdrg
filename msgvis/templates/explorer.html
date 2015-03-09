@@ -120,7 +120,7 @@
                                      ng-model="zone.dimension"
                                      data-drop="true"
                                      jqyoui-droppable="{onDrop: 'onDimensionDrop'}"
-                                     data-jqyoui-options="{tolerance: 'touch', hoverClass: 'ui-droppable-hover'}">
+                                     data-jqyoui-options="{tolerance: 'touch', hoverClass: 'ui-droppable-hover', accept: zone.accept_class()}">
                                     <div class="dropzone-background"></div>
                                     <!-- This shows if there is a dimension occupying the zone -->
                                     <div class="dimension-wrapper" ng-hide="!zone.dimension">
