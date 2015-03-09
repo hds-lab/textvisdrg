@@ -466,10 +466,14 @@ class RelatedQuantitativeDimension(QuantitativeDimension):
     def _add_manual_join(self, queryset):
         """Add a join to the queryset"""
         to_table = self.path_info.to_opts.db_table
-        return queryset.extra(
-            tables=[to_table],
-            where=[self._get_join_condition()]
-        )
+
+        # Don't join again without need
+        if to_table not in queryset.query.extra_tables:
+            queryset = queryset.extra(
+                tables=[to_table],
+                where=[self._get_join_condition()]
+            )
+        return queryset
 
     def select_grouping_expression(self, queryset, expression):
         queryset, internal_key = super(RelatedQuantitativeDimension, self).select_grouping_expression(
