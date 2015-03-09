@@ -253,10 +253,11 @@
         };
 
         $scope.resetFilter = function () {
-            if (!Filtering.dimension.current_filter().is_empty()) {
+            if (!Filtering.dimension.is_not_applying_filters()) {
                 if (Filtering.dimension.is_categorical()){
                     Filtering.dimension.search_key = "";
                     Filtering.dimension.search_key_tmp = "";
+                    Filtering.dimension.switch_mode('exclude');
                 }else{
                     Filtering.dimension.current_filter().reset();
                 }

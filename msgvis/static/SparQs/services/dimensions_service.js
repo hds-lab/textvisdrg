@@ -179,8 +179,8 @@
                     }
                 },
                 is_not_applying_filters: function(){
-                    return this.filter_type['filter'].is_empty() &&
-                           this.filter_type['exclude'].is_empty();
+                    return ((this.is_categorical() && this.is_all_selected()) ||
+                            (!this.is_categorical() && this.current_filter().is_empty()));
                 },
                 is_dirty: function(){
                     console.log("is_dirty is called");
@@ -369,14 +369,20 @@
                 is_all_selected: function () {
                     var self = this;
                     if (self.mode == "exclude" && (!self.current_filter().levels() || self.current_filter().levels().length == 0)) {
-                        return true
+                        return true;
+                    }
+                    else if (self.mode == "filter" && self.current_filter().levels() && self.current_filter().levels().length == self.domain.length){
+                        return true;
                     }
                     return false;
                 },
                 is_all_unselected: function () {
                     var self = this;
                     if (self.mode == "filter" && (!self.current_filter().levels() || self.current_filter().levels().length == 0)) {
-                        return true
+                        return true;
+                    }
+                    else if (self.mode == "exclude" && self.current_filter().levels() && self.current_filter().levels().length == self.domain.length){
+                        return true;
                     }
                     return false;
                 },

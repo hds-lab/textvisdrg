@@ -368,7 +368,7 @@
 
                         $self.find('.level-show').prop('checked', (d.show));
                         self.select('.level-show').on('change', function(d){
-                            d.show = $self.find('.level-show').prop("checked");
+                            d.show = $(this).prop("checked");
                             scope.dimension.change_level(d);
                             scope.$parent.$parent.$digest();
                         });
@@ -400,7 +400,7 @@
                         self.select('.level-show').on('change', null);
                         $self.find('.level-show').prop('checked', reset_value[scope.dimension.mode]);
                         self.select('.level-show').on('change', function(d){
-                            d.show = $self.find('.level-show').prop("checked");
+                            d.show = $(this).prop("checked");
                             scope.dimension.change_level(d);
                             scope.$parent.$parent.$digest();
                         });
