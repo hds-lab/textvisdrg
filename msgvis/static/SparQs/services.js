@@ -270,7 +270,8 @@
                         dataset: dataset,
                         filters: filters,
                         exclude: exclude,
-                        dimensions: dimension_keys
+                        dimensions: dimension_keys,
+                        mode: "enable_others"
                     };
 
                     var self = this;

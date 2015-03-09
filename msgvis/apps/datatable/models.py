@@ -137,6 +137,10 @@ class DataTable(object):
         and a value key for the count.
         """
 
+        # check if any of the dimensions is categorical
+        if not self.secondary_dimension and not self.primary_dimension.is_categorical():
+            return None
+
         # Type checking
         queryset_for_others = find_messages(queryset_for_others)
 
@@ -171,6 +175,7 @@ class DataTable(object):
 
                 # primary top ones x secondary others
                 queryset_for_others = original_queryset
+                queryset_for_others = queryset_for_others.filter(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
                 queryset_for_others = queryset_for_others.exclude(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
 
                 queryset_for_others = self.primary_dimension.group_by(queryset_for_others,
@@ -185,6 +190,7 @@ class DataTable(object):
                 # primary others x secondary top ones
                 queryset_for_others = original_queryset
                 queryset_for_others = queryset_for_others.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
+                queryset_for_others = queryset_for_others.filter(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
 
                 queryset_for_others = self.secondary_dimension.group_by(queryset_for_others,
                                                                         grouping_key=self.secondary_dimension.key)
@@ -358,7 +364,8 @@ class DataTable(object):
         # Render a table
         table = self.render(queryset)
 
-        if self.mode == "enable_others":
+        if self.mode == "enable_others" and (self.primary_dimension.is_categorical() or
+                                            (self.secondary_dimension and self.secondary_dimension.is_categorical())):
             # adding others to the results
             table_for_others = self.render_others(queryset_for_others, domains)
             table = list(table)
