@@ -77,7 +77,7 @@ class Url(models.Model):
 class Hashtag(models.Model):
     """A hashtag in a message"""
 
-    text = base_models.Utf8CharField(max_length=100)
+    text = base_models.Utf8CharField(max_length=100, db_index=True)
     """The text of the hashtag, without the hash"""
 
 
@@ -101,7 +101,7 @@ class Timezone(CachingMixin, models.Model):
     olson_code = models.CharField(max_length=40, null=True, blank=True, default=None)
     """The timezone code from pytz."""
 
-    name = models.CharField(max_length=150)
+    name = models.CharField(max_length=150, db_index=True)
     """Another name for the timezone, perhaps the country where it is located?"""
 
     objects = CachingManager()
@@ -111,6 +111,11 @@ class Person(models.Model):
     """
     A person who sends messages in a dataset.
     """
+
+    class Meta:
+        index_together = (
+            ('dataset', 'original_id')  # used by the importer
+        )
 
     dataset = models.ForeignKey(Dataset)
     """Which :class:`Dataset` this person belongs to"""
@@ -153,7 +158,11 @@ class Message(models.Model):
     """
     The Message is the central data entity for the dataset.
     """
-
+    class Meta:
+        index_together = (
+            ('dataset', 'original_id'),  # used by importer
+        )
+            
     dataset = models.ForeignKey(Dataset)
     """Which :class:`Dataset` the message belongs to"""
 
