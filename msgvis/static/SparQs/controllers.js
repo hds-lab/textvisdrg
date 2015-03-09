@@ -28,9 +28,9 @@
                     Dimensions.get_by_key('topics'),
                     Dimensions.get_by_key('words'),
                     Dimensions.get_by_key('hashtags'),
-                    Dimensions.get_by_key('contains_hashtag'),
+                    //Dimensions.get_by_key('contains_hashtag'),
                     Dimensions.get_by_key('urls'),
-                    Dimensions.get_by_key('contains_url'),
+                    //Dimensions.get_by_key('contains_url'),
                     Dimensions.get_by_key('contains_media')
                 ]
             },
@@ -48,7 +48,7 @@
                     Dimensions.get_by_key('replies'),
                     Dimensions.get_by_key('shares'),
                     Dimensions.get_by_key('mentions'),
-                    Dimensions.get_by_key('contains_mention')
+                    //Dimensions.get_by_key('contains_mention')
                 ]
             },
             {
