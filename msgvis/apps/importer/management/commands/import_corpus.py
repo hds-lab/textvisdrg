@@ -5,6 +5,7 @@ from optparse import make_option
 from msgvis.apps.corpus.models import Dataset
 from django.db import transaction
 import traceback
+import sys
 
 class Command(BaseCommand):
     """
@@ -67,12 +68,14 @@ class Importer(object):
                             self.not_tweets += 1
                     except:
                         self.errors += 1
-                        print "Import error on line %d" % self.line
+                        print >> sys.stderr, "Import error on line %d" % self.line
                         traceback.print_exc()
 
     def run(self):
-
+        from time import time
         transaction_group = []
+
+        start = time()
 
         for json_str in self.fp:
             self.line += 1
@@ -84,9 +87,9 @@ class Importer(object):
                 transaction_group = []
 
             if self.line > 0 and self.line % self.print_every == 0:
-                print "Reached line %d. Imported: %d; Non-tweets: %d; Errors: %d" % (self.line, self.imported, self.not_tweets, self.errors)
+                print "%6.2fs | Reached line %d. Imported: %d; Non-tweets: %d; Errors: %d" % (time() - start, self.line, self.imported, self.not_tweets, self.errors)
 
         if len(transaction_group) >= 0:
             self._import_group(transaction_group)
 
-        print "Finished %d lines. Imported: %d; Non-tweets: %d; Errors: %d" % (self.line, self.imported, self.not_tweets, self.errors)
+        print "%6.2fs | Finished %d lines. Imported: %d; Non-tweets: %d; Errors: %d" % (time() - start, self.line, self.imported, self.not_tweets, self.errors)
