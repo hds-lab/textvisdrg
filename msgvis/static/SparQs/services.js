@@ -29,6 +29,9 @@
             angular.extend(Dropzone.prototype, {
                 zone_class: function () {
                     return "dropzone-" + this.name;
+                },
+                accept_class: function() {
+                    return '.' + this.name + "-enabled";
                 }
             });
 

@@ -208,6 +208,13 @@
         var dropzoneChanged = function(zone, new_dimension, old_dimension) {
             if (new_dimension && new_dimension.zone != zone) {
 
+                if (zone.name == 'secondary' && new_dimension.key == 'time') {
+                    //FAIL, remove it
+                    new_dimension.zone = undefined;
+                    zone.dimension = undefined;
+                    return;
+                }
+
                 //If the old dimension still thinks it is here, unset it
                 if (old_dimension && old_dimension.zone == zone) {
                     old_dimension.zone = undefined;
