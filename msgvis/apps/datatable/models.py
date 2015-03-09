@@ -216,6 +216,7 @@ class DataTable(object):
                     r[self.primary_dimension.key] = u'others'
                 return secondary_results
 
+            # primary quantitative and secondary categorical
             elif not self.primary_dimension.is_categorical() and self.secondary_dimension.is_categorical():
                 queryset_for_others = queryset_for_others.exclude(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
                 domains[self.secondary_dimension.key].append(u'others')

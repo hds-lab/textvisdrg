@@ -618,6 +618,15 @@
                 table.forEach(function(row) {
                     var value = row[DEFAULT_VALUE_KEY];
                     var r = rowIndex[self.primaryValueLabel(row[primary.key])];
+                    if ( typeof(r) === "undefined" && primary.is_quantitative() ){
+                        var rowList = Object.keys(rowIndex).sort(function(a, b){return (+a) - (+b);});
+                        for ( var i = 0 ; i < rowList.length ; i++ ){
+                            if ( +rowList[i] < +row[primary.key] ){
+                                r = rowIndex[rowList[i]];
+                                break;
+                            }
+                        }
+                    }
                     var c = 1;
                     if (columnAggregation) {
                         //We are aggregating
@@ -628,9 +637,22 @@
                             //we have secondary dimension values in the headers which means
                             //the column index comes from the data
                             c = columnIndex[self.secondaryValueLabel(row[secondary.key])];
+                            if ( typeof(c) === "undefined" && secondary.is_quantitative() ){
+                                var columnList = Object.keys(columnIndex).sort(function(a, b){return (+a) - (+b);});
+                                for ( var i = 0 ; i < columnList.length ; i++ ){
+                                    if ( +columnList[i] < +row[primary.key] ){
+                                        c = columnIndex[columnList[i]];
+                                        break;
+                                    }
+                                }
+                            }
                         }
-
-                        rows[r][c] = value;
+                        try{
+                            rows[r][c] = value;
+                        }
+                        catch(e){
+                            debugger;
+                        }
                     }
                 });
 
