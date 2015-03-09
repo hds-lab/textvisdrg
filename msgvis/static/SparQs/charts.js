@@ -368,8 +368,9 @@
 
                         $self.find('.level-show').prop('checked', (d.show));
                         self.select('.level-show').on('change', function(d){
-                            d.show = $self.prop("checked");
+                            d.show = $(this).prop("checked");
                             scope.dimension.change_level(d);
+                            scope.$parent.$parent.$digest();
                         });
                         self.select('.level-name-text').text(d.label || d.level);
                         self.select('.level-value').text(d.value);
@@ -399,17 +400,18 @@
                         self.select('.level-show').on('change', null);
                         $self.find('.level-show').prop('checked', reset_value[scope.dimension.mode]);
                         self.select('.level-show').on('change', function(d){
-                            d.show = $self.prop("checked");
+                            d.show = $(this).prop("checked");
                             scope.dimension.change_level(d);
+                            scope.$parent.$parent.$digest();
                         });
                     });
 
-
+                scope.dimension.group_action = false;
             }
         };
 
         function link(scope, $element, attrs){
-            scope.$watch('dimension.mode', function (newVals, oldVals) {
+            scope.$watch('dimension.group_action', function (newVals, oldVals) {
                     if (newVals) return reset_levels(scope, $element, attrs);
             }, false);
             scope.$watch('dimension.get_current_distribution().length', function (newVals, oldVals) {
@@ -615,11 +617,14 @@
                 table.forEach(function(row) {
                     var value = row[DEFAULT_VALUE_KEY];
                     var r = rowIndex[self.primaryValueLabel(row[primary.key])];
-                    if ( typeof(r) === "undefined" && primary.is_quantitative() ){
-                        var rowList = Object.keys(rowIndex).sort(function(a, b){return (+a) - (+b);});
+                    if ( typeof(r) === "undefined" && primary.is_quantitative_or_time() ){
+                        var rowList = Object.keys(rowIndex);
+                        if ( primary.is_quantitative()) rowList.map(function(d){return +d;}).sort(function(a, b){return (a) - (b);});
+                        else if ( primary.is_time()) rowList.sort();
+
                         for ( var i = 0 ; i < rowList.length ; i++ ){
-                            if ( +rowList[i] < +row[primary.key] ){
-                                r = rowIndex[rowList[i]];
+                            if ( rowList[i] < row[primary.key] ){
+                                r = rowIndex["" + rowList[i]];
                                 break;
                             }
                         }
@@ -634,11 +639,14 @@
                             //we have secondary dimension values in the headers which means
                             //the column index comes from the data
                             c = columnIndex[self.secondaryValueLabel(row[secondary.key])];
-                            if ( typeof(c) === "undefined" && secondary.is_quantitative() ){
-                                var columnList = Object.keys(columnIndex).sort(function(a, b){return (+a) - (+b);});
+                            if ( typeof(c) === "undefined" && secondary.is_quantitative_or_time() ){
+                                var columnList = Object.keys(columnIndex);
+                                if ( secondary.is_quantitative()) columnList.map(function(d){return +d;}).sort(function(a, b){return (a) - (b);});
+                                else if ( primary.is_time()) rowList.sort();
+
                                 for ( var i = 0 ; i < columnList.length ; i++ ){
-                                    if ( +columnList[i] < +row[primary.key] ){
-                                        c = columnIndex[columnList[i]];
+                                    if ( columnList[i] < row[secondary.key] ){
+                                        c = columnIndex["" + columnList[i]];
                                         break;
                                     }
                                 }
