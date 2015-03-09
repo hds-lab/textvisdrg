@@ -66,6 +66,10 @@ class CategoricalDimension(object):
                 queryset = queryset.exclude(Q((self.field_name, kwargs['value'])))
         return queryset
 
+    def is_categorical(self):
+        """Return True for real categorical dimensions"""
+        return True
+
     def get_key_model(self):
         dimension_key_model, created = DimensionKey.objects.get_or_create(key=self.key)
         return dimension_key_model
@@ -245,6 +249,9 @@ class QuantitativeDimension(CategoricalDimension):
         self.min_bin_size = min_bin_size
         self._cached_range_queryset_id = None
         self._cached_range = None
+
+    def is_categorical(self):
+        return False
 
     def filter(self, queryset, **kwargs):
         # Type checking

@@ -494,7 +494,7 @@
                     }
 
                     if (label === null || label === '') {
-                        label = "No " + dimension.key;
+                        label = "No " + dimension.name;
                     }
 
                     valueLabels[value] = label.toString();
@@ -615,6 +615,15 @@
                 table.forEach(function(row) {
                     var value = row[DEFAULT_VALUE_KEY];
                     var r = rowIndex[self.primaryValueLabel(row[primary.key])];
+                    if ( typeof(r) === "undefined" && primary.is_quantitative() ){
+                        var rowList = Object.keys(rowIndex).sort(function(a, b){return (+a) - (+b);});
+                        for ( var i = 0 ; i < rowList.length ; i++ ){
+                            if ( +rowList[i] < +row[primary.key] ){
+                                r = rowIndex[rowList[i]];
+                                break;
+                            }
+                        }
+                    }
                     var c = 1;
                     if (columnAggregation) {
                         //We are aggregating
@@ -625,9 +634,19 @@
                             //we have secondary dimension values in the headers which means
                             //the column index comes from the data
                             c = columnIndex[self.secondaryValueLabel(row[secondary.key])];
+                            if ( typeof(c) === "undefined" && secondary.is_quantitative() ){
+                                var columnList = Object.keys(columnIndex).sort(function(a, b){return (+a) - (+b);});
+                                for ( var i = 0 ; i < columnList.length ; i++ ){
+                                    if ( +columnList[i] < +row[primary.key] ){
+                                        c = columnIndex[columnList[i]];
+                                        break;
+                                    }
+                                }
+                            }
                         }
 
                         rows[r][c] = value;
+
                     }
                 });
 
@@ -669,16 +688,16 @@
                     size: {
                         height: 500
                     },
-                    padding: {
-                        //bottom: 80
-                    },
+                    /*padding: {
+                        bottom: 30
+                    },*/
                     data:{
                         type: 'bar',
                         x: primary.key,
                         names: {
                             value: 'Num. Messages'
                         },
-                        onclick: dataClicked
+                        onclick: dataClicked,
                     },
                     axis:  {
                         x: {
@@ -687,7 +706,8 @@
                             label: {
                                 text: primary.name,
                                 position: 'outer-center'
-                            }
+                            },
+                            height: 60
                         },
                         y: {
                             label: {
@@ -700,7 +720,6 @@
                     legend: {
                         show: false
                     }
-
                 };
 
                 //If x is quantitative, use a line chart
@@ -755,15 +774,11 @@
                             anchor: 'top-right',
                             x: 20,
                             y: 20,
-                            step: 2
+                            step: 3
                         };
                         var num_of_levels = domains[secondary.key].length;
                         if ( num_of_levels > 12 ){
                             config.legend.inset.step = 6;
-                            //config.legend.inset.y = 450;
-                            //config.padding.bottom = 150;
-
-
                         }
                     }
                 }
