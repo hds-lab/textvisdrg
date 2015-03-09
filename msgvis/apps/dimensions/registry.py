@@ -96,7 +96,7 @@ register(models.RelatedCategoricalDimension, dict(
 
 register(models.CategoricalDimension, dict(
     key='contains_hashtag',
-    name='Contains a hashtag',
+    name='Contains a Hashtag',
     description='Contains any hashtag',
     field_name='contains_hashtag',
     domain=[False, True],
@@ -111,7 +111,7 @@ register(models.RelatedCategoricalDimension, dict(
 
 register(models.CategoricalDimension, dict(
     key='contains_url',
-    name='Contains a url',
+    name='Contains a Url',
     description='Contains a url',
     field_name='contains_url',
     domain=[False, True],
@@ -126,7 +126,7 @@ register(models.RelatedCategoricalDimension, dict(
 
 register(models.CategoricalDimension, dict(
     key='contains_media',
-    name='Contains media',
+    name='Contains Media',
     description='Contains a photo',
     field_name='contains_media',
     domain=[False, True],
@@ -192,7 +192,7 @@ register(models.CategoricalDimension, dict(
 # BEGIN SENDER DIMENSIONS
 register(models.RelatedCategoricalDimension, dict(
     key='sender_name',
-    name='Author name',
+    name='Author Name',
     description='The name of the message author',
     field_name='sender__username',
 ))

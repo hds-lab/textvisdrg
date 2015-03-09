@@ -113,6 +113,7 @@ class DataTableView(APIView):
             filters = data.get('filters', [])
             exclude = data.get('exclude', [])
             search_key = data.get('search_key')
+            mode = data.get('mode')
 
             page_size = 30
             page = None
@@ -123,6 +124,8 @@ class DataTableView(APIView):
                 page = max(1, int(data.get('page')))
 
             datatable = datatable_models.DataTable(*dimensions)
+            if mode is not None:
+                datatable.set_mode(mode)
             result = datatable.generate(dataset, filters, exclude, page_size, page, search_key)
 
             # Just add the result key
