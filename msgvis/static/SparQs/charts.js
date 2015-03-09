@@ -700,7 +700,7 @@
                         names: {
                             value: 'Num. Messages'
                         },
-                        onclick: dataClicked
+                        onclick: dataClicked,
                     },
                     axis:  {
                         x: {
@@ -722,7 +722,6 @@
                     legend: {
                         show: false
                     }
-
                 };
 
                 //If x is quantitative, use a line chart
@@ -774,15 +773,11 @@
                             anchor: 'top-right',
                             x: 20,
                             y: 20,
-                            step: 2
+                            step: 3
                         };
                         var num_of_levels = domains[secondary.key].length;
                         if ( num_of_levels > 12 ){
                             config.legend.inset.step = 6;
-                            //config.legend.inset.y = 450;
-                            //config.padding.bottom = 150;
-
-
                         }
                     }
                 }
