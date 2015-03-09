@@ -7,6 +7,9 @@ Django>=1.7.2
 # Database Adapter
 MySQL-python
 
+# Cache adapter
+python-memcached
+
 # Templates
 django_compressor
 
