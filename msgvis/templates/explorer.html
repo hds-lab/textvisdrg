@@ -194,17 +194,17 @@
 
                             <quant-histogram
                                 dimension="filtering.dimension"
-                                brush-min="filtering.dimension.filter.min()"
-                                brush-max="filtering.dimension.filter.max()"
+                                brush-min="filtering.dimension.current_filter().min()"
+                                brush-max="filtering.dimension.current_filter().max()"
                                 on-brushed="onQuantitativeBrushed">
                             </quant-histogram>
 
                             <input type="text" class="filter-min form-control"
-                                   ng-model="filtering.dimension.filter.min"
+                                   ng-model="filtering.dimension.current_filter().min"
                                    ng-model-options="{ getterSetter: true }"
                                    placeholder="min"/>
                             <input type="text" class="filter-max form-control"
-                                   ng-model="filtering.dimension.filter.max"
+                                   ng-model="filtering.dimension.current_filter().max"
                                    ng-model-options="{ getterSetter: true }"
                                    placeholder="max"/>
 
@@ -215,17 +215,17 @@
 
                             <quant-histogram
                                 dimension="filtering.dimension"
-                                brush-min="filtering.dimension.filter.min()"
-                                brush-max="filtering.dimension.filter.max()"
+                                brush-min="filtering.dimension.current_filter().min_time()"
+                                brush-max="filtering.dimension.current_filter().max_time()"
                                 on-brushed="onQuantitativeBrushed">
                             </quant-histogram>
 
                             <input type="text" class="filter-min form-control"
-                                   ng-model="filtering.dimension.filter.min_time"
+                                   ng-model="filtering.dimension.current_filter().min_time"
                                    ng-model-options="{ getterSetter: true }"
                                    placeholder="min" datetime-format />
                             <input type="text" class="filter-max form-control"
-                                   ng-model="filtering.dimension.filter.max_time"
+                                   ng-model="filtering.dimension.current_filter().max_time"
                                    ng-model-options="{ getterSetter: true }"
                                    placeholder="max" datetime-format/>
 
@@ -281,9 +281,10 @@
 
                     <div class="form-group form-buttons">
                         <button type="submit" class="btn btn-sm btn-primary apply-button"
+                                ng-disabled="!filtering.dimension.is_dirty()"
                                 ng-click="saveFilter()">Update</button>
                         <button type="button" class="btn btn-sm btn-default clear-button"
-                                ng-disabled="filtering.dimension.filter.is_empty()"
+                                ng-disabled="filtering.dimension.is_not_applying_filters()"
                                 ng-click="resetFilter()">Clear</button>
                     </div>
 

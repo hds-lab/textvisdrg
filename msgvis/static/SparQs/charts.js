@@ -250,17 +250,14 @@
             if (!scope._histogram) {
 
                 var onBrushed = function (min, max) {
-                    if (scope.dimension && scope.dimension.filter) {
-
+                    if (scope.dimension && scope.dimension.current_filter()) {
+                        var filter = scope.dimension.current_filter();
                         if (scope.dimension.is_time()) {
-                            //var format = d3.time.format("%Y-%m-%d %H:%M:%S");
-                            //min = new Date(min);
-                            //max = new Date(max);
-                            scope.dimension.filter.min_time(min);
-                            scope.dimension.filter.max_time(max);
+                            filter.min_time(min);
+                            filter.max_time(max);
                         } else {
-                            scope.dimension.filter.min(min);
-                            scope.dimension.filter.max(max);
+                            filter.min(min);
+                            filter.max(max);
                         }
                     }
 
@@ -282,7 +279,7 @@
                 }, false);
 
                 // Watch for filter changes
-                scope.$watch('dimension.filter.data', function (newVal, oldVal) {
+                scope.$watch('dimension.current_filter().data', function (newVal, oldVal) {
                     if (newVal) {
                         if (scope.dimension.is_time()) {
                             if (newVal.min_time && newVal.max_time) {
@@ -686,6 +683,7 @@
                     axis:  {
                         x: {
                             type: 'category',
+                            localtime: false,
                             label: {
                                 text: primary.name,
                                 position: 'outer-center'
@@ -710,15 +708,18 @@
                     config.axis.x.type = 'indexed';
 
                     if (secondary) {
-                        config.data.type = 'spline';
+                        config.data.type = 'line';
                     } else {
-                        config.data.type = 'area-spline';
+                        config.data.type = 'area';
                     }
 
                     //Special time-specific overrides
                     if (primary.is_time()) {
                         config.axis.x.type = 'timeseries';
-
+                        //config.axis.x.tick = {
+                        //    culling: false
+                        //};
+                        //
                         //parsing django time values
                         config.data.xFormat = '%Y-%m-%dT%H:%M:%SZ';
                     }
