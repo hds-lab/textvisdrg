@@ -151,11 +151,52 @@ class DataTable(object):
             domains[self.primary_dimension.key].append(u'others')
 
             return [{self.primary_dimension.key: u'others', 'value': queryset_for_others.count()}]
-    """
-        else:
+
+        elif self.secondary_dimension:
             if self.primary_dimension.is_categorical() and self.secondary_dimension.is_categorical():
+                original_queryset = queryset_for_others
+                others_results = []
+                domains[self.primary_dimension.key].append(u'others')
+                domains[self.secondary_dimension.key].append(u'others')
+
+                # primary others x secondary others
+                queryset_for_others = queryset_for_others.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
+                queryset_for_others = queryset_for_others.exclude(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
+
+                others_results.append({self.primary_dimension.key: u'others',
+                                       self.secondary_dimension.key: u'others',
+                                       'value': queryset_for_others.count()})
+
+                # primary top ones x secondary others
+                queryset_for_others = original_queryset
+                queryset_for_others = queryset_for_others.exclude(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
+
+                queryset_for_others = self.primary_dimension.group_by(queryset_for_others,
+                                                                      grouping_key=self.primary_dimension.key)
+
+                queryset_for_others = queryset_for_others.annotate(value=models.Count('id'))
+                primary_top_results = list(queryset_for_others)
+                for r in primary_top_results:
+                    r[self.secondary_dimension.key] = u'others'
+                others_results.extend(primary_top_results)
+
+                # primary others x secondary top ones
+                queryset_for_others = original_queryset
+                queryset_for_others = queryset_for_others.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
+
+                queryset_for_others = self.secondary_dimension.group_by(queryset_for_others,
+                                                                        grouping_key=self.secondary_dimension.key)
+
+                queryset_for_others = queryset_for_others.annotate(value=models.Count('id'))
+                secondary_top_results = list(queryset_for_others)
+                for r in secondary_top_results:
+                    r[self.primary_dimension.key] = u'others'
+                others_results.extend(secondary_top_results)
+
+                return others_results
 
 
+        """
 
             # Now it gets nasty...
             primary_group = self.primary_dimension.get_grouping_expression(queryset,
