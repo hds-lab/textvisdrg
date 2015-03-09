@@ -325,7 +325,7 @@ body {
 }
 
 
-@questions-row-height: 170px;
+@questions-row-height: 180px;
 @dropzone-buffer: 20px;
 @secondary-dropzone-width: 150px;
 @primary-dropzone-height: 80px;
@@ -356,8 +356,8 @@ body {
     overflow: visible;
 }
 #viz {
-    top: 0;
-    bottom: @questions-row-height + @section-margin;
+    top: @questions-row-height + @section-margin;
+    bottom: 0;
 
     .background-gradient();
 
@@ -517,7 +517,14 @@ body {
 /* research questions */
 #questions {
     height: @questions-row-height;
-    bottom: 0;
+    top: 0;
+    z-index: 1000;
+
+    .popover{
+        z-index: 10000;
+        max-width: 1000px;
+        color: black;
+    }
 
     .questions-list {
         padding-left: 22px;
@@ -536,7 +543,20 @@ body {
             .tag-primary.tag-secondary {
                 color: #BB8DEA;
             }
-
+            .source-popover:hover{
+                cursor: pointer;
+            }
+            .source-popover:focus{
+                outline: none;
+            }
+            .source{
+                div{
+                  display: block;
+                }
+                .title{
+                    font-weight: bold;
+                }
+            }
 
         }
     }
