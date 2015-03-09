@@ -4,7 +4,7 @@ from optparse import make_option
 
 from msgvis.apps.corpus.models import Dataset
 from django.db import transaction
-
+import traceback
 
 class Command(BaseCommand):
     """
@@ -31,10 +31,7 @@ class Command(BaseCommand):
             raise CommandError('Corpus filename must be provided.')
 
         dataset = options.get('dataset')
-        import logging
-        l = logging.getLogger('django.db.backends')
-        l.setLevel(logging.DEBUG)
-        l.addHandler(logging.StreamHandler())
+
         with open(corpus_filename, 'rb') as fp:
 
             if dataset is None:
@@ -47,7 +44,7 @@ class Command(BaseCommand):
 
 
 class Importer(object):
-    commit_every = 1
+    commit_every = 100
     print_every = 1000
 
     def __init__(self, fp, dataset):
@@ -71,6 +68,7 @@ class Importer(object):
                     except:
                         self.errors += 1
                         print "Import error on line %d" % self.line
+                        traceback.print_exc()
 
     def run(self):
 

@@ -1,4 +1,5 @@
-
+import sys, six
+from django.db import IntegrityError
 from django.utils.timezone import utc
 from urlparse import urlparse
 
@@ -72,7 +73,8 @@ def get_or_create_url(urlblob):
 
 
 def get_or_create_media(mediablob):
-    media, created = Media.objects.get_or_create(type=mediablob['type'], media_url=mediablob['media_url'])
+    media, created = Media.objects.get_or_create(type=mediablob['type'],
+                                                 media_url=mediablob['media_url'])
     return media
 
 
@@ -83,7 +85,7 @@ def handle_reply_to(status_id, user_id, screen_name, dataset_obj):
         'user': {
             'id': user_id,
             'screen_name': screen_name,
-            },
+        },
         'in_reply_to_status_id': None
     }
 
@@ -106,7 +108,6 @@ def handle_retweet(retweeted_status, dataset_obj):
 
 
 def handle_entities(tweet, entities, dataset_obj):
-
     # hashtags
     if entities.get('hashtags') and len(entities['hashtags']) > 0:
         tweet.contains_hashtag = True
@@ -134,6 +135,7 @@ def handle_entities(tweet, entities, dataset_obj):
             mention_obj.save()
             tweet.mentions.add(mention_obj)
 
+
 def get_or_create_a_tweet_from_json_obj(tweet_data, dataset_obj):
     """
     Given a dataset object, imports a tweet from json object into
@@ -142,7 +144,8 @@ def get_or_create_a_tweet_from_json_obj(tweet_data, dataset_obj):
     if 'in_reply_to_status_id' not in tweet_data:
         return None
 
-    tweet, created = Message.objects.get_or_create(dataset=dataset_obj, original_id=tweet_data['id'])
+    tweet, created = Message.objects.get_or_create(dataset=dataset_obj,
+                                                   original_id=tweet_data['id'])
 
     # text
     if tweet_data.get('text'):
