@@ -116,7 +116,6 @@
                 this.zone = undefined;
                 this.draggable = this;
 
-                this.token_holder = {};
                 this.filter_type = {};
                 this.filter_type['filter'] = new Filter(this.filter_type['filter']);
                 this.filter_type['exclude'] = new Filter(this.filter_type['exclude']);

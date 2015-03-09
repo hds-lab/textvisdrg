@@ -363,14 +363,14 @@
                 $d3_element.selectAll('.level-div.active')
                     .each(function(d){
                         var self = d3.select(this);
+                        var $self = $(this);
                         self.style('display', 'block');
 
-                        $(this).find('.level-show').prop('checked', (d.show));
+                        $self.find('.level-show').prop('checked', (d.show));
                         self.select('.level-show').on('change', function(d){
-                                var checked = $(this).prop("checked");
-                                d.show = checked;
-                                scope.dimension.change_level(d);
-                            });
+                            d.show = $self.prop("checked");
+                            scope.dimension.change_level(d);
+                        });
                         self.select('.level-name-text').text(d.label || d.level);
                         self.select('.level-value').text(d.value);
                         self.select('.level-bar')
@@ -393,15 +393,15 @@
                 $d3_element.selectAll('.level-div')
                     .each(function(d){
                         var self = d3.select(this);
+                        var $self = $(this);
 
                         // turn off the event handler first
                         self.select('.level-show').on('change', null);
-                        $(this).find('.level-show').prop('checked', reset_value[scope.dimension.mode]);
+                        $self.find('.level-show').prop('checked', reset_value[scope.dimension.mode]);
                         self.select('.level-show').on('change', function(d){
-                                var checked = $(this).prop("checked");
-                                d.show = checked;
-                                scope.dimension.change_level(d);
-                            });
+                            d.show = $self.prop("checked");
+                            scope.dimension.change_level(d);
+                        });
                     });
 
 
