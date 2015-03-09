@@ -50,7 +50,6 @@
 
     angular.module('SparQs.bootstrap')
         .constant('SparQs.bootstrap.dataset', 1);
-
 </script>
 {% endblock %}
 
@@ -105,9 +104,20 @@
                 <div id="questions" class="row app-panel"
                      ng-controller="SparQs.controllers.SampleQuestionController" ng-class="selection.dimensions_class()">
                     <div class="heading">From the literature...</div>
+
+
                     <ul class="questions-list heading-body">
-                        <li ng-repeat="question in questions.list">
-                            <span ng-bind-html="question.text"></span> ({$ get_authors(question.source.authors) $}, {$ question.source.year $})
+                        <li ng-repeat="question in questions.list track by $index">
+                            <div  class="source-popover"
+                                  tabindex="0" role="button" data-toggle="popover"
+                                  data-trigger="focus"
+                                  data-placement="{$ $index < 3 ? 'bottom' : 'top' $}"
+                                  data-content="{$ get_full_source_info(question.source) $}">
+                                <span ng-bind-html="question.text"></span>
+                                <span class="citation">({$ get_authors(question.source.authors) $} {$ question.source.year $})</span>
+                            </div>
+
+
                             <!--Dimensions: <span ng-repeat="dimension in question.dimensions">
                                 <span ng-class="dimension.token_class()" ng-bind="dimension.name"></span>
                             </span>-->

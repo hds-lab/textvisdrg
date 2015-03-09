@@ -5,8 +5,8 @@
 
     //A service for loading sample questions.
     module.factory('SparQs.services.SampleQuestions', [
-        '$http', '$sce', 'djangoUrl', 'SparQs.services.Dimensions',
-        function sampleQuestionsFactory($http, $sce, djangoUrl, Dimensions) {
+        '$http', '$sce', '$timeout', 'djangoUrl', 'SparQs.services.Dimensions',
+        function sampleQuestionsFactory($http, $sce, $timeout, djangoUrl, Dimensions) {
 
             var apiUrl = djangoUrl.reverse('research-questions');
 
@@ -90,6 +90,9 @@
                     $http.post(apiUrl, request)
                         .success(function (data) {
                             self.list = data.questions.map(function (qdata) {
+                                $timeout(function() {
+                                    $('[data-toggle="popover"]').popover({html: 'true'})
+                                }, 10);
                                 return new Question(qdata);
                             });
                         });

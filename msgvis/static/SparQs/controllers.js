@@ -142,9 +142,25 @@
             SampleQuestions.load(Selection.dimensions());
         };
 
-        $scope.get_authors = function(question){
-
+        $scope.get_authors = function(authors){
+            var author_list = authors.split("\n");
+            var last_names = [];
+            author_list.forEach(function(d){
+                var l = d.split(" ");
+                last_names.push(l.pop());
+            });
+            if (last_names.length >= 3)
+                return last_names[0] + " et al.";
+            return last_names.join(" & ");
         };
+
+        $scope.get_full_source_info = function(source){
+            var template = "<div class='source title'><strong>" + source.title + "</strong> (" + source.year + ")</div>";
+            template += "<span class='source authors'>" + (source.authors.split('\n').join(", ")) + ".</span> ";
+            if ( source.venue )
+                template += "<span class='source venue'>Published in <em>" + source.venue + "</em></span>";
+            return template;
+        }
 
         $scope.$watch('questions.list', function(){
             //When the question list changes, we are going to manually (jQuery)
