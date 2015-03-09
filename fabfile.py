@@ -167,3 +167,12 @@ def info():
 
 
 nltk_init = factories.nltk_download_task(required_nltk_corpora)
+
+
+def memcached_status():
+    """Display the status of the memcached server"""
+    denv = fabutils.dot_env(default={})
+    if denv.get('MEMCACHED_LOCATION', None) is not None:
+        local("watch -n1 -d 'memcstat --servers %s'" % denv.get('MEMCACHED_LOCATION', None))
+    else:
+        print yellow("Set MEMCACHED_LOCATION in .env")
