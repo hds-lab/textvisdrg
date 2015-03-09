@@ -1,4 +1,4 @@
-from django.db import models
+
 from django.utils.timezone import utc
 from urlparse import urlparse
 
@@ -134,7 +134,6 @@ def handle_entities(tweet, entities, dataset_obj):
             mention_obj.save()
             tweet.mentions.add(mention_obj)
 
-# @profile
 def get_or_create_a_tweet_from_json_obj(tweet_data, dataset_obj):
     """
     Given a dataset object, imports a tweet from json object into
