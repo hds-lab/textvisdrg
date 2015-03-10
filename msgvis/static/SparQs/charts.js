@@ -13,7 +13,7 @@
 
             var xScale = d3.scale.ordinal();
             var xLinearScale = d3.scale.linear();
-            var xTimeScale = d3.time.scale();
+            var xTimeScale = d3.time.scale.utc();
             var xCurrentScale = xLinearScale;
 
             var yScale = d3.scale.linear();
