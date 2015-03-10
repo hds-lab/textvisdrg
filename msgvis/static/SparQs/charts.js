@@ -706,6 +706,7 @@
                             value: 'Num. Messages'
                         },
                         onclick: dataClicked,
+                        xLocaltime: false
                     },
                     axis:  {
                         x: {
@@ -727,6 +728,9 @@
                     },
                     legend: {
                         show: false
+                    },
+                    tooltip: {
+                        
                     }
                 };
 
@@ -743,12 +747,21 @@
                     //Special time-specific overrides
                     if (primary.is_time()) {
                         config.axis.x.type = 'timeseries';
-                        //config.axis.x.tick = {
-                        //    culling: false
-                        //};
-                        //
+
                         //parsing django time values
                         config.data.xFormat = '%Y-%m-%dT%H:%M:%SZ';
+                        
+                        config.axis.x.tick = {
+                            fit: false
+                        };
+
+                        var tooltipDateFormat = d3.time.format('%c');
+                        config.tooltip.format = {
+                            title: function(d) {
+                                return tooltipDateFormat(d);
+                            }
+                        };
+                        
                     }
                 }
 
