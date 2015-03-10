@@ -338,14 +338,14 @@
         link: function(scope, element, attrs, ngModelController) {
           ngModelController.$parsers.push(function(data) {
             //convert data from view format to model format
-            data = moment(data, "YYYY-MM-DD HH:mm:ss");
-            if (data.isValid()) return data.utc().toDate();
+            data = moment.utc(data, "YYYY-MM-DD HH:mm:ss");
+            if (data.isValid()) return data.toDate();
             else return undefined;
           });
 
           ngModelController.$formatters.push(function(data) {
             //convert data from model format to view format
-              if (data !== undefined) return moment(data).utc().format("YYYY-MM-DD HH:mm:ss"); //converted
+              if (data !== undefined) return moment.utc(data).format("YYYY-MM-DD HH:mm:ss"); //converted
               return data;
           });
         }
@@ -357,7 +357,7 @@
             var raw = element[0];
 
             var checkBounds = function(evt) {
-                if (raw.scrollTop + $(raw).height() == raw.scrollHeight) {
+                if (Math.abs(raw.scrollTop + $(raw).height() - raw.scrollHeight) < 10) {
                     scope.$apply(attr.whenScrolled);
                 }
 

@@ -13,7 +13,7 @@
 
             var xScale = d3.scale.ordinal();
             var xLinearScale = d3.scale.linear();
-            var xTimeScale = d3.time.scale();
+            var xTimeScale = d3.time.scale.utc();
             var xCurrentScale = xLinearScale;
 
             var yScale = d3.scale.linear();
@@ -706,6 +706,7 @@
                             value: 'Num. Messages'
                         },
                         onclick: dataClicked,
+                        xLocaltime: false
                     },
                     axis:  {
                         x: {
@@ -727,6 +728,9 @@
                     },
                     legend: {
                         show: false
+                    },
+                    tooltip: {
+                        
                     }
                 };
 
@@ -743,12 +747,21 @@
                     //Special time-specific overrides
                     if (primary.is_time()) {
                         config.axis.x.type = 'timeseries';
-                        //config.axis.x.tick = {
-                        //    culling: false
-                        //};
-                        //
+
                         //parsing django time values
                         config.data.xFormat = '%Y-%m-%dT%H:%M:%SZ';
+                        
+                        config.axis.x.tick = {
+                            fit: false
+                        };
+
+                        var tooltipDateFormat = d3.time.format('%c');
+                        config.tooltip.format = {
+                            title: function(d) {
+                                return tooltipDateFormat(d);
+                            }
+                        };
+                        
                     }
                 }
 
