@@ -59,11 +59,6 @@ class Command(BaseCommand):
                 importer = Importer(fp, dataset_obj)
                 importer.run()
 
-            if settings.DEBUG:
-                # prevent memory leaks
-                from django.db import connection
-                connection.queries = []
-
         print "Dataset '%s' (%d) contains %d messages" % (
             dataset_obj.name, dataset_obj.id, dataset_obj.message_set.count()
         )
@@ -97,6 +92,12 @@ class Importer(object):
                         self.errors += 1
                         print >> sys.stderr, "Import error on line %d" % self.line
                         traceback.print_exc()
+
+        if settings.DEBUG:
+            # prevent memory leaks
+            from django.db import connection
+            connection.queries = []
+
 
     def run(self):
         transaction_group = []
