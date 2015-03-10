@@ -82,10 +82,10 @@ def load_fixtures():
         fabutils.manage_py('syncdata %s' % (PROJECT_ROOT / fixturefile,))
 
 
-def import_corpus(dataset_file):
+def import_corpus(dataset_file_or_dir):
     """Import a dataset from a file"""
-    dataset_file = path(dataset_file).abspath().realpath()
-    fabutils.manage_py('import_corpus %s' % dataset_file)
+    dataset_file_or_dir = path(dataset_file_or_dir).abspath().realpath()
+    fabutils.manage_py('import_corpus %s' % dataset_file_or_dir)
 
 
 def restart_webserver():
@@ -167,3 +167,12 @@ def info():
 
 
 nltk_init = factories.nltk_download_task(required_nltk_corpora)
+
+
+def memcached_status():
+    """Display the status of the memcached server"""
+    denv = fabutils.dot_env(default={})
+    if denv.get('MEMCACHED_LOCATION', None) is not None:
+        local("watch -n1 -d 'memcstat --servers %s'" % denv.get('MEMCACHED_LOCATION', None))
+    else:
+        print yellow("Set MEMCACHED_LOCATION in .env")

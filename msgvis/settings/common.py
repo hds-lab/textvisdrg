@@ -76,6 +76,24 @@ if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
 
 
 
+########## CACHE CONFIGURATION
+# See: https://docs.djangoproject.com/en/dev/ref/settings/#caches
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
+
+if get_env_setting('MEMCACHED_LOCATION', '') is not '':
+    CACHES['default'] = {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': get_env_setting('MEMCACHED_LOCATION'),
+        'PREFIX': SITE_NAME + ':',
+    }
+########## END CACHE CONFIGURATION
+
+
+
 ########## GENERAL CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
 TIME_ZONE = 'UTC'

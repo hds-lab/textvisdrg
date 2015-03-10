@@ -386,6 +386,7 @@ class MessageTopic(models.Model):
         return examples.order_by('-probability')
 
 
-def set_message_sentiment(message):
+def set_message_sentiment(message, save=True):
     message.sentiment = int(round(textblob.TextBlob(message.text).sentiment.polarity))
-    message.save()
+    if save:
+        message.save()
