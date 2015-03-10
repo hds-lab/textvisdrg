@@ -6,6 +6,7 @@ from msgvis.apps.corpus.models import Dataset
 from django.db import transaction
 import traceback
 import sys
+import path
 
 class Command(BaseCommand):
     """
@@ -16,33 +17,41 @@ class Command(BaseCommand):
         $ python manage.py import_corpus <file_path>
 
     """
-    args = '<corpus_filename>'
+    args = '<corpus_filename> [...]'
     help = "Import a corpus into the database."
     option_list = BaseCommand.option_list + (
                         make_option('-d', '--dataset',
                             action='store',
                             dest='dataset',
-                            default=None,
                             help='Set a target dataset to add to'),
                         )
 
-    def handle(self, corpus_filename, *args, **options):
+    def handle(self, *filenames, **options):
 
-        if not corpus_filename:
-            raise CommandError('Corpus filename must be provided.')
+        if len(filenames) == 0:
+            raise CommandError('At least one filename must be provided.')
 
-        dataset = options.get('dataset')
+        dataset = options.get('dataset', None)
+        if not dataset:
+            dataset = filenames[0]
 
-        with open(corpus_filename, 'rb') as fp:
+        for f in filenames:
+            if not path.path(f).exists():
+                raise CommandError("Filename %s does not exist" % f)
 
-            if dataset is None:
-                dataset_obj = Dataset.objects.create(name=corpus_filename, description=corpus_filename)
-            else:
-                dataset_obj, created = Dataset.objects.get_or_create(name=dataset, description=dataset)
 
-            importer = Importer(fp, dataset_obj)
-            importer.run()
+        dataset_obj, created = Dataset.objects.get_or_create(name=dataset, description=dataset)
+        if created:
+            print "Created dataset '%s' (%d)" % (dataset_obj.name, dataset_obj.id)
+        else:
+            print "Adding to existing dataset '%s' (%d)" % (dataset_obj.name, dataset_obj.id)
 
+        for corpus_filename in filenames:
+            with open(corpus_filename, 'rb') as fp:
+                importer = Importer(fp, dataset_obj)
+                importer.run()
+
+        print "Dataset '%s' (%d) contains %d messages" % (dataset_obj.name, dataset_obj.id, dataset_obj.message_set.count())
 
 class Importer(object):
     commit_every = 100
