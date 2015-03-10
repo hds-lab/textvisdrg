@@ -357,7 +357,7 @@
             var raw = element[0];
 
             var checkBounds = function(evt) {
-                if (raw.scrollTop + $(raw).height() == raw.scrollHeight) {
+                if (Math.abs(raw.scrollTop + $(raw).height() - raw.scrollHeight) < 10) {
                     scope.$apply(attr.whenScrolled);
                 }
 
