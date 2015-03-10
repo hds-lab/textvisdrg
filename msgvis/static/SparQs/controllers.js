@@ -11,7 +11,7 @@
         $interpolateProvider.endSymbol('$}');
     });
 
-    var DimensionController = function ($scope, Dimensions, Filtering) {
+    var DimensionController = function ($scope, Dimensions, Filtering, Selection) {
 
         //Hierarchy of dimensions
         $scope.dimension_groups = [
@@ -47,7 +47,7 @@
                     Dimensions.get_by_key('type'),
                     Dimensions.get_by_key('replies'),
                     Dimensions.get_by_key('shares'),
-                    Dimensions.get_by_key('mentions'),
+                    Dimensions.get_by_key('mentions')
                     //Dimensions.get_by_key('contains_mention')
                 ]
             },
@@ -95,6 +95,8 @@
 
                 //Turn off the zone of this dimension
                 $scope.dropped.zone = undefined;
+
+                Selection.changed('dimensions');
             }
             $scope.dropped = undefined; // remove the dropped dimension
         };
@@ -103,7 +105,8 @@
     DimensionController.$inject = [
         '$scope',
         'SparQs.services.Dimensions',
-        'SparQs.services.Filtering'];
+        'SparQs.services.Filtering',
+        'SparQs.services.Selection'];
     module.controller('SparQs.controllers.DimensionController', DimensionController);
 
     var ExampleMessageController = function ($scope, ExampleMessages, Selection, Dataset) {
