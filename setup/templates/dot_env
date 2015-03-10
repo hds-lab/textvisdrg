@@ -14,14 +14,21 @@ PORT={{ PORT }}
 
 DATABASE_URL=mysql://{{ DATABASE_USER }}:{{ DATABASE_PASS }}@{{ DATABASE_HOST }}:{{ DATABASE_PORT }}/{{ DATABASE_NAME}}
 
+# If this is set, will use memcached
+# should be like host:portnum, e.g. localhost:11211
+MEMCACHED_LOCATION={{ MEMCACHED_LOCATION }}
+
+
 SECRET_KEY={{ SECRET_KEY }}
 GOOGLE_ANALYTICS_ID={{ GOOGLE_ANALYTICS_ID }}
+
 
 # Development Settings
 
 # Set these for deployment
 # DEPLOY_HOST=<username>@<hostname>
 # DEPLOY_VIRTUALENV=<virtualenvname>
+
 
 # Production Settings
 

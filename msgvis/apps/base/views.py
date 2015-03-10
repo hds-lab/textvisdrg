@@ -2,7 +2,7 @@ from django.views import generic
 from django.http import Http404
 from django.utils.translation import ugettext as _
 
-from msgvis.apps.corpus import models
+from msgvis.apps.corpus import models as corpus_models
 
 class HomeView(generic.TemplateView):
     """The homepage view for the website."""
@@ -15,9 +15,12 @@ class ExplorerView(generic.DetailView):
 
     template_name = 'explorer.html'
 
-    model = models.Dataset
     pk_url_kwarg = 'dataset_pk'
     default_dataset_pk = 1
+
+    def get_queryset(self):
+        return corpus_models.Dataset.objects.all()
+
 
     def get_object(self, queryset=None):
 

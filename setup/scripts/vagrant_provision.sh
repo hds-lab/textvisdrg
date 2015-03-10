@@ -25,6 +25,7 @@ TEST_DBNAME=test_$DBNAME
 SCRIPTS_DIR=$PROJECT_ROOT/setup/scripts
 source "${SCRIPTS_DIR}/vagrant/update.sh"
 source "${SCRIPTS_DIR}/vagrant/mysql.sh"
+source "${SCRIPTS_DIR}/vagrant/memcached.sh"
 source "${SCRIPTS_DIR}/vagrant/phpmyadmin.sh"
 source "${SCRIPTS_DIR}/vagrant/scipy.sh"
 source "${SCRIPTS_DIR}/vagrant/bower.sh"

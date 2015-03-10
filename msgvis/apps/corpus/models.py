@@ -1,4 +1,6 @@
 from django.db import models
+from caching.base import CachingManager, CachingMixin
+
 from msgvis.apps.base import models as base_models
 
 class Dataset(models.Model):
@@ -32,17 +34,19 @@ class Dataset(models.Model):
         return messages.order_by('?')[:10]
 
 
-class MessageType(models.Model):
+class MessageType(CachingMixin, models.Model):
     """The type of a message, e.g. retweet, reply, original, system..."""
 
     name = models.CharField(max_length=100, unique=True)
     """The name of the message type"""
 
+    objects = CachingManager()
+
     def __unicode__(self):
         return self.name
 
 
-class Language(models.Model):
+class Language(CachingMixin, models.Model):
     """Represents the language of a message or a user"""
 
     code = models.SlugField(max_length=10, unique=True)
@@ -50,6 +54,8 @@ class Language(models.Model):
 
     name = models.CharField(max_length=100)
     """The full name of the language"""
+
+    objects = CachingManager()
 
     def __unicode__(self):
         return "%s:%s" % (self.code, self.name)
@@ -71,7 +77,7 @@ class Url(models.Model):
 class Hashtag(models.Model):
     """A hashtag in a message"""
 
-    text = base_models.Utf8CharField(max_length=100)
+    text = base_models.Utf8CharField(max_length=100, db_index=True)
     """The text of the hashtag, without the hash"""
 
 
@@ -87,7 +93,7 @@ class Media(models.Model):
     """A url where the media may be accessed"""
 
 
-class Timezone(models.Model):
+class Timezone(CachingMixin, models.Model):
     """
     The timezone of a message or user
     """
@@ -95,13 +101,21 @@ class Timezone(models.Model):
     olson_code = models.CharField(max_length=40, null=True, blank=True, default=None)
     """The timezone code from pytz."""
 
-    name = models.CharField(max_length=150)
+    name = models.CharField(max_length=150, db_index=True)
     """Another name for the timezone, perhaps the country where it is located?"""
+
+    objects = CachingManager()
+
 
 class Person(models.Model):
     """
     A person who sends messages in a dataset.
     """
+
+    class Meta:
+        index_together = (
+            ('dataset', 'original_id')  # used by the importer
+        )
 
     dataset = models.ForeignKey(Dataset)
     """Which :class:`Dataset` this person belongs to"""
@@ -144,7 +158,11 @@ class Message(models.Model):
     """
     The Message is the central data entity for the dataset.
     """
-
+    class Meta:
+        index_together = (
+            ('dataset', 'original_id'),  # used by importer
+        )
+            
     dataset = models.ForeignKey(Dataset)
     """Which :class:`Dataset` the message belongs to"""
 
