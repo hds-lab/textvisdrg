@@ -317,7 +317,7 @@
                         var value = distribution_map[level] || 0;
 
                         if (level === null || level === "")
-                            level = "No " + self.key;
+                            level = "No " + self.name;
 
                         var label;
                         if (labels && labels.length > i) {
