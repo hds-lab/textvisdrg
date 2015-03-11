@@ -56,7 +56,7 @@ class TestCategoricalDataTable(DistributionTestCaseMixins, TestCase):
         dimension = registry.get_dimension('contains_url')
 
         datatable = models.DataTable(dimension)
-        result = datatable.render(dataset)
+        result = datatable.render(dataset.message_set.all())
 
         self.assertDistributionsEqual(result, bool_distribution, level_key='contains_url', measure_key='value')
 
@@ -76,7 +76,7 @@ class TestCategoricalDataTable(DistributionTestCaseMixins, TestCase):
         d2 = registry.get_dimension(field_names[1])
 
         datatable = models.DataTable(d1, d2)
-        result = datatable.render(dataset)
+        result = datatable.render(dataset.message_set.all())
 
         self.assertMultiDistributionsEqual(result, bi_bool_distribution, field_names, measure_key='value')
 
@@ -101,7 +101,7 @@ class TestQuantitativeDataTable(DistributionTestCaseMixins, TestCase):
         dimension = registry.get_dimension('shares')
 
         datatable = models.DataTable(dimension)
-        result = datatable.render(dataset)
+        result = datatable.render(dataset.message_set.all())
 
         self.assertDistributionsEqual(result, quant_distribution, level_key='shares', measure_key='value')
 
@@ -127,7 +127,7 @@ class TestQuantitativeDataTable(DistributionTestCaseMixins, TestCase):
         dimension = registry.get_dimension('shares')
 
         datatable = models.DataTable(dimension)
-        result = datatable.render(dataset, desired_primary_bins=5)
+        result = datatable.render(dataset.message_set.all(), desired_primary_bins=5)
 
         self.assertDistributionsEqual(result, binned_distribution, level_key='shares', measure_key='value')
 
@@ -145,7 +145,7 @@ class TestQuantitativeDataTable(DistributionTestCaseMixins, TestCase):
         d2 = registry.get_dimension('replies')
 
         datatable = models.DataTable(d1, d2)
-        result = datatable.render(dataset)
+        result = datatable.render(dataset.message_set.all())
 
         self.assertMultiDistributionsEqual(result, quant_distribution, ('shares', 'replies'), measure_key='value')
 
@@ -168,7 +168,7 @@ class TestQuantitativeDataTable(DistributionTestCaseMixins, TestCase):
         d2 = registry.get_dimension('replies')
 
         datatable = models.DataTable(d1, d2)
-        result = datatable.render(dataset, desired_secondary_bins=5)
+        result = datatable.render(dataset.message_set.all(), desired_secondary_bins=5)
 
         self.assertMultiDistributionsEqual(result, binned_distribution, ('shares', 'replies'), measure_key='value')
 
@@ -193,7 +193,7 @@ class TestRelatedCategoricalDataTable(DistributionTestCaseMixins, TestCase):
         dimension = registry.get_dimension('language')
 
         datatable = models.DataTable(dimension)
-        result = datatable.render(dataset)
+        result = datatable.render(dataset.message_set.all())
 
         self.assertDistributionsEqual(result, language_name_distribution, level_key='language', measure_key='value')
 
@@ -228,7 +228,7 @@ class TestRelatedCategoricalDataTable(DistributionTestCaseMixins, TestCase):
         d2 = registry.get_dimension('sender_name')
 
         datatable = models.DataTable(d1, d2)
-        result = datatable.render(dataset)
+        result = datatable.render(dataset.message_set.all())
 
         self.assertMultiDistributionsEqual(result, value_distribution, ('language', 'sender_name'), measure_key='value')
 
