@@ -516,7 +516,10 @@
                 mapFn.inverse = function(label) {
                     // find the label in valueLabels.values
                     // or if it isn't there return null;
-                    return valueLabelsInverse[label] || "";
+                    if ( dimension.is_time() ){
+                        label = moment(label).format("YYYY-MM-DDTHH:mm:ss") + "Z";
+                    }
+                    return "" + valueLabelsInverse[label] || "";
                 };
 
                 return mapFn;
@@ -727,7 +730,14 @@
                     },
                     legend: {
                         show: false
+                    },
+                    tooltip: {
+                        grouped: false // Default true
+                    },
+                    subchart: {
+                        show: true
                     }
+
                 };
 
                 //If x is quantitative, use a line chart
