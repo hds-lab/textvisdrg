@@ -13,8 +13,15 @@
             'SparQs.charts',
             'ngCookies',
             'ngDragDrop',
-            'ngAnimate'
+            'ngAnimate',
+            'angularSpinner'
         ]);
+
+    app.config(['usSpinnerConfigProvider', function (usSpinnerConfigProvider) {
+        usSpinnerConfigProvider.setDefaults({
+            color: '#eee'
+        });
+    }]);
 
     //Fix CSRF
     //http://django-angular.readthedocs.org/en/latest/csrf-protection.html

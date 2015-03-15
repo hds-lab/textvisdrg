@@ -27,6 +27,9 @@
 
 <script src="{% static 'djangular/js/django-angular.js' %}"></script>
 
+<script src="{% static 'bower/spin.js/spin.js' %}"></script>
+<script src="{% static 'bower/angular-spinner/angular-spinner.js' %}"></script>
+    
 <script src="{% static 'bower/moment/moment.js' %}"></script>
 <script src="{% static 'bower/d3/d3.js' %}"></script>
 <script src="{% static 'bower/c3/c3.js' %}"></script>
@@ -129,7 +132,7 @@
                     <div id="viz-content" class="heading-body">
                         <sparqs-vis vis-data-table="datatable"
                                         on-clicked="onVisClicked">
-
+                            <span us-spinner="spinnerOptions" spinner-key="vis-spinner"></span>
                         </sparqs-vis>
 
                         <div class="dropzones"

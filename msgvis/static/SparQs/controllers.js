@@ -193,7 +193,7 @@
     ];
     module.controller('SparQs.controllers.SampleQuestionController', SampleQuestionController);
 
-    var VisualizationController = function ($scope, Selection, DataTables, Dataset) {
+    var VisualizationController = function ($scope, Selection, DataTables, Dataset, usSpinnerService) {
 
         $scope.datatable = DataTables;
         $scope.selection = Selection;
@@ -202,7 +202,16 @@
             var dimensions = Selection.dimensions();
             var filters = Selection.filters();
             var exclude = Selection.exclude();
-            DataTables.load(Dataset.id, dimensions, filters, exclude);
+
+            var request = DataTables.load(Dataset.id, dimensions, filters, exclude);
+            
+            if (request) {
+                usSpinnerService.spin('vis-spinner');
+
+                request.then(function () {
+                    usSpinnerService.stop('vis-spinner');
+                });
+            }
         };
 
         $scope.get_data_table();
@@ -212,14 +221,22 @@
         $scope.onVisClicked = function(data) {
             Selection.set_focus(data);
         };
+        
+        $scope.spinnerOptions = {
+            radius: 20,
+            width:6,
+            length: 10
+        };
 
+        
     };
 
     VisualizationController.$inject = [
         '$scope',
         'SparQs.services.Selection',
         'SparQs.services.DataTables',
-        'SparQs.services.Dataset'
+        'SparQs.services.Dataset',
+        'usSpinnerService'
     ];
     module.controller('SparQs.controllers.VisualizationController', VisualizationController);
 
