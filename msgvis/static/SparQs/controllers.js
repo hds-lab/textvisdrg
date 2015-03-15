@@ -109,15 +109,28 @@
         'SparQs.services.Selection'];
     module.controller('SparQs.controllers.DimensionController', DimensionController);
 
-    var ExampleMessageController = function ($scope, ExampleMessages, Selection, Dataset) {
+    var ExampleMessageController = function ($scope, ExampleMessages, Selection, Dataset, usSpinnerService) {
 
         $scope.messages = ExampleMessages;
 
+        $scope.spinnerOptions = {
+            radius: 20,
+            width: 6,
+            length: 10
+        };
+        
         $scope.get_example_messages = function () {
             var filters = Selection.filters();
             var exclude = Selection.exclude();
             var focus = Selection.focus();
-            ExampleMessages.load(Dataset.id, filters, focus, exclude);
+            var request = ExampleMessages.load(Dataset.id, filters, focus, exclude);
+            if (request) {
+                usSpinnerService.spin('examples-spinner');
+                
+                request.then(function() {
+                    usSpinnerService.stop('examples-spinner');
+                });
+            }
         };
 
         Selection.changed('filters,focus', $scope, $scope.get_example_messages);
@@ -129,7 +142,8 @@
         '$scope',
         'SparQs.services.ExampleMessages',
         'SparQs.services.Selection',
-        'SparQs.services.Dataset'
+        'SparQs.services.Dataset',
+        'usSpinnerService'
     ];
     module.controller('SparQs.controllers.ExampleMessageController', ExampleMessageController);
 

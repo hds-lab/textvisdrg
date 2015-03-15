@@ -232,7 +232,7 @@
                     };
 
                     var self = this;
-                    $http.post(apiUrl, request)
+                    return $http.post(apiUrl, request)
                         .success(function (data) {
                             self.list = data.messages.map(function (msgdata) {
                                 return new Message(msgdata);
