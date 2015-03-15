@@ -291,10 +291,26 @@
 
 
     //Extends DimensionsController
-    var FilterController = function ($scope, Filtering, Selection) {
+    var FilterController = function ($scope, Filtering, Selection, usSpinnerService) {
 
         $scope.filtering = Filtering;
 
+        $scope.spinnerOptions = {
+            radius: 15,
+            width: 4,
+            length: 8
+        };
+        
+        $scope.$watch('filtering.dimension.request', function(newVal, oldVal) {
+            if (Filtering.dimension && Filtering.dimension.request) {
+                usSpinnerService.spin('filter-spinner');
+
+                Filtering.dimension.request.then(function() {
+                    usSpinnerService.stop('filter-spinner');
+                })
+            }
+        });
+        
         $scope.closeFilter = function() {
             Filtering.toggle();
         };
@@ -345,7 +361,8 @@
     FilterController.$inject = [
         '$scope',
         'SparQs.services.Filtering',
-        'SparQs.services.Selection'
+        'SparQs.services.Selection',
+        'usSpinnerService'
     ];
     module.controller('SparQs.controllers.FilterController', FilterController);
 
