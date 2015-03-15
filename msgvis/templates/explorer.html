@@ -4,7 +4,8 @@
 {% block page_title %}SparQs{% endblock %}
 
 {% block css %}
-{{ block.super }}
+<link rel="stylesheet" href="{% static 'theme.less' %}" type="text/less">
+<link rel="stylesheet" href="{% static 'style.less' %}" type="text/less">
 <link rel="stylesheet" href="{% static 'bower/c3/c3.css' %}">
 <link rel="stylesheet" href="{% static 'sparqs.less' %}" type="text/less">
 {% endblock %}
@@ -108,11 +109,12 @@
 
                     <ul class="questions-list heading-body">
                         <li ng-repeat="question in questions.list track by $index">
-                            <div  class="source-popover"
+                            <div  class="question source-popover"
                                   tabindex="0" role="button" data-toggle="popover"
                                   data-trigger="focus"
-                                  data-placement="{$ $index < 3 ? 'bottom' : 'top' $}"
-                                  data-content="{$ get_full_source_info(question.source) $}">
+                                  data-placement="right"
+                                  data-content="{$ get_full_source_info(question.source) $}" 
+                                  data-container="body">
                                 <span ng-bind-html="question.text"></span>
                                 <span class="citation">({$ get_authors(question.source.authors) $} {$ question.source.year $})</span>
                             </div>
