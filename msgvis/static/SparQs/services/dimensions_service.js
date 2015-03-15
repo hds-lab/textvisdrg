@@ -123,7 +123,6 @@
                 this.group_action = false;
 
                 this.filtering = false; //true if currently being filtered
-                this.description = [this.name, this.name, this.name].join(', ') + '!';
                 this.table = undefined;
                 this.domain = undefined;
                 this.distribution = undefined;
@@ -232,7 +231,7 @@
                         var target = self;
                         if ( typeof(self.search_key) !== "undefined" && self.search_key !== "" &&
                              typeof(self.search_results[self.search_key]) === "undefined" ){
-                            target = {}
+                            target = {};
                             target.table = [];
                             target.domain = [];
                             target.domain_labels = {};
@@ -424,117 +423,140 @@
                 {
                     "key": "time",
                     "name": "Time",
-                    "type": "TimeDimension"
+                    "type": "TimeDimension",
+                    "description": "The time a message was sent (UTC)."
                 },
                 {
                     "key": "timezone",
                     "name": "Timezone",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "The timezone (proxy for location) of a message."
                 },
                 {
                     "key": "topics",
                     "name": "Topics",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Topics in the dataset based on a topic model."
                 },
                 {
                     "key": "words",
                     "name": "Keywords",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Words extracted from messages."
                 },
                 {
                     "key": "hashtags",
                     "name": "Hashtags",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Hashtags used in messages."
                 },
                 {
                     "key": "contains_hashtag",
                     "name": "Contains a Hashtag",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Whether a message includes a hashtag."
                 },
                 {
                     "key": "urls",
                     "name": "Urls",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Urls included in messages."
                 },
                 {
                     "key": "contains_url",
                     "name": "Contains a Url",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Whether a message includes a url."
                 },
                 {
                     "key": "contains_media",
                     "name": "Contains a Photo",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Whether a message includes a photo."
                 },
                 {
                     "key": "language",
                     "name": "Language",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "The language of a message."
                 },
                 {
                     "key": "sentiment",
                     "name": "Sentiment",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Sentiment (positive, negative, neutral) from sentiment analysis."
                 },
                 {
                     "key": "type",
                     "name": "Message Type",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Whether a message is an original tweet, a retweet, or a reply."
                 },
                 {
                     "key": "replies",
                     "name": "Num. Replies",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Number of known replies a message received."
                 },
                 {
                     "key": "shares",
                     "name": "Num. Shares",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Times a message was shared or retweeted."
                 },
                 {
                     "key": "mentions",
                     "name": "Mentions",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Usernames mentioned in messages."
                 },
                 {
                     "key": "contains_mention",
                     "name": "Contains a Mention",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Whether or not a message @mentions someone."
                 },
                 {
                     "key": "sender_name",
                     "name": "Author Name",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Name of the person who sent a message."
                 },
                 {
                     "key": "sender_message_count",
                     "name": "Num. Messages",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Total messages sent by a message's author."
                 },
                 {
                     "key": "sender_reply_count",
                     "name": "Num. Replies",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Total replies received by a message's author."
                 },
                 {
                     "key": "sender_mention_count",
                     "name": "Num. Mentions",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Total mentions of a message's author."
                 },
                 {
                     "key": "sender_share_count",
                     "name": "Num. Shares",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Total shares or retweets received by a message's author."
                 },
                 {
                     "key": "sender_friend_count",
                     "name": "Num. Friends",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Number of people a message's author is following."
                 },
                 {
                     "key": "sender_follower_count",
                     "name": "Num. Followers",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Number of people following a message's author."
                 }
             ]);
         }
