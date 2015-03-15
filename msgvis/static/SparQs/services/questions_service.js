@@ -87,7 +87,7 @@
                     };
 
                     var self = this;
-                    $http.post(apiUrl, request)
+                    return $http.post(apiUrl, request)
                         .success(function (data) {
                             self.list = data.questions.map(function (qdata) {
                                 $timeout(function() {

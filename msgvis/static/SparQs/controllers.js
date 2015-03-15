@@ -3,13 +3,21 @@
 
 
     var module = angular.module('SparQs.controllers', [
-        'SparQs.services'
+        'SparQs.services',
+        'angularSpinner'
     ]);
 
-    module.config(function ($interpolateProvider) {
+    module.config(['$interpolateProvider', function ($interpolateProvider) {
         $interpolateProvider.startSymbol('{$');
         $interpolateProvider.endSymbol('$}');
-    });
+    }]);
+
+
+    module.config(['usSpinnerConfigProvider', function (usSpinnerConfigProvider) {
+        usSpinnerConfigProvider.setDefaults({
+            color: '#eee'
+        });
+    }]);
 
     var DimensionController = function ($scope, Dimensions, Filtering, Selection) {
 
@@ -147,13 +155,27 @@
     ];
     module.controller('SparQs.controllers.ExampleMessageController', ExampleMessageController);
 
-    var SampleQuestionController = function ($scope, $timeout, Selection, SampleQuestions) {
+    var SampleQuestionController = function ($scope, $timeout, Selection, SampleQuestions, usSpinnerService) {
 
         $scope.questions = SampleQuestions;
         $scope.selection = Selection;
 
+        $scope.spinnerOptions = {
+            radius: 15,
+            width: 4,
+            length: 8
+        };
+        
         $scope.get_sample_questions = function () {
-            SampleQuestions.load(Selection.dimensions());
+            var request = SampleQuestions.load(Selection.dimensions());
+            
+            if (request) {
+                usSpinnerService.spin('questions-spinner');
+                request.then(function() {
+                    usSpinnerService.stop('questions-spinner');
+                })
+                
+            }
         };
 
         $scope.get_authors = function(authors){
@@ -174,7 +196,7 @@
             if ( source.venue )
                 template += "<span class='source venue'>Published in <em>" + source.venue + "</em></span>";
             return template;
-        }
+        };
 
         $scope.$watch('questions.list', function(){
             //When the question list changes, we are going to manually (jQuery)
@@ -203,7 +225,8 @@
         '$scope',
         '$timeout',
         'SparQs.services.Selection',
-        'SparQs.services.SampleQuestions'
+        'SparQs.services.SampleQuestions',
+        'usSpinnerService'
     ];
     module.controller('SparQs.controllers.SampleQuestionController', SampleQuestionController);
 
