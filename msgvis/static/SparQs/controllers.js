@@ -21,6 +21,15 @@
 
     var DimensionController = function ($scope, Dimensions, Filtering, Selection) {
 
+        $scope.draggableOptions = {
+            revert: 'invalid',
+            helper: 'clone',
+            appendTo: '#content',
+            containment: '#content',
+            scroll: false,
+            cursorAt: {left: 60, top: 20}
+        };
+
         //Hierarchy of dimensions
         $scope.dimension_groups = [
             {
@@ -126,7 +135,7 @@
             width: 6,
             length: 10
         };
-        
+
         $scope.get_example_messages = function () {
             var filters = Selection.filters();
             var exclude = Selection.exclude();
@@ -134,7 +143,7 @@
             var request = ExampleMessages.load(Dataset.id, filters, focus, exclude);
             if (request) {
                 usSpinnerService.spin('examples-spinner');
-                
+
                 request.then(function() {
                     usSpinnerService.stop('examples-spinner');
                 });
@@ -165,16 +174,16 @@
             width: 4,
             length: 8
         };
-        
+
         $scope.get_sample_questions = function () {
             var request = SampleQuestions.load(Selection.dimensions());
-            
+
             if (request) {
                 usSpinnerService.spin('questions-spinner');
                 request.then(function() {
                     usSpinnerService.stop('questions-spinner');
                 })
-                
+
             }
         };
 
@@ -241,7 +250,7 @@
             var exclude = Selection.exclude();
 
             var request = DataTables.load(Dataset.id, dimensions, filters, exclude);
-            
+
             if (request) {
                 usSpinnerService.spin('vis-spinner');
 
@@ -258,14 +267,14 @@
         $scope.onVisClicked = function(data) {
             Selection.set_focus(data);
         };
-        
+
         $scope.spinnerOptions = {
             radius: 20,
             width:6,
             length: 10
         };
 
-        
+
     };
 
     VisualizationController.$inject = [
@@ -281,6 +290,20 @@
     var DropzonesController = function($scope, Dimensions, Dropzones, Selection) {
         $scope.dropzones = Dropzones;
 
+        $scope.draggableOptions = {
+            containment: '#content',
+            scroll: false, 
+            revert: 'invalid'
+        };
+        
+        $scope.droppableOptions = function (zone) {
+            return {
+                tolerance: 'touch', 
+                hoverClass: 'ui-droppable-hover',
+                accept: zone.accept_class()
+            };
+        };
+        
         var dropzoneChanged = function(zone, new_dimension, old_dimension) {
             if (new_dimension && new_dimension.zone != zone) {
 
@@ -337,7 +360,7 @@
             width: 4,
             length: 8
         };
-        
+
         $scope.$watch('filtering.dimension.request', function(newVal, oldVal) {
             if (Filtering.dimension && Filtering.dimension.request) {
                 usSpinnerService.spin('filter-spinner');
@@ -347,7 +370,7 @@
                 })
             }
         });
-        
+
         $scope.closeFilter = function() {
             Filtering.toggle();
         };

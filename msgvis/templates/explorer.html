@@ -91,7 +91,7 @@
                                      ng-model="dimension.draggable"
                                      data-drag="true"
                                      jqyoui-draggable="{placeholder: 'keep'}"
-                                     data-jqyoui-options="{revert: 'invalid', helper: 'clone', appendTo: 'body', cursorAt: {left: 60, top: 20}}">
+                                     data-jqyoui-options="draggableOptions">
 
                                     <span class="dimension-name" ng-bind="dimension.name"></span>
 
@@ -149,7 +149,7 @@
                                      ng-model="zone.dimension"
                                      data-drop="true"
                                      jqyoui-droppable="{onDrop: 'onDimensionDrop'}"
-                                     data-jqyoui-options="{tolerance: 'touch', hoverClass: 'ui-droppable-hover', accept: zone.accept_class()}">
+                                     data-jqyoui-options="droppableOptions(zone)">
                                     <div class="dropzone-background"></div>
                                     <!-- This shows if there is a dimension occupying the zone -->
                                     <div class="dimension-wrapper" ng-hide="!zone.dimension">
@@ -158,7 +158,7 @@
                                              ng-model="zone.dimension"
                                              data-drag="true"
                                              jqyoui-draggable="{placeholder: false}"
-                                             data-jqyoui-options="{appendTo: body, revert: 'invalid'}">
+                                             data-jqyoui-options="draggableOptions">
                                             <span class="dimension-name">
                                                 {$ zone.dimension.name $}
                                             </span>
