@@ -199,8 +199,8 @@
                         //$('.level-select-button.none').prop('disabled', false);
                         return this.load_categorical_distribution(dataset);
                     }
-                    else if (!this._loading && !this.table) {
-                        this._loading = true;
+                    else if (!this.loading && !this.table) {
+                        this.loading = true;
 
                         var request = {
                             dataset: Dataset.id,
@@ -210,15 +210,17 @@
                         var apiUrl = djangoUrl.reverse('data-table');
 
                         var self = this;
-                        return $http.post(apiUrl, request)
+                        this.request = $http.post(apiUrl, request)
                             .success(function (data) {
                                 var result = data.result;
-                                self._loading = false;
-
+                                self.loading = false;
+                                self.request = false;
                                 self.table = result.table;
                                 self.domain = result.domains[self.key];
                                 self.domain_labels = result.domain_labels[self.key] || {};
                             });
+                        
+                        return this.request;
                     }
                 },
                 get_current_distribution: function(){
@@ -226,8 +228,8 @@
                 },
                 load_categorical_distribution: function (dataset) {
                     var self = this;
-                    if (!self._loading) {
-                        self._loading = true;
+                    if (!self.loading) {
+                        self.loading = true;
                         var target = self;
                         if ( typeof(self.search_key) !== "undefined" && self.search_key !== "" &&
                              typeof(self.search_results[self.search_key]) === "undefined" ){
@@ -259,11 +261,11 @@
                         var apiUrl = djangoUrl.reverse('data-table');
 
 
-                        return $http.post(apiUrl, request)
+                        this.request = $http.post(apiUrl, request)
                             .success(function (data) {
                                 var result = data.result;
-                                self._loading = false;
-
+                                self.loading = false;
+                                self.request = undefined;
                                 if ( result !== null && typeof(result) !== "undefined" ){
                                     result.table = result.table;
                                     result.domain = result.domains[self.key];
@@ -274,6 +276,8 @@
 
                                 }
                             });
+                        
+                        return this.request;
                     }
                 },
                 add_categorical_distribution: function(target, result){

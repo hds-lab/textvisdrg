@@ -3,13 +3,21 @@
 
 
     var module = angular.module('SparQs.controllers', [
-        'SparQs.services'
+        'SparQs.services',
+        'angularSpinner'
     ]);
 
-    module.config(function ($interpolateProvider) {
+    module.config(['$interpolateProvider', function ($interpolateProvider) {
         $interpolateProvider.startSymbol('{$');
         $interpolateProvider.endSymbol('$}');
-    });
+    }]);
+
+
+    module.config(['usSpinnerConfigProvider', function (usSpinnerConfigProvider) {
+        usSpinnerConfigProvider.setDefaults({
+            color: '#eee'
+        });
+    }]);
 
     var DimensionController = function ($scope, Dimensions, Filtering, Selection) {
 
@@ -109,15 +117,28 @@
         'SparQs.services.Selection'];
     module.controller('SparQs.controllers.DimensionController', DimensionController);
 
-    var ExampleMessageController = function ($scope, ExampleMessages, Selection, Dataset) {
+    var ExampleMessageController = function ($scope, ExampleMessages, Selection, Dataset, usSpinnerService) {
 
         $scope.messages = ExampleMessages;
 
+        $scope.spinnerOptions = {
+            radius: 20,
+            width: 6,
+            length: 10
+        };
+        
         $scope.get_example_messages = function () {
             var filters = Selection.filters();
             var exclude = Selection.exclude();
             var focus = Selection.focus();
-            ExampleMessages.load(Dataset.id, filters, focus, exclude);
+            var request = ExampleMessages.load(Dataset.id, filters, focus, exclude);
+            if (request) {
+                usSpinnerService.spin('examples-spinner');
+                
+                request.then(function() {
+                    usSpinnerService.stop('examples-spinner');
+                });
+            }
         };
 
         Selection.changed('filters,focus', $scope, $scope.get_example_messages);
@@ -129,17 +150,32 @@
         '$scope',
         'SparQs.services.ExampleMessages',
         'SparQs.services.Selection',
-        'SparQs.services.Dataset'
+        'SparQs.services.Dataset',
+        'usSpinnerService'
     ];
     module.controller('SparQs.controllers.ExampleMessageController', ExampleMessageController);
 
-    var SampleQuestionController = function ($scope, $timeout, Selection, SampleQuestions) {
+    var SampleQuestionController = function ($scope, $timeout, Selection, SampleQuestions, usSpinnerService) {
 
         $scope.questions = SampleQuestions;
         $scope.selection = Selection;
 
+        $scope.spinnerOptions = {
+            radius: 15,
+            width: 4,
+            length: 8
+        };
+        
         $scope.get_sample_questions = function () {
-            SampleQuestions.load(Selection.dimensions());
+            var request = SampleQuestions.load(Selection.dimensions());
+            
+            if (request) {
+                usSpinnerService.spin('questions-spinner');
+                request.then(function() {
+                    usSpinnerService.stop('questions-spinner');
+                })
+                
+            }
         };
 
         $scope.get_authors = function(authors){
@@ -160,7 +196,7 @@
             if ( source.venue )
                 template += "<span class='source venue'>Published in <em>" + source.venue + "</em></span>";
             return template;
-        }
+        };
 
         $scope.$watch('questions.list', function(){
             //When the question list changes, we are going to manually (jQuery)
@@ -189,11 +225,12 @@
         '$scope',
         '$timeout',
         'SparQs.services.Selection',
-        'SparQs.services.SampleQuestions'
+        'SparQs.services.SampleQuestions',
+        'usSpinnerService'
     ];
     module.controller('SparQs.controllers.SampleQuestionController', SampleQuestionController);
 
-    var VisualizationController = function ($scope, Selection, DataTables, Dataset) {
+    var VisualizationController = function ($scope, Selection, DataTables, Dataset, usSpinnerService) {
 
         $scope.datatable = DataTables;
         $scope.selection = Selection;
@@ -202,7 +239,16 @@
             var dimensions = Selection.dimensions();
             var filters = Selection.filters();
             var exclude = Selection.exclude();
-            DataTables.load(Dataset.id, dimensions, filters, exclude);
+
+            var request = DataTables.load(Dataset.id, dimensions, filters, exclude);
+            
+            if (request) {
+                usSpinnerService.spin('vis-spinner');
+
+                request.then(function () {
+                    usSpinnerService.stop('vis-spinner');
+                });
+            }
         };
 
         $scope.get_data_table();
@@ -212,14 +258,22 @@
         $scope.onVisClicked = function(data) {
             Selection.set_focus(data);
         };
+        
+        $scope.spinnerOptions = {
+            radius: 20,
+            width:6,
+            length: 10
+        };
 
+        
     };
 
     VisualizationController.$inject = [
         '$scope',
         'SparQs.services.Selection',
         'SparQs.services.DataTables',
-        'SparQs.services.Dataset'
+        'SparQs.services.Dataset',
+        'usSpinnerService'
     ];
     module.controller('SparQs.controllers.VisualizationController', VisualizationController);
 
@@ -274,10 +328,26 @@
 
 
     //Extends DimensionsController
-    var FilterController = function ($scope, Filtering, Selection) {
+    var FilterController = function ($scope, Filtering, Selection, usSpinnerService) {
 
         $scope.filtering = Filtering;
 
+        $scope.spinnerOptions = {
+            radius: 15,
+            width: 4,
+            length: 8
+        };
+        
+        $scope.$watch('filtering.dimension.request', function(newVal, oldVal) {
+            if (Filtering.dimension && Filtering.dimension.request) {
+                usSpinnerService.spin('filter-spinner');
+
+                Filtering.dimension.request.then(function() {
+                    usSpinnerService.stop('filter-spinner');
+                })
+            }
+        });
+        
         $scope.closeFilter = function() {
             Filtering.toggle();
         };
@@ -328,7 +398,8 @@
     FilterController.$inject = [
         '$scope',
         'SparQs.services.Filtering',
-        'SparQs.services.Selection'
+        'SparQs.services.Selection',
+        'usSpinnerService'
     ];
     module.controller('SparQs.controllers.FilterController', FilterController);
 

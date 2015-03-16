@@ -861,7 +861,9 @@
                 onClicked: '=onClicked'
             },
             link: link,
-            template: '<div class="sparqs-vis-render-target"></div>'
+            transclude: true,
+            template: '<div class="sparqs-vis-render-target"></div>' +
+            '<div ng-transclude></div>'
         }
     });
 })();
