@@ -731,17 +731,19 @@
                     },
                     tooltip: {
                         
+                    },
+                    color: {
+                        pattern: d3.scale.category20().range()
                     }
                 };
 
                 //If x is quantitative, use a line chart
                 if (primary.is_quantitative_or_time()) {
                     config.axis.x.type = 'indexed';
+                    config.data.type = 'area';
 
                     if (secondary) {
                         config.data.type = 'line';
-                    } else {
-                        config.data.type = 'area';
                     }
 
                     //Special time-specific overrides
