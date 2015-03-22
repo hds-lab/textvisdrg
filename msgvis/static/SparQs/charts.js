@@ -696,12 +696,6 @@
                 var defaultDotRadius = 5;
 
                 var config = {
-                    size: {
-                        height: 500
-                    },
-                    /*padding: {
-                        bottom: 30
-                    },*/
                     point: {
                         r: defaultDotRadius
                     },
@@ -831,7 +825,7 @@
                     var config = getC3Config(primary, secondary, dataTable.domains);
                     config.data.rows = table;
                     config.bindto = $element.find('.sparqs-vis-render-target')[0];
-                    var chart = c3.generate(config);
+                    this.chart = c3.generate(config);
                 }
             };
         };
