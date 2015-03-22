@@ -617,12 +617,13 @@
                 table.forEach(function(row) {
                     var value = row[DEFAULT_VALUE_KEY];
                     var r = rowIndex[self.primaryValueLabel(row[primary.key])];
+                    var i;
                     if ( typeof(r) === "undefined" && primary.is_quantitative_or_time() ){
                         var rowList = Object.keys(rowIndex);
                         if ( primary.is_quantitative()) rowList.map(function(d){return +d;}).sort(function(a, b){return (a) - (b);});
                         else if ( primary.is_time()) rowList.sort();
 
-                        for ( var i = 0 ; i < rowList.length ; i++ ){
+                        for (i = 0 ; i < rowList.length ; i++ ){
                             if ( rowList[i] < row[primary.key] ){
                                 r = rowIndex["" + rowList[i]];
                                 break;
@@ -644,7 +645,7 @@
                                 if ( secondary.is_quantitative()) columnList.map(function(d){return +d;}).sort(function(a, b){return (a) - (b);});
                                 else if ( primary.is_time()) rowList.sort();
 
-                                for ( var i = 0 ; i < columnList.length ; i++ ){
+                                for (i = 0 ; i < columnList.length ; i++ ){
                                     if ( columnList[i] < row[secondary.key] ){
                                         c = columnIndex["" + columnList[i]];
                                         break;
@@ -692,6 +693,8 @@
             function getC3Config(primary, secondary, domains) {
                 //Default setup: one-axis bar chart vs. counts
 
+                var defaultDotRadius = 5;
+
                 var config = {
                     size: {
                         height: 500
@@ -699,6 +702,9 @@
                     /*padding: {
                         bottom: 30
                     },*/
+                    point: {
+                        r: defaultDotRadius
+                    },
                     data:{
                         type: 'bar',
                         x: primary.key,
@@ -729,9 +735,7 @@
                     legend: {
                         show: false
                     },
-                    tooltip: {
-                        
-                    },
+                    tooltip: { },
                     color: {
                         pattern: d3.scale.category20().range()
                     }
