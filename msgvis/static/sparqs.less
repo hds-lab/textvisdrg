@@ -73,31 +73,31 @@ body {
     bottom: @section-margin;
 }
 
-@header-height: 90px;
+@header-height: 50px;
 #titleWrap {
     height: @header-height;
     top: 0;
 
+    line-height: @header-height;
+
     .logo {
         float: left;
-
-        margin-right: 20px;
-        height: 90px;
-        text-align: left;
-        vertical-align: bottom;
+        min-width: 34px;
+        margin: 0 5px;
 
         img {
-            height: 75px;
+            display: inline;
+            height: @header-height * 0.8;
         }
     }
 
     .logo-titles {
         float: left;
-        margin-top: 3px;
 
         .title {
             font-size: 36px;
             color: #fff;
+            margin-right: 10px;
         }
 
         .subtitle {
