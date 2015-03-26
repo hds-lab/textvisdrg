@@ -1,7 +1,7 @@
 @import 'bower/components-bootstrap/less/mixins';
 
-@primary-color: #680F37;
-@secondary-color: #022D47;
+@primary-color: #FF174E;
+@secondary-color: #29D7FF;
 
 @section-margin: 5px;
 
@@ -219,47 +219,65 @@ body {
                 border-bottom: none;
             }
         }
-
     }
 
     /* Dimension-specific overrides */
 
     @totaldims: 20;
     @min-dimension-height: 27px;
-    .group-style(@numdims) {
+    .group-style(@numdims, @icon_name) {
         height: @numdims * 100% / @totaldims;
         min-height: @min-dimension-height * @numdims;
         .dimension {
             height: 100% / @numdims;
+
+            .dimension-icon {
+                background-image: url('images/part2_normal_@{icon_name}.png');
+            }
+
+            &.dimension-primary {
+                .dimension-icon {
+                    background-image: url('images/part2_x_@{icon_name}.png');
+                    opacity: 1;
+                }
+            }
+
+
+            &.dimension-secondary {
+                .dimension-icon {
+                    background-image: url('images/part2_y_@{icon_name}.png');
+                    opacity: 1;
+                }
+            }
         }
     }
 
     #group-Time {
-        .group-style(2);
+        .group-style(2, 'time');
     }
 
     #group-Contents {
-        .group-style(5);
+        .group-style(5, 'content');
     }
 
     #group-Meta {
-        .group-style(2);
+        .group-style(2, 'meta');
     }
+
     #group-Interaction {
-        .group-style(4);
+        .group-style(4, 'interaction');
     }
+
     #group-Author {
-        .group-style(7);
+        .group-style(7, 'author');
     }
 
 }
 
 .dimension {
-    .user-select(none);
-    cursor: default;
     position: relative;
     font-size: 12pt;
-    color: #999;
+    cursor: pointer;
 
     &.ui-draggable-dragging {
         cursor: hand;
@@ -269,14 +287,6 @@ body {
         .box-shadow(1px 3px 10px rgba(0, 0, 0, 0.5));
 
         .dimension-token();
-    }
-
-    &.dimension-primary {
-        .background-gradient(@left: darken(@primary-color, 5%), @right: @primary-color);
-    }
-
-    &.dimension-secondary {
-        .background-gradient(@left: darken(@secondary-color, 5%), @right: @secondary-color);
     }
 
     .dimension-border {
@@ -292,13 +302,69 @@ body {
         }
     }
 
-    .dimension-name {
+    .dimension-icon {
         position: absolute;
+        left: 5px;
+        top: 50%;
+
+        width: 20px;
+        height: 20px;
+
+        margin-top: -10px;
+
+        background: center no-repeat;
+
+        opacity: 0.3;
+        .transition(opacity 0.2s);
+    }
+
+    .dimension-name {
+        color: #FFF;
+        position: absolute;
+        left: 35px;
         top: 50%;
         height: 22px;
         line-height: 22px;
         margin-top: -11px;
 
+        opacity: 0.5;
+        .transition(opacity 0.2s);
+    }
+
+    &.dimension-primary,
+    &.dimension-secondary {
+        .dimension-name {
+            opacity: 0.9;
+            font-weight: bold;
+        }
+    }
+
+    &.dimension-primary {
+        .dimension-name {
+            color: @primary-color;
+        }
+    }
+
+    &.dimension-secondary {
+        .dimension-name {
+            color: @secondary-color;
+        }
+    }
+
+    &:hover {
+        .dimension-icon {
+            opacity: 0.7;
+        }
+        .dimension-name {
+            opacity: 0.8;
+        }
+
+        &.dimension-primary,
+        &.dimension-secondary {
+            .dimension-name {
+                opacity: 0.99; /* because chrome is dumb */
+            }
+        }
     }
 
     .dimension-filter {
