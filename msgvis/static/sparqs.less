@@ -133,10 +133,8 @@ body {
 }
 
 /* selectors */
-@dimension-height: 27px;
 @dimension-group-name-height: 30px;
 @dimension-group-width: @left-col-width - @dimension-group-name-height;
-@token-size: @dimension-height - 2;
 @dimension-group-border-color: #4d4f52;
 @dimension-border-color: #1a1c1e;
 
@@ -163,38 +161,48 @@ body {
     bottom: 0;
     overflow-y: auto;
 
-    border: 1px solid @dimension-group-border-color;
+//    .background-gradient();
+    #dimension-groups {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
 
     .dimension-group {
         position: relative;
 
-        //Top borders, inside borders, and one bottom border
-        border-bottom: 1px solid @dimension-group-border-color;
-
-        &:last-child {
-            border-bottom-width: 0;
-        }
-
         .group-name {
-            height: @dimension-group-name-height;
-            line-height: @dimension-group-name-height;
+            width: @dimension-group-name-height;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
 
             background-color: #999999;
             color: #000;
             font-size: 18px;
-            font-weight: 500;
+            line-height: @dimension-group-name-height;
 
-            transform: rotate(-90deg);
-            transform-origin: left bottom 0;
+            font-weight: bold;
 
-            text-align: center;
-            position: absolute;
-            bottom: 0;
-            left: 30px;
+            span {
+                transform: rotate(-90deg);
+                display: block;
+
+                position: absolute;
+                height: @dimension-group-name-height;
+                bottom: -20px;
+                left: 0;
+
+                transform-origin: left top;
+            }
         }
 
         .group-members {
             margin-left: @dimension-group-name-height;
+            height: 100%;
         }
 
         /* Even and odd alternate styles */
@@ -206,43 +214,42 @@ body {
             }
         }
 
+        &:last-child {
+            .dimension:last-child .dimension-border {
+                border-bottom: none;
+            }
+        }
+
     }
 
     /* Dimension-specific overrides */
 
-    #group-Time {
-        .group-name {
-            width: @dimension-height * 2;
+    @totaldims: 20;
+    @min-dimension-height: 27px;
+    .group-style(@numdims) {
+        height: @numdims * 100% / @totaldims;
+        min-height: @min-dimension-height * @numdims;
+        .dimension {
+            height: 100% / @numdims;
         }
+    }
+
+    #group-Time {
+        .group-style(2);
     }
 
     #group-Contents {
-        .group-name {
-            width: @dimension-height * 5;
-        }
+        .group-style(5);
     }
 
     #group-Meta {
-        .group-name {
-            width: @dimension-height * 2;
-        }
+        .group-style(2);
     }
     #group-Interaction {
-        .group-name {
-            width: @dimension-height * 4;
-        }
+        .group-style(4);
     }
     #group-Author {
-        .group-name {
-            width: @dimension-height * 7;
-        }
-    }
-
-    .token {
-        width: @token-size;
-        height: @token-size;
-        background-position: center;
-        background-repeat: no-repeat;
+        .group-style(7);
     }
 
 }
@@ -250,25 +257,9 @@ body {
 .dimension {
     .user-select(none);
     cursor: default;
-
     position: relative;
-    height: @dimension-height;
-    width: @dimension-group-width - 2;
-
     font-size: 12pt;
-    line-height: @dimension-height;
-    .background-gradient();
-
     color: #999;
-
-    // Interior borders only
-    border-bottom: 1px solid @dimension-border-color;
-    border-top-width: 0;
-    &:last-child {
-        border-bottom-width: 0;
-    }
-
-    //    .transition(border 200ms linear);
 
     &.ui-draggable-dragging {
         cursor: hand;
@@ -288,16 +279,36 @@ body {
         .background-gradient(@left: darken(@secondary-color, 5%), @right: @secondary-color);
     }
 
+    .dimension-border {
+        margin: 0 10px;
+        position: relative;
+        border-bottom: 1px solid @dimension-border-color;
+        height: 100%;
+    }
+
+    &:last-child {
+        .dimension-border {
+            border-bottom-color: @dimension-group-border-color;
+        }
+    }
+
     .dimension-name {
-        margin-left: 10px;
+        position: absolute;
+        top: 50%;
+        height: 22px;
+        line-height: 22px;
+        margin-top: -11px;
+
     }
 
     .dimension-filter {
         position: absolute;
-        right: 5px;
-        top: 0;
-        width: @token-size;
-        height: @token-size;
+        right: 0;
+        top: 50%;
+        width: 20px;
+        height: 20px;
+        margin-top: -10px;
+
         background: url('images/part2_filter.png') no-repeat center;
         cursor: pointer;
 
@@ -333,7 +344,7 @@ body {
     /* For when the dimension is being dragged around */
 
     width: auto;
-    height: 1.5 * @dimension-height;
+//    height: 1.5 * @dimension-height;
 
     font-size: 16px;
     padding: 6px 12px;
@@ -359,7 +370,7 @@ body {
     top: @questions-row-height + @section-margin;
     bottom: 0;
 
-    .background-gradient();
+//    .background-gradient();
 
     #viz-content {
         position: absolute;
@@ -462,9 +473,9 @@ body {
             display: block;
             position: absolute;
             top: 50%;
-            margin-top: -1.5 * @dimension-height / 2;
+//            margin-top: -1.5 * @dimension-height / 2;
             width: 100%;
-            height: 1.5 * @dimension-height;
+//            height: 1.5 * @dimension-height;
 
             text-align: center;
         }
@@ -578,7 +589,7 @@ body {
 
     overflow-y: auto;
 
-    .background-gradient();
+//    .background-gradient();
 
     .message-list {
         padding-left: 15px;

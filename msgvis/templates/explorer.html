@@ -93,10 +93,12 @@
                                      jqyoui-draggable="{placeholder: 'keep'}"
                                      data-jqyoui-options="draggableOptions">
 
-                                    <span class="dimension-name" ng-bind="dimension.name"></span>
+                                    <div class="dimension-border">
+                                        <span class="dimension-name" ng-bind="dimension.name"></span>
 
-                                    <div class="dimension-filter"
-                                         ng-click="openFilter(dimension, $event)"></div>
+                                        <div class="dimension-filter"
+                                             ng-click="openFilter(dimension, $event)"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
