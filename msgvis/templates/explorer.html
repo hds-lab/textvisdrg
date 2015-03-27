@@ -184,9 +184,10 @@
                         <li ng-repeat="message in messages.list">
                             <div class="text"><span ng-bind="message.text"></span></div>
                             <div class="meta">
-                                <span ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
                                 by
-                                <span ng-bind="message.sender.full_name"></span>
+                                <span class="meta-author" ng-bind="message.sender.full_name"></span>
+                                at
+                                <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
                             </div>
                         </li>
                     </ul>

@@ -116,7 +116,7 @@ body {
 
 /* setting content boxes */
 @left-col-width: 255px;
-@right-col-width: 300px;
+@right-col-width: 350px;
 #left {
     left: 0;
     width: @left-col-width;
@@ -674,15 +674,20 @@ body {
 //    .background-gradient();
 
     .message-list {
-        padding-left: 15px;
+        padding: 5px;
+        list-style: none;
 
         li {
-            color: #cfcfcf;
-            list-style-image: url("images/part6_dots.png");
+            color: #ccc;
+            list-style: none;
+            margin-bottom: 1em;
 
             .meta {
-                color: #B3B3B3;
-                font-size: 10px;
+                text-align: right;
+                margin-top: 3px;
+
+                color: #aaa;
+                font-size: 11px;
             }
         }
     }
