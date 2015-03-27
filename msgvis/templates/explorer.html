@@ -110,7 +110,7 @@
             <div id="middle" class="col">
                 <div id="questions" class="row app-panel"
                      ng-controller="SparQs.controllers.SampleQuestionController" ng-class="selection.dimensions_class()">
-                    <div class="heading">From the literature...</div>
+                    <div class="heading">From the Literature</div>
 
 
                     <ul class="questions-list heading-body">
@@ -135,7 +135,6 @@
                     <span us-spinner="spinnerOptions" spinner-key="questions-spinner"></span>
                 </div>
                 <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
-                    <div class="heading">Visualization</div>
                     <div id="viz-content" class="heading-body">
                         <sparqs-vis vis-data-table="datatable"
                                         on-clicked="onVisClicked">
