@@ -27,7 +27,7 @@
             appendTo: '#content',
             containment: '#content',
             scroll: false,
-            cursorAt: {left: 60, top: 20}
+            cursorAt: {left: 20, top: 10}
         };
 
         $scope.dimension_groups = Dimensions.get_groups();
@@ -243,7 +243,8 @@
         $scope.draggableOptions = {
             containment: '#content',
             scroll: false, 
-            revert: 'invalid'
+            revert: 'invalid',
+            cursorAt: {left: 20, top: 10}
         };
         
         $scope.droppableOptions = function (zone) {

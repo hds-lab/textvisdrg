@@ -162,6 +162,7 @@ body {
     cursor: pointer;
 
     .dimension-icon {
+        position: absolute;
         display: block;
         width: @dimension-icon-width;
         height: @dimension-icon-width;
@@ -298,7 +299,6 @@ body {
             }
 
             .dimension-icon {
-                position: absolute;
                 left: 5px;
                 top: 50%;
                 margin-top: -@dimension-icon-width / 2;
@@ -402,17 +402,20 @@ body {
     cursor: -webkit-grab;
     cursor: -moz-grab;
 
-    .box-shadow(1px 3px 10px rgba(0, 0, 0, 0.5));
-
-    width: auto;
-
-    font-size: 16px;
-    padding: 6px 12px;
-    color: #eee;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: absolute;
+    text-align: left;
 
     .dimension-name {
-        margin: 0;
+        margin-left: @dimension-icon-width + 5px;
+    }
+
+    .dimension-icon {
+        top: 50%;
+        margin-top: -@dimension-icon-width / 2;
+        left: 0;
+
+        .box-shadow(1px 3px 10px rgba(0, 0, 0, 0.5));
+        opacity: 1;
     }
 }
 
@@ -421,8 +424,8 @@ body {
 @dropzone-buffer: 20px;
 @dropzone-border-radius: 40px;
 @dropzone-border-width: 3px;
-@secondary-dropzone-width: 100px;
-@primary-dropzone-height: 100px;
+@secondary-dropzone-width: 110px;
+@primary-dropzone-height: 110px;
 
 /* visualization */
 #middle, #viz {
@@ -557,18 +560,44 @@ body {
         }
 
         .dimension-wrapper {
-            display: block;
             position: absolute;
             top: 50%;
-//            margin-top: -1.5 * @dimension-height / 2;
             width: 100%;
-//            height: 1.5 * @dimension-height;
-
-            text-align: center;
+            margin-top: -20px;
         }
 
         .dimension {
             display: inline-block;
+            text-align: center;
+            margin: 0 5px;
+
+            .dimension-name {
+                display: block;
+                margin-bottom: @dimension-icon-width + 5px;
+                margin-left: 0;
+            }
+
+            .dimension-icon {
+                bottom: 0;
+                left: 50%;
+                margin-left: -@dimension-icon-width / 2;
+            }
+
+            &.ui-draggable-dragging {
+                text-align: left;
+                margin: 0;
+
+                .dimension-icon {
+                    bottom: auto;
+                    left: 0;
+                    margin-left: 0;
+                }
+
+                .dimension-name {
+                    margin-bottom: 0;
+                    margin-left: @dimension-icon-width + 10px;
+                }
+            }
         }
 
         .c3-legend-background {
