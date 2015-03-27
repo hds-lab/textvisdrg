@@ -138,6 +138,8 @@
         };
 
         $scope.get_authors = function(authors){
+            if (!authors) return "";
+
             var author_list = authors.split("\n");
             var last_names = [];
             author_list.forEach(function(d){
@@ -150,6 +152,8 @@
         };
 
         $scope.get_full_source_info = function(source){
+            if (!source) return "";
+
             var template = "<div class='source title'><strong>" + source.title + "</strong> (" + source.year + ")</div>";
             template += "<span class='source authors'>" + (source.authors.split('\n').join(", ")) + ".</span> ";
             if ( source.venue )
@@ -157,7 +161,7 @@
             return template;
         };
 
-        $scope.$watch('questions.list', function(){
+        $scope.$watch('questions.current', function(){
             //When the question list changes, we are going to manually (jQuery)
             //update the token classes so that they end up the right color.
             //.question-tag are the dimension tags inside the research questions.
