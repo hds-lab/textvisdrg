@@ -100,7 +100,7 @@ def supervisor():
     fabutils.manage_py('supervisor')
 
 
-def deploy():
+def deploy(branch=None):
     """
     SSH into a remote server, run commands to update deployment,
     and start the server.
@@ -135,7 +135,11 @@ def deploy():
             print green("Installing Fabric...")
             run('pip install -q Fabric path.py')
 
-        run('fab pull')
+        run('git pull')
+        if branch:
+            run('git checkout %s' % branch)
+            run('git pull')
+
         run('fab dependencies:prod')
         run('fab print_env check_database migrate')
         run('fab build_static restart_webserver')
