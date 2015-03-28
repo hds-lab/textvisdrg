@@ -144,6 +144,10 @@
                         cls += ' dimension-' + this.zone.name;
                     }
 
+                    if (this.group_name) {
+                        cls += ' group-' + this.group_name;
+                    }
+
                     if (!this.is_not_applying_filters()) {
                         cls += ' filter-applied';
                     }
@@ -420,6 +424,67 @@
             angular.extend(Dimensions.prototype, {
                 get_by_key: function (key) {
                     return this.by_key[key];
+                },
+                get_groups: function() {
+                    //Hierarchy of dimensions
+                    var groups = [
+                        {
+                            "group_name": "Time",
+                            "dimensions": [
+                                this.get_by_key('time'),
+                                this.get_by_key('timezone')
+                            ]
+                        },
+                        {
+                            "group_name": "Contents",
+                            "dimensions": [
+                                this.get_by_key('topics'),
+                                this.get_by_key('words'),
+                                this.get_by_key('hashtags'),
+                                //this.get_by_key('contains_hashtag'),
+                                this.get_by_key('urls'),
+                                //this.get_by_key('contains_url'),
+                                this.get_by_key('contains_media')
+                            ]
+                        },
+                        {
+                            "group_name": "Meta",
+                            "dimensions": [
+                                this.get_by_key('language'),
+                                this.get_by_key('sentiment')
+                            ]
+                        },
+                        {
+                            "group_name": "Interaction",
+                            "dimensions": [
+                                this.get_by_key('type'),
+                                this.get_by_key('replies'),
+                                this.get_by_key('shares'),
+                                this.get_by_key('mentions')
+                                //this.get_by_key('contains_mention')
+                            ]
+                        },
+                        {
+                            "group_name": "Author",
+                            "dimensions": [
+                                this.get_by_key('sender_name'),
+                                this.get_by_key('sender_message_count'),
+                                this.get_by_key('sender_reply_count'),
+                                this.get_by_key('sender_mention_count'),
+                                this.get_by_key('sender_share_count'),
+                                this.get_by_key('sender_friend_count'),
+                                this.get_by_key('sender_follower_count')
+                            ]
+                        }
+                    ];
+
+                    groups.forEach(function(group) {
+                        group.dimensions.forEach(function(dimension) {
+                            dimension.group_name = group.group_name;
+                        });
+                    });
+
+                    return groups;
                 }
             });
 
