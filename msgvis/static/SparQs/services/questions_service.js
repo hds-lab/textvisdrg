@@ -73,7 +73,7 @@
             };
 
             var SampleQuestions = function () {
-                this.list = [];
+                this.current = undefined;
             };
 
             angular.extend(SampleQuestions.prototype, {
@@ -89,12 +89,16 @@
                     var self = this;
                     return $http.post(apiUrl, request)
                         .success(function (data) {
-                            self.list = data.questions.map(function (qdata) {
-                                $timeout(function() {
-                                    $('[data-toggle="popover"]').popover({html: 'true'})
-                                }, 10);
-                                return new Question(qdata);
-                            });
+                            var question = data.questions.slice(0, 1)
+                                .map(function (qdata) {
+                                    return new Question(qdata);
+                                });
+
+                            self.current = question.length ? question[0] : undefined;
+
+                            $timeout(function() {
+                                $('.source-popover').popover({html: true})
+                            }, 10);
                         });
 
                 }
