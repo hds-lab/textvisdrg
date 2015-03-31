@@ -283,7 +283,12 @@ LOGGING = {
         'console': {
             # logging handler that outputs log messages to terminal
             'class': 'logging.StreamHandler',
-            'level': 'DEBUG', # message level to be written to console
+            'level': 'DEBUG',
+        },
+        'db_handler': {
+            'class': 'logging.FileHandler',
+            'filename': LOGS_ROOT / 'django.db.log',
+            'level': 'DEBUG',
         },
     },
     'loggers': {
@@ -304,8 +309,11 @@ if DEBUG:
 
 if DEBUG_DB:
     LOGGING['loggers']['django.db'] = {
-        # django also has database level logging
-    },
+        'handlers': ['db_handler'],
+        'level': 'DEBUG',
+        'propagate': False,
+    }
+    
 ########## END LOGGING CONFIGURATION
 
 
