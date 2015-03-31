@@ -141,7 +141,7 @@ def get_or_create_a_tweet_from_json_obj(tweet_data, dataset_obj):
     if 'in_reply_to_status_id' not in tweet_data:
         return None
 
-    if tweet_data.get('lang') is not 'en':
+    if tweet_data.get('lang') != 'en':
         return None
 
     tweet, created = Message.objects.get_or_create(dataset=dataset_obj,
