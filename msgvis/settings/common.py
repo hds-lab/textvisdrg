@@ -313,7 +313,7 @@ if DEBUG_DB:
         'level': 'DEBUG',
         'propagate': False,
     }
-    
+
 ########## END LOGGING CONFIGURATION
 
 
@@ -332,7 +332,7 @@ INSTALLED_APPS += (
 
 # Only show the debug toolbar to users with the superuser flag.
 def custom_show_toolbar(request):
-    return request.user.is_superuser
+    return DEBUG or request.user.is_superuser
 
 
 DEBUG_TOOLBAR_CONFIG = {
