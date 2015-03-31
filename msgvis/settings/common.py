@@ -47,7 +47,7 @@ SITE_ID = 1
 
 ########## DEBUG CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = False
+DEBUG = bool(get_env_setting('DEBUG', False))
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
 TEMPLATE_DEBUG = DEBUG
@@ -55,6 +55,8 @@ TEMPLATE_DEBUG = DEBUG
 # Is this a development instance? Set this to True on development/master
 # instances and False on stage/prod.
 DEV = False
+
+DEBUG_DB = bool(get_env_setting('DEBUG_DB', False))
 ########## END DEBUG CONFIGURATION
 
 
@@ -277,7 +279,12 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        'console': {
+            # logging handler that outputs log messages to terminal
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG', # message level to be written to console
+        },
     },
     'loggers': {
         'django.request': {
@@ -287,6 +294,18 @@ LOGGING = {
         },
     }
 }
+
+if DEBUG:
+    LOGGING['loggers'][''] = {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+        'propagate': False,
+    }
+
+if DEBUG_DB:
+    LOGGING['loggers']['django.db'] = {
+        # django also has database level logging
+    },
 ########## END LOGGING CONFIGURATION
 
 

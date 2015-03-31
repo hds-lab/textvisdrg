@@ -2,7 +2,6 @@ from msgvis.settings.common import *
 
 DEV = False
 
-DEBUG = bool(get_env_setting('DEBUG', False))
 DEBUG_TEMPLATE = DEBUG
 
 COMPRESS_ENABLED = bool(get_env_setting('COMPRESS_ENABLED', True))
