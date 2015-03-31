@@ -87,8 +87,9 @@ def handle_reply_to(status_id, user_id, screen_name, dataset_obj):
     }
 
     original_tweet = get_or_create_a_tweet_from_json_obj(tmp_tweet, dataset_obj)
-    original_tweet.replied_to_count += 1
-    original_tweet.save()
+    if original_tweet is not None:
+        original_tweet.replied_to_count += 1
+        original_tweet.save()
 
     original_tweet.sender.replied_to_count += 1
     original_tweet.sender.save()
@@ -97,8 +98,9 @@ def handle_reply_to(status_id, user_id, screen_name, dataset_obj):
 def handle_retweet(retweeted_status, dataset_obj):
     # update original tweet shared_count
     original_tweet = get_or_create_a_tweet_from_json_obj(retweeted_status, dataset_obj)
-    original_tweet.shared_count += 1
-    original_tweet.save()
+    if original_tweet is not None:
+        original_tweet.shared_count += 1
+        original_tweet.save()
 
     original_tweet.sender.shared_count += 1
     original_tweet.sender.save()
