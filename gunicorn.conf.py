@@ -22,5 +22,7 @@ workers = os.environ.get("GUNICORN_WORKERS", 1)
 accesslog = settings.LOGS_ROOT / 'gunicorn.access.log'
 errorlog = settings.LOGS_ROOT / 'gunicorn.error.log'
 
+timeout = int(os.environ.get("GUNICORN_TIMEOUT", 30))
+
 if settings.DEBUG:
     loglevel = 'debug'
