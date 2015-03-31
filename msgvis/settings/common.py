@@ -334,7 +334,6 @@ INSTALLED_APPS += (
 def custom_show_toolbar(request):
     return DEBUG or request.user.is_superuser
 
-
 DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
     'SHOW_TOOLBAR_CALLBACK': '%s.settings.common.custom_show_toolbar' % SITE_NAME,
@@ -343,8 +342,6 @@ DEBUG_TOOLBAR_CONFIG = {
     'SHOW_TEMPLATE_CONTEXT': True,
     'ENABLE_STACKTRACES': True,
 }
-
-DEBUG_TOOLBAR_PATCH_SETTINGS = False
 
 # http://django-debug-toolbar.readthedocs.org/en/latest/installation.html
 INTERNAL_IPS = tuple(s.strip() for s in get_env_setting('INTERNAL_IPS', '127.0.0.1').split(','))
