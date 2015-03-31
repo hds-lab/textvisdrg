@@ -370,12 +370,15 @@ class MessageWord(models.Model):
 
 class MessageTopic(models.Model):
     class Meta:
-        index_together = ['topic_model', 'message']
+        index_together = (
+            ('topic_model', 'message'),
+            ('message', 'topic'),
+        )
 
     topic_model = models.ForeignKey(TopicModel, db_index=False)
 
     topic = models.ForeignKey(Topic, related_name='message_probabilities')
-    message = models.ForeignKey(Message, related_name="topic_probabilities")
+    message = models.ForeignKey(Message, related_name="topic_probabilities", db_index=False)
 
     probability = models.FloatField()
 
