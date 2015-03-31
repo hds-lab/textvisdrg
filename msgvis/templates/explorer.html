@@ -65,8 +65,8 @@
                 <img src="{% static 'images/part1_logo.png' %}"/>
             </div>
             <div class="logo-titles">
-                <div class="title">SparQs</div>
-                <div class="subtitle">Inspiring exploration in social media data</div>
+                <span class="title">SparQs</span>
+                <span class="subtitle">Inspiring exploration of social media data</span>
             </div>
         </div>
         <div id="content" class="row ng-cloak" ng-cloak>
@@ -93,10 +93,13 @@
                                      jqyoui-draggable="{placeholder: 'keep'}"
                                      data-jqyoui-options="draggableOptions">
 
-                                    <span class="dimension-name" ng-bind="dimension.name"></span>
+                                    <div class="dimension-border">
+                                        <span class="dimension-icon"></span>
+                                        <span class="dimension-name" ng-bind="dimension.name"></span>
 
-                                    <div class="dimension-filter"
-                                         ng-click="openFilter(dimension, $event)"></div>
+                                        <div class="dimension-filter"
+                                             ng-click="openFilter(dimension, $event)"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -107,32 +110,23 @@
             <div id="middle" class="col">
                 <div id="questions" class="row app-panel"
                      ng-controller="SparQs.controllers.SampleQuestionController" ng-class="selection.dimensions_class()">
-                    <div class="heading">From the literature...</div>
+                    <div id="questions-content">
+                        <div class="heading"><span class="icon"></span>From the Literature</div>
+                        <div class="question">
+                            <span class="question-text" ng-bind-html="questions.current.text"></span>
+                            <br/>
+                            <span class="citation source-popover"
+                                  data-toggle="popover"
+                                  data-trigger="hover"
+                                  data-placement="bottom"
+                                  data-content="{$ get_full_source_info(questions.current.source) $}"
+                                  data-container="body">({$ get_authors(questions.current.source.authors) $} {$ questions.current.source.year $})</span>
+                        </div>
 
-
-                    <ul class="questions-list heading-body">
-                        <li ng-repeat="question in questions.list track by $index">
-                            <div  class="question source-popover"
-                                  tabindex="0" role="button" data-toggle="popover"
-                                  data-trigger="focus"
-                                  data-placement="right"
-                                  data-content="{$ get_full_source_info(question.source) $}" 
-                                  data-container="body">
-                                <span ng-bind-html="question.text"></span>
-                                <span class="citation">({$ get_authors(question.source.authors) $} {$ question.source.year $})</span>
-                            </div>
-
-
-                            <!--Dimensions: <span ng-repeat="dimension in question.dimensions">
-                                <span ng-class="dimension.token_class()" ng-bind="dimension.name"></span>
-                            </span>-->
-                        </li>
-                    </ul>
-                    
-                    <span us-spinner="spinnerOptions" spinner-key="questions-spinner"></span>
+                        <span us-spinner="spinnerOptions" spinner-key="questions-spinner"></span>
+                    </div>
                 </div>
                 <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
-                    <div class="heading">Visualization</div>
                     <div id="viz-content" class="heading-body">
                         <sparqs-vis vis-data-table="datatable"
                                         on-clicked="onVisClicked">
@@ -162,10 +156,11 @@
                                             <span class="dimension-name">
                                                 {$ zone.dimension.name $}
                                             </span>
+                                            <span class="dimension-icon"></span>
                                         </div>
                                     </div>
                                     <div class="zone-placeholder"
-                                        ng-hide="zone.dimension">{$ zone.text $}
+                                        ng-hide="zone.dimension">
                                     </div>
                                 </div>
                             </div>
@@ -181,9 +176,10 @@
                         <li ng-repeat="message in messages.list">
                             <div class="text"><span ng-bind="message.text"></span></div>
                             <div class="meta">
-                                <span ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
                                 by
-                                <span ng-bind="message.sender.full_name"></span>
+                                <span class="meta-author" ng-bind="message.sender.full_name"></span>
+                                at
+                                <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
                             </div>
                         </li>
                     </ul>
