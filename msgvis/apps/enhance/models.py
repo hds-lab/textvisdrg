@@ -356,12 +356,15 @@ class TopicWord(models.Model):
 
 class MessageWord(models.Model):
     class Meta:
-        index_together = ['dictionary', 'message']
+        index_together = (
+            ('dictionary', 'message'),
+            ('message', 'word'),
+        )
 
     dictionary = models.ForeignKey(Dictionary, db_index=False)
 
     word = models.ForeignKey(Word, related_name="message_scores")
-    message = models.ForeignKey(Message, related_name='word_scores')
+    message = models.ForeignKey(Message, related_name='word_scores', db_index=False)
 
     word_index = models.IntegerField()
     count = models.FloatField()
