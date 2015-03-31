@@ -167,6 +167,7 @@ class Message(models.Model):
     class Meta:
         index_together = (
             ('dataset', 'original_id'),  # used by importer
+            ('dataset', 'time'),
         )
             
     dataset = models.ForeignKey(Dataset)
