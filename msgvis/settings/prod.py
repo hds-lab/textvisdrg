@@ -21,7 +21,7 @@ GUNICORN_CONF = PROJECT_ROOT / 'gunicorn.conf.py'
 SUPERVISOR_PIDFILE = LOGS_ROOT / 'supervisord.pid'
 # End supervisord settings
 
-if DEBUG:
+if 'debug_toolbar' in INSTALLED_APPS:
     DEBUG_TOOLBAR_PATCH_SETTINGS = False
     MIDDLEWARE_CLASSES = (
                              'debug_toolbar.middleware.DebugToolbarMiddleware',
