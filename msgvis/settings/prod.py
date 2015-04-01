@@ -18,7 +18,7 @@ SUPERVISOR_LOG_MAXBYTES = '50MB'
 SUPERVISOR_LOG_BACKUPS = 10
 WSGI_MODULE = 'msgvis.wsgi'
 GUNICORN_CONF = PROJECT_ROOT / 'gunicorn.conf.py'
-SUPERVISOR_PIDFILE = LOGS_ROOT / 'supservisord.pid'
+SUPERVISOR_PIDFILE = LOGS_ROOT / 'supervisord.pid'
 # End supervisord settings
 
 if DEBUG:

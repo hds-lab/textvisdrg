@@ -292,6 +292,11 @@ LOGGING = {
         },
     },
     'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
         'django.request': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
@@ -301,11 +306,7 @@ LOGGING = {
 }
 
 if DEBUG:
-    LOGGING['loggers'][''] = {
-        'handlers': ['console'],
-        'level': 'DEBUG',
-        'propagate': False,
-    }
+    LOGGING['loggers']['']['level'] = 'DEBUG'
 
 if DEBUG_DB:
     LOGGING['loggers']['django.db'] = {
