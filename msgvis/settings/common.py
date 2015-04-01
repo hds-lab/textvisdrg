@@ -326,7 +326,7 @@ WSGI_APPLICATION = '%s.wsgi.application' % SITE_NAME
 
 ########## TOOLBAR CONFIGURATION
 # See: http://south.readthedocs.org/en/latest/installation.html#configuring-your-django-installation
-if get_env_setting('DEBUG_TOOLBAR'):
+if bool(get_env_setting('DEBUG_TOOLBAR', False)):
     INSTALLED_APPS += (
         # Database migration helpers:
         'debug_toolbar',
