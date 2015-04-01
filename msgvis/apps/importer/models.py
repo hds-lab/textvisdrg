@@ -91,8 +91,8 @@ def handle_reply_to(status_id, user_id, screen_name, dataset_obj):
         original_tweet.replied_to_count += 1
         original_tweet.save()
 
-    original_tweet.sender.replied_to_count += 1
-    original_tweet.sender.save()
+        original_tweet.sender.replied_to_count += 1
+        original_tweet.sender.save()
 
 
 def handle_retweet(retweeted_status, dataset_obj):
@@ -102,8 +102,8 @@ def handle_retweet(retweeted_status, dataset_obj):
         original_tweet.shared_count += 1
         original_tweet.save()
 
-    original_tweet.sender.shared_count += 1
-    original_tweet.sender.save()
+        original_tweet.sender.shared_count += 1
+        original_tweet.sender.save()
 
 
 def handle_entities(tweet, entities, dataset_obj):
