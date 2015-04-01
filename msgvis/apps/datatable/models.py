@@ -136,9 +136,6 @@ class DataTable(object):
         if not primary_flag and not secondary_flag:
             return None
 
-        if self.primary_dimension.key is 'topics' or self.secondary_dimension.key is 'topics':
-            return None
-
         if not self.secondary_dimension and self.primary_dimension.is_categorical() and primary_flag:
             # If there is only one dimension, we should be able to fall back
             # on that dimension's group_by() implementation.
