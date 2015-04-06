@@ -345,6 +345,8 @@ DEBUG_TOOLBAR_CONFIG = {
 
 # http://django-debug-toolbar.readthedocs.org/en/latest/installation.html
 INTERNAL_IPS = tuple(s.strip() for s in get_env_setting('INTERNAL_IPS', '127.0.0.1').split(','))
+
+DEBUG_TOOLBAR_PATCH_SETTINGS = True
 ########## END TOOLBAR CONFIGURATION
 
 
