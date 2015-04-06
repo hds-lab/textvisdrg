@@ -37,10 +37,7 @@ def create_an_instance_from_json(json_str, dataset_obj):
     the dataset.
     """
     tweet_data = json.loads(json_str)
-    if get_or_create_a_tweet_from_json_obj(tweet_data, dataset_obj) is not None:
-        return True
-    else:
-        return False
+    return get_or_create_a_tweet_from_json_obj(tweet_data, dataset_obj)
 
 
 def get_or_create_language(code):

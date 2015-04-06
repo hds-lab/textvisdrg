@@ -2,7 +2,6 @@ from msgvis.settings.common import *
 
 DEV = False
 
-DEBUG = bool(get_env_setting('DEBUG', False))
 DEBUG_TEMPLATE = DEBUG
 
 COMPRESS_ENABLED = bool(get_env_setting('COMPRESS_ENABLED', True))
@@ -20,3 +19,9 @@ SUPERVISOR_LOG_BACKUPS = 10
 WSGI_MODULE = 'msgvis.wsgi'
 GUNICORN_CONF = PROJECT_ROOT / 'gunicorn.conf.py'
 # End supervisord settings
+
+if DEBUG:
+    DEBUG_TOOLBAR_PATCH_SETTINGS = False
+    MIDDLEWARE_CLASSES = (
+                             'debug_toolbar.middleware.DebugToolbarMiddleware',
+                         ) + MIDDLEWARE_CLASSES

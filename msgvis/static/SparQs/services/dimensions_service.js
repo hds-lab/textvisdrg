@@ -123,7 +123,6 @@
                 this.group_action = false;
 
                 this.filtering = false; //true if currently being filtered
-                this.description = [this.name, this.name, this.name].join(', ') + '!';
                 this.table = undefined;
                 this.domain = undefined;
                 this.distribution = undefined;
@@ -143,6 +142,10 @@
 
                     if (this.zone) {
                         cls += ' dimension-' + this.zone.name;
+                    }
+
+                    if (this.group_name) {
+                        cls += ' group-' + this.group_name;
                     }
 
                     if (!this.is_not_applying_filters()) {
@@ -200,8 +203,8 @@
                         //$('.level-select-button.none').prop('disabled', false);
                         return this.load_categorical_distribution(dataset);
                     }
-                    else if (!this._loading && !this.table) {
-                        this._loading = true;
+                    else if (!this.loading && !this.table) {
+                        this.loading = true;
 
                         var request = {
                             dataset: Dataset.id,
@@ -211,15 +214,17 @@
                         var apiUrl = djangoUrl.reverse('data-table');
 
                         var self = this;
-                        return $http.post(apiUrl, request)
+                        this.request = $http.post(apiUrl, request)
                             .success(function (data) {
                                 var result = data.result;
-                                self._loading = false;
-
+                                self.loading = false;
+                                self.request = false;
                                 self.table = result.table;
                                 self.domain = result.domains[self.key];
                                 self.domain_labels = result.domain_labels[self.key] || {};
                             });
+                        
+                        return this.request;
                     }
                 },
                 get_current_distribution: function(){
@@ -227,12 +232,12 @@
                 },
                 load_categorical_distribution: function (dataset) {
                     var self = this;
-                    if (!self._loading) {
-                        self._loading = true;
+                    if (!self.loading) {
+                        self.loading = true;
                         var target = self;
                         if ( typeof(self.search_key) !== "undefined" && self.search_key !== "" &&
                              typeof(self.search_results[self.search_key]) === "undefined" ){
-                            target = {}
+                            target = {};
                             target.table = [];
                             target.domain = [];
                             target.domain_labels = {};
@@ -260,11 +265,11 @@
                         var apiUrl = djangoUrl.reverse('data-table');
 
 
-                        return $http.post(apiUrl, request)
+                        this.request = $http.post(apiUrl, request)
                             .success(function (data) {
                                 var result = data.result;
-                                self._loading = false;
-
+                                self.loading = false;
+                                self.request = undefined;
                                 if ( result !== null && typeof(result) !== "undefined" ){
                                     result.table = result.table;
                                     result.domain = result.domains[self.key];
@@ -275,6 +280,8 @@
 
                                 }
                             });
+                        
+                        return this.request;
                     }
                 },
                 add_categorical_distribution: function(target, result){
@@ -417,6 +424,67 @@
             angular.extend(Dimensions.prototype, {
                 get_by_key: function (key) {
                     return this.by_key[key];
+                },
+                get_groups: function() {
+                    //Hierarchy of dimensions
+                    var groups = [
+                        {
+                            "group_name": "Time",
+                            "dimensions": [
+                                this.get_by_key('time'),
+                                this.get_by_key('timezone')
+                            ]
+                        },
+                        {
+                            "group_name": "Contents",
+                            "dimensions": [
+                                this.get_by_key('topics'),
+                                this.get_by_key('words'),
+                                this.get_by_key('hashtags'),
+                                //this.get_by_key('contains_hashtag'),
+                                this.get_by_key('urls'),
+                                //this.get_by_key('contains_url'),
+                                this.get_by_key('contains_media')
+                            ]
+                        },
+                        {
+                            "group_name": "Meta",
+                            "dimensions": [
+                                this.get_by_key('language'),
+                                this.get_by_key('sentiment')
+                            ]
+                        },
+                        {
+                            "group_name": "Interaction",
+                            "dimensions": [
+                                this.get_by_key('type'),
+                                this.get_by_key('replies'),
+                                this.get_by_key('shares'),
+                                this.get_by_key('mentions')
+                                //this.get_by_key('contains_mention')
+                            ]
+                        },
+                        {
+                            "group_name": "Author",
+                            "dimensions": [
+                                this.get_by_key('sender_name'),
+                                this.get_by_key('sender_message_count'),
+                                this.get_by_key('sender_reply_count'),
+                                this.get_by_key('sender_mention_count'),
+                                this.get_by_key('sender_share_count'),
+                                this.get_by_key('sender_friend_count'),
+                                this.get_by_key('sender_follower_count')
+                            ]
+                        }
+                    ];
+
+                    groups.forEach(function(group) {
+                        group.dimensions.forEach(function(dimension) {
+                            dimension.group_name = group.group_name;
+                        });
+                    });
+
+                    return groups;
                 }
             });
 
@@ -424,117 +492,140 @@
                 {
                     "key": "time",
                     "name": "Time",
-                    "type": "TimeDimension"
+                    "type": "TimeDimension",
+                    "description": "The time a message was sent (UTC)."
                 },
                 {
                     "key": "timezone",
                     "name": "Timezone",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "The timezone (proxy for location) of a message."
                 },
                 {
                     "key": "topics",
                     "name": "Topics",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Topics in the dataset based on a topic model."
                 },
                 {
                     "key": "words",
                     "name": "Keywords",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Words extracted from messages."
                 },
                 {
                     "key": "hashtags",
                     "name": "Hashtags",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Hashtags used in messages."
                 },
                 {
                     "key": "contains_hashtag",
                     "name": "Contains a Hashtag",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Whether a message includes a hashtag."
                 },
                 {
                     "key": "urls",
                     "name": "Urls",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Urls included in messages."
                 },
                 {
                     "key": "contains_url",
                     "name": "Contains a Url",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Whether a message includes a url."
                 },
                 {
                     "key": "contains_media",
                     "name": "Contains a Photo",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Whether a message includes a photo."
                 },
                 {
                     "key": "language",
                     "name": "Language",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "The language of a message."
                 },
                 {
                     "key": "sentiment",
                     "name": "Sentiment",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Sentiment (positive, negative, neutral) from sentiment analysis."
                 },
                 {
                     "key": "type",
                     "name": "Message Type",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Whether a message is an original tweet, a retweet, or a reply."
                 },
                 {
                     "key": "replies",
                     "name": "Num. Replies",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Number of known replies a message received."
                 },
                 {
                     "key": "shares",
                     "name": "Num. Shares",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Times a message was shared or retweeted."
                 },
                 {
                     "key": "mentions",
                     "name": "Mentions",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Usernames mentioned in messages."
                 },
                 {
                     "key": "contains_mention",
                     "name": "Contains a Mention",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Whether or not a message @mentions someone."
                 },
                 {
                     "key": "sender_name",
                     "name": "Author Name",
-                    "type": "CategoricalDimension"
+                    "type": "CategoricalDimension",
+                    "description": "Name of the person who sent a message."
                 },
                 {
                     "key": "sender_message_count",
                     "name": "Num. Messages",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Total messages sent by a message's author."
                 },
                 {
                     "key": "sender_reply_count",
                     "name": "Num. Replies",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Total replies received by a message's author."
                 },
                 {
                     "key": "sender_mention_count",
                     "name": "Num. Mentions",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Total mentions of a message's author."
                 },
                 {
                     "key": "sender_share_count",
                     "name": "Num. Shares",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Total shares or retweets received by a message's author."
                 },
                 {
                     "key": "sender_friend_count",
                     "name": "Num. Friends",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Number of people a message's author is following."
                 },
                 {
                     "key": "sender_follower_count",
                     "name": "Num. Followers",
-                    "type": "QuantitativeDimension"
+                    "type": "QuantitativeDimension",
+                    "description": "Number of people following a message's author."
                 }
             ]);
         }

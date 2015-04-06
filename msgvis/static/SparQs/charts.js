@@ -13,7 +13,7 @@
 
             var xScale = d3.scale.ordinal();
             var xLinearScale = d3.scale.linear();
-            var xTimeScale = d3.time.scale();
+            var xTimeScale = d3.time.scale.utc();
             var xCurrentScale = xLinearScale;
 
             var yScale = d3.scale.linear();
@@ -620,12 +620,13 @@
                 table.forEach(function(row) {
                     var value = row[DEFAULT_VALUE_KEY];
                     var r = rowIndex[self.primaryValueLabel(row[primary.key])];
+                    var i;
                     if ( typeof(r) === "undefined" && primary.is_quantitative_or_time() ){
                         var rowList = Object.keys(rowIndex);
                         if ( primary.is_quantitative()) rowList.map(function(d){return +d;}).sort(function(a, b){return (a) - (b);});
                         else if ( primary.is_time()) rowList.sort();
 
-                        for ( var i = 0 ; i < rowList.length ; i++ ){
+                        for (i = 0 ; i < rowList.length ; i++ ){
                             if ( rowList[i] < row[primary.key] ){
                                 r = rowIndex["" + rowList[i]];
                                 break;
@@ -647,7 +648,7 @@
                                 if ( secondary.is_quantitative()) columnList.map(function(d){return +d;}).sort(function(a, b){return (a) - (b);});
                                 else if ( primary.is_time()) rowList.sort();
 
-                                for ( var i = 0 ; i < columnList.length ; i++ ){
+                                for (i = 0 ; i < columnList.length ; i++ ){
                                     if ( columnList[i] < row[secondary.key] ){
                                         c = columnIndex["" + columnList[i]];
                                         break;
@@ -695,13 +696,12 @@
             function getC3Config(primary, secondary, domains) {
                 //Default setup: one-axis bar chart vs. counts
 
+                var defaultDotRadius = 5;
+
                 var config = {
-                    size: {
-                        height: 500
+                    point: {
+                        r: defaultDotRadius
                     },
-                    /*padding: {
-                        bottom: 30
-                    },*/
                     data:{
                         type: 'bar',
                         x: primary.key,
@@ -709,6 +709,7 @@
                             value: 'Num. Messages'
                         },
                         onclick: dataClicked,
+                        xLocaltime: false
                     },
                     axis:  {
                         x: {
@@ -736,6 +737,9 @@
                     },
                     subchart: {
                         show: true
+                    },
+                    color: {
+                        pattern: d3.scale.category20().range()
                     }
 
                 };
@@ -743,22 +747,30 @@
                 //If x is quantitative, use a line chart
                 if (primary.is_quantitative_or_time()) {
                     config.axis.x.type = 'indexed';
+                    config.data.type = 'area';
 
                     if (secondary) {
                         config.data.type = 'line';
-                    } else {
-                        config.data.type = 'area';
                     }
 
                     //Special time-specific overrides
                     if (primary.is_time()) {
                         config.axis.x.type = 'timeseries';
-                        //config.axis.x.tick = {
-                        //    culling: false
-                        //};
-                        //
+
                         //parsing django time values
                         config.data.xFormat = '%Y-%m-%dT%H:%M:%SZ';
+                        
+                        config.axis.x.tick = {
+                            fit: false
+                        };
+
+                        var tooltipDateFormat = d3.time.format('%c');
+                        config.tooltip.format = {
+                            title: function(d) {
+                                return tooltipDateFormat(d);
+                            }
+                        };
+                        
                     }
                 }
 
@@ -822,7 +834,7 @@
                     var config = getC3Config(primary, secondary, dataTable.domains);
                     config.data.rows = table;
                     config.bindto = $element.find('.sparqs-vis-render-target')[0];
-                    var chart = c3.generate(config);
+                    this.chart = c3.generate(config);
                 }
             };
         };
@@ -858,7 +870,9 @@
                 onClicked: '=onClicked'
             },
             link: link,
-            template: '<div class="sparqs-vis-render-target"></div>'
+            transclude: true,
+            template: '<div class="sparqs-vis-render-target"></div>' +
+            '<div ng-transclude></div>'
         }
     });
 })();

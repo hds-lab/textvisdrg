@@ -3,6 +3,7 @@
 DJANGO_SETTINGS_MODULE={{ SETTINGS_MODULE }}
 # DEBUG=
 # DEBUG_JS=
+# DEBUG_DB=
 
 # Set the web server listening address
 SERVER_HOST={{ SERVER_HOST }}
@@ -37,3 +38,6 @@ GOOGLE_ANALYTICS_ID={{ GOOGLE_ANALYTICS_ID }}
 
 # Comma-separated list of host names
 # ALLOWED_HOSTS=localhost
+
+# Set this if you need to use debug toolbar in production
+# INTERNAL_IPS=127.0.0.1

@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Q
+from datetime import timedelta
 import operator
 
 from msgvis.apps.base.models import MappedValuesQuerySet
@@ -69,12 +70,6 @@ class DataTable(object):
         and a value key for the count.
         """
 
-        # Type checking
-        queryset = find_messages(queryset)
-
-        # Filter out null time
-        queryset = queryset.exclude(time__isnull=True)
-
         if not self.secondary_dimension:
             # If there is only one dimension, we should be able to fall back
             # on that dimension's group_by() implementation.
@@ -125,7 +120,7 @@ class DataTable(object):
 
 
 
-    def render_others(self, queryset_for_others, domains, primary_flag, secondary_flag, desired_primary_bins=None, desired_secondary_bins=None):
+    def render_others(self, queryset, domains, primary_flag, secondary_flag, desired_primary_bins=None, desired_secondary_bins=None):
         """
         Given a set of messages (already filtered as necessary),
         calculate the data table.
@@ -141,26 +136,20 @@ class DataTable(object):
         if not primary_flag and not secondary_flag:
             return None
 
-        # Type checking
-        queryset_for_others = find_messages(queryset_for_others)
-
-        # Filter out null time
-        queryset_for_others = queryset_for_others.exclude(time__isnull=True)
-
         if not self.secondary_dimension and self.primary_dimension.is_categorical() and primary_flag:
             # If there is only one dimension, we should be able to fall back
             # on that dimension's group_by() implementation.
 
-            queryset_for_others = queryset_for_others.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
+            queryset = queryset.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
             domains[self.primary_dimension.key].append(u'Other ' + self.primary_dimension.name)
 
-            return [{self.primary_dimension.key: u'Other ' + self.primary_dimension.name, 'value': queryset_for_others.count()}]
+            return [{self.primary_dimension.key: u'Other ' + self.primary_dimension.name, 'value': queryset.count()}]
 
         elif self.secondary_dimension:
 
             # both dimensions are categorical
             if self.primary_dimension.is_categorical() and self.secondary_dimension.is_categorical():
-                original_queryset = queryset_for_others
+                original_queryset = queryset
                 others_results = []
                 if primary_flag:
                     domains[self.primary_dimension.key].append(u'Other ' + self.primary_dimension.name)
@@ -169,39 +158,39 @@ class DataTable(object):
 
                 # primary others x secondary others
                 if primary_flag and secondary_flag:
-                    queryset_for_others = queryset_for_others.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
-                    queryset_for_others = queryset_for_others.exclude(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
+                    queryset = queryset.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
+                    queryset = queryset.exclude(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
 
                     others_results.append({self.primary_dimension.key: u'Other ' + self.primary_dimension.name,
                                            self.secondary_dimension.key: u'Other ' + self.secondary_dimension.name,
-                                           'value': queryset_for_others.count()})
+                                           'value': queryset.count()})
 
                 # primary top ones x secondary others
                 if secondary_flag:
-                    queryset_for_others = original_queryset
-                    queryset_for_others = queryset_for_others.filter(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
-                    queryset_for_others = queryset_for_others.exclude(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
+                    queryset = original_queryset
+                    queryset = queryset.filter(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
+                    queryset = queryset.exclude(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
 
-                    queryset_for_others = self.primary_dimension.group_by(queryset_for_others,
+                    queryset = self.primary_dimension.group_by(queryset,
                                                                           grouping_key=self.primary_dimension.key)
 
-                    queryset_for_others = queryset_for_others.annotate(value=models.Count('id'))
-                    results = list(queryset_for_others)
+                    queryset = queryset.annotate(value=models.Count('id'))
+                    results = list(queryset)
                     for r in results:
                         r[self.secondary_dimension.key] = u'Other ' + self.secondary_dimension.name
                     others_results.extend(results)
 
                 # primary others x secondary top ones
                 if primary_flag:
-                    queryset_for_others = original_queryset
-                    queryset_for_others = queryset_for_others.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
-                    queryset_for_others = queryset_for_others.filter(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
+                    queryset = original_queryset
+                    queryset = queryset.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
+                    queryset = queryset.filter(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
 
-                    queryset_for_others = self.secondary_dimension.group_by(queryset_for_others,
+                    queryset = self.secondary_dimension.group_by(queryset,
                                                                             grouping_key=self.secondary_dimension.key)
 
-                    queryset_for_others = queryset_for_others.annotate(value=models.Count('id'))
-                    results = list(queryset_for_others)
+                    queryset = queryset.annotate(value=models.Count('id'))
+                    results = list(queryset)
                     for r in results:
                         r[self.primary_dimension.key] = u'Other ' + self.primary_dimension.name
                     others_results.extend(results)
@@ -210,26 +199,26 @@ class DataTable(object):
 
             # primary categorical and secondary quantitative
             elif self.primary_dimension.is_categorical() and primary_flag and not self.secondary_dimension.is_categorical():
-                queryset_for_others = queryset_for_others.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
+                queryset = queryset.exclude(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
                 domains[self.primary_dimension.key].append(u'Other ' + self.primary_dimension.name)
-                queryset_for_others = self.secondary_dimension.group_by(queryset_for_others,
+                queryset = self.secondary_dimension.group_by(queryset,
                                                                         grouping_key=self.secondary_dimension.key,
                                                                         bins=desired_secondary_bins)
-                queryset_for_others = queryset_for_others.annotate(value=models.Count('id'))
-                results = list(queryset_for_others)
+                queryset = queryset.annotate(value=models.Count('id'))
+                results = list(queryset)
                 for r in results:
                     r[self.primary_dimension.key] = u'Other ' + self.primary_dimension.name
                 return results
 
             # primary quantitative and secondary categorical
             elif not self.primary_dimension.is_categorical() and self.secondary_dimension.is_categorical() and secondary_flag:
-                queryset_for_others = queryset_for_others.exclude(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
+                queryset = queryset.exclude(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
                 domains[self.secondary_dimension.key].append(u'Other ' + self.secondary_dimension.name)
-                queryset_for_others = self.primary_dimension.group_by(queryset_for_others,
+                queryset = self.primary_dimension.group_by(queryset,
                                                                       grouping_key=self.primary_dimension.key,
                                                                       bins=desired_primary_bins)
-                queryset_for_others = queryset_for_others.annotate(value=models.Count('id'))
-                results = list(queryset_for_others)
+                queryset = queryset.annotate(value=models.Count('id'))
+                results = list(queryset)
                 for r in results:
                     r[self.secondary_dimension.key] = u'Other ' + self.secondary_dimension.name
                 return results
@@ -243,7 +232,6 @@ class DataTable(object):
         if exclude is not None:
             queryset = dimension.exclude(queryset, **exclude)
 
-        queryset = queryset.exclude(time__isnull=True)
         domain = dimension.get_domain(queryset, bins=desired_bins)
         labels = dimension.get_domain_labels(domain)
 
@@ -277,6 +265,16 @@ class DataTable(object):
 
         queryset = dataset.message_set.all()
 
+        # Filter out null time
+        queryset = queryset.exclude(time__isnull=True)
+        if dataset.start_time and dataset.end_time:
+            range = dataset.end_time - dataset.start_time
+            buffer = timedelta(seconds=range.total_seconds() * 0.1)
+            queryset = queryset.filter(time__gte=dataset.start_time - buffer,
+                                       time__lte=dataset.end_time + buffer)
+
+        unfiltered_queryset = queryset
+
         # Filter the data (look for filters on the primary/secondary dimensions at the same time
         primary_filter = None
         secondary_filter = None
@@ -302,8 +300,6 @@ class DataTable(object):
                 if dimension == self.secondary_dimension:
                     secondary_exclude = exclude_filter
 
-
-        table = None
         domains = {}
         domain_labels = {}
         max_page = None
@@ -315,9 +311,8 @@ class DataTable(object):
 
         # Include the domains for primary and (secondary) dimensions
         domain, labels = self.domain(self.primary_dimension,
-                                     dataset.message_set.all(),
+                                     unfiltered_queryset,
                                      primary_filter, primary_exclude)
-
 
         # paging the first dimension, this is for the filter distribution
         if primary_filter is None and self.secondary_dimension is None and page is not None:
@@ -354,10 +349,12 @@ class DataTable(object):
 
         if self.secondary_dimension:
             domain, labels = self.domain(self.secondary_dimension,
-                                         dataset.message_set.all(),
+                                         unfiltered_queryset,
                                          secondary_filter, secondary_exclude)
 
-            if self.mode == 'enable_others' and self.secondary_dimension.is_categorical() and len(domain) > MAX_CATEGORICAL_LEVELS:
+            if self.mode == 'enable_others' and \
+                self.secondary_dimension.is_categorical() and \
+                    len(domain) > MAX_CATEGORICAL_LEVELS:
                 secondary_flag = True
                 domain = domain[:MAX_CATEGORICAL_LEVELS]
 

@@ -47,7 +47,7 @@ SITE_ID = 1
 
 ########## DEBUG CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = False
+DEBUG = bool(get_env_setting('DEBUG', False))
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
 TEMPLATE_DEBUG = DEBUG
@@ -55,6 +55,8 @@ TEMPLATE_DEBUG = DEBUG
 # Is this a development instance? Set this to True on development/master
 # instances and False on stage/prod.
 DEV = False
+
+DEBUG_DB = bool(get_env_setting('DEBUG_DB', False))
 ########## END DEBUG CONFIGURATION
 
 
@@ -277,7 +279,17 @@ LOGGING = {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler'
-        }
+        },
+        'console': {
+            # logging handler that outputs log messages to terminal
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
+        },
+        'db_handler': {
+            'class': 'logging.FileHandler',
+            'filename': LOGS_ROOT / 'django.db.log',
+            'level': 'DEBUG',
+        },
     },
     'loggers': {
         'django.request': {
@@ -287,6 +299,21 @@ LOGGING = {
         },
     }
 }
+
+if DEBUG:
+    LOGGING['loggers'][''] = {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+        'propagate': False,
+    }
+
+if DEBUG_DB:
+    LOGGING['loggers']['django.db'] = {
+        'handlers': ['db_handler'],
+        'level': 'DEBUG',
+        'propagate': False,
+    }
+
 ########## END LOGGING CONFIGURATION
 
 
@@ -305,8 +332,7 @@ INSTALLED_APPS += (
 
 # Only show the debug toolbar to users with the superuser flag.
 def custom_show_toolbar(request):
-    return request.user.is_superuser
-
+    return DEBUG or request.user.is_superuser
 
 DEBUG_TOOLBAR_CONFIG = {
     'INTERCEPT_REDIRECTS': False,
@@ -317,10 +343,8 @@ DEBUG_TOOLBAR_CONFIG = {
     'ENABLE_STACKTRACES': True,
 }
 
-DEBUG_TOOLBAR_PATCH_SETTINGS = False
-
 # http://django-debug-toolbar.readthedocs.org/en/latest/installation.html
-INTERNAL_IPS = ('127.0.0.1',)
+INTERNAL_IPS = tuple(s.strip() for s in get_env_setting('INTERNAL_IPS', '127.0.0.1').split(','))
 ########## END TOOLBAR CONFIGURATION
 
 

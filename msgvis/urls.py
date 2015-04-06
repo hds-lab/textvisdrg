@@ -9,3 +9,10 @@ urlpatterns = patterns('',
                        url(r'^', include('msgvis.apps.base.urls')),
                        url(r'^topics/', include('msgvis.apps.enhance.urls')),
 )
+
+from django.conf import settings
+if 'debug_toolbar' in settings.INSTALLED_APPS and not settings.DEBUG_TOOLBAR_PATCH_SETTINGS:
+    import debug_toolbar
+    urlpatterns += patterns('',
+                            url(r'^__debug__/', include(debug_toolbar.urls)),
+                            )

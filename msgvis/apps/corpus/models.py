@@ -15,6 +15,12 @@ class Dataset(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     """The :py:class:`datetime.datetime` when the dataset was created."""
 
+    start_time = models.DateTimeField(null=True, default=None, blank=True)
+    """The time of the first real message in the dataset"""
+
+    end_time = models.DateTimeField(null=True, default=None, blank=True)
+    """The time of the last real message in the dataset"""
+
     def __unicode__(self):
         return self.name
 
