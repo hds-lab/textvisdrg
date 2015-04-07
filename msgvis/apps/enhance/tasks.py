@@ -123,6 +123,24 @@ class WordTokenizer(Tokenizer):
         return self._tokenize(text)
 
 
+class SimpleTokenizer(Tokenizer):
+    def __init__(self, texts=None, stoplist=None):
+        super(SimpleTokenizer, self).__init__(texts, stoplist)
+
+        from nltk.tokenize import sent_tokenize, wordpunct_tokenize
+        self._sent_tokenize = sent_tokenize
+        self._tokenize = wordpunct_tokenize
+
+        import re
+        self._strip_punct = re.compile(r'[^\w\s]')
+
+    def split(self, text):
+        # split into sentence, then remove all punctuation
+        sents = (self._strip_punct.sub('', sent) for sent in self._sent_tokenize(text))
+        # then split on non-words
+        return [token for sent in sents for token in self._tokenize(sent)]
+
+
 class TopicContext(object):
     def __init__(self, name, queryset, tokenizer, minimum_frequency=2, stoplist=None):
         self.name = name
@@ -206,6 +224,6 @@ def default_topic_context(name, dataset_id):
     queryset = dataset.message_set.filter(language__code='en')
 
     return TopicContext(name=name, queryset=queryset,
-                        tokenizer=WordTokenizer,
+                        tokenizer=SimpleTokenizer,
                         stoplist=get_stoplist(),
                         minimum_frequency=4)
