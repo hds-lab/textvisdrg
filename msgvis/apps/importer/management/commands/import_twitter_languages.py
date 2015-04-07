@@ -1,4 +1,4 @@
-from django.core.management.base import BaseCommand, make_option
+from django.core.management.base import BaseCommand
 
 from msgvis.apps.importer import twitter
 from msgvis.apps.corpus import models as corpus_models
