@@ -1,6 +1,4 @@
 from django.core.management.base import BaseCommand, CommandError
-from msgvis.apps.importer.models import create_an_instance_from_json
-from optparse import make_option
 
 from msgvis.apps.corpus.models import Dataset, Hashtag, Url, Media
 
