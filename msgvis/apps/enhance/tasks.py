@@ -84,12 +84,15 @@ class DbWordVectorIterator(object):
 
 
 class Tokenizer(object):
-    def __init__(self, texts=None, stoplist=None):
+    def __init__(self, texts, *filters):
+        """
+        Filters is a list of objects which can be used like sets
+        to determine if a word should be removed: if word in filter, then word will
+        be ignored.
+        """
         self.texts = texts
-        self.stoplist = stoplist
+        self.filters = filters
         self.max_length = Word._meta.get_field('text').max_length
-        if self.stoplist is None:
-            self.stoplist = []
 
     def __iter__(self):
         if self.texts is None:
@@ -100,11 +103,23 @@ class Tokenizer(object):
 
     def tokenize(self, text):
         words = []
+
         for word in self.split(text.lower()):
-            if word not in self.stoplist:
-                if len(word) >= self.max_length:
-                    word = word[:self.max_length - 1]
-                words.append(word)
+            filter_out = False
+            for f in self.filters:
+                if word in f:
+                    filter_out = True
+                    break
+
+            if filter_out:
+                # skip this word
+                continue
+
+            if len(word) >= self.max_length:
+                word = word[:self.max_length - 1]
+
+            words.append(word)
+
         return words
 
     def split(self, text):
@@ -112,8 +127,8 @@ class Tokenizer(object):
 
 
 class WordTokenizer(Tokenizer):
-    def __init__(self, texts=None, stoplist=None):
-        super(WordTokenizer, self).__init__(texts, stoplist)
+    def __init__(self, *args, **kwargs):
+        super(WordTokenizer, self).__init__(*args, **kwargs)
 
         import nltk
 
@@ -124,8 +139,8 @@ class WordTokenizer(Tokenizer):
 
 
 class SimpleTokenizer(Tokenizer):
-    def __init__(self, texts=None, stoplist=None):
-        super(SimpleTokenizer, self).__init__(texts, stoplist)
+    def __init__(self, *args, **kwargs):
+        super(SimpleTokenizer, self).__init__(*args, **kwargs)
 
         from nltk.tokenize import sent_tokenize, wordpunct_tokenize
         self._sent_tokenize = sent_tokenize
@@ -142,11 +157,11 @@ class SimpleTokenizer(Tokenizer):
 
 
 class TopicContext(object):
-    def __init__(self, name, queryset, tokenizer, minimum_frequency=2, stoplist=None):
+    def __init__(self, name, queryset, tokenizer, filters, minimum_frequency=2):
         self.name = name
         self.queryset = queryset
         self.tokenizer = tokenizer
-        self.stoplist = stoplist
+        self.filters = filters
         self.minimum_frequency = minimum_frequency
 
     def queryset_str(self):
@@ -157,7 +172,7 @@ class TopicContext(object):
             name=self.name,
             tokenizer=self.tokenizer.__name__,
             dataset=self.queryset_str(),
-            stoplist=self.stoplist is not None,
+            filters=repr(self.filters),
             minimum_frequency=self.minimum_frequency
         )
 
@@ -174,7 +189,7 @@ class TopicContext(object):
     def build_dictionary(self):
         texts = DbTextIterator(self.queryset)
 
-        tokenized_texts = self.tokenizer(texts, stoplist=self.stoplist)
+        tokenized_texts = self.tokenizer(texts, *self.filters)
 
         return Dictionary._create_from_texts(tokenized_texts=tokenized_texts,
                                              name=self.name,
@@ -188,7 +203,7 @@ class TopicContext(object):
 
     def build_bows(self, dictionary):
         texts = DbTextIterator(self.queryset)
-        tokenized_texts = self.tokenizer(texts, stoplist=self.stoplist)
+        tokenized_texts = self.tokenizer(texts, *self.filters)
 
         dictionary._vectorize_corpus(queryset=self.queryset,
                                      tokenizer=tokenized_texts)
@@ -204,6 +219,14 @@ class TopicContext(object):
     def evaluate_lda(self, dictionary, model, lda=None):
         corpus = DbWordVectorIterator(dictionary)
         return dictionary._evaluate_lda(model, corpus, lda=lda)
+
+
+class LambdaWordFilter(object):
+    def __init__(self, fn):
+        self.fn = fn
+
+    def __contains__(self, item):
+        return self.fn(item)
 
 
 def standard_topic_pipeline(context, num_topics, **kwargs):
@@ -223,7 +246,12 @@ def default_topic_context(name, dataset_id):
     dataset = Dataset.objects.get(pk=dataset_id)
     queryset = dataset.message_set.filter(language__code='en')
 
+    filters = [
+        set(get_stoplist()),
+        LambdaWordFilter(lambda word: word.startswith('http') and len(word) > 4)
+    ]
+
     return TopicContext(name=name, queryset=queryset,
                         tokenizer=SimpleTokenizer,
-                        stoplist=get_stoplist(),
+                        filters=filters,
                         minimum_frequency=4)
