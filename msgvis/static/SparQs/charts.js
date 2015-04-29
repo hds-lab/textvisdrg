@@ -736,7 +736,9 @@
                         grouped: false // Default true
                     },
                     subchart: {
-                        show: true
+                        show: function(primary){
+                            return primary.is_quantitative_or_time();
+                        }(primary)
                     },
                     color: {
                         pattern: d3.scale.category20().range()
