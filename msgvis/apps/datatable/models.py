@@ -333,7 +333,8 @@ class DataTable(object):
 
             queryset = queryset.filter(levels_or(self.primary_dimension.field_name, domain))
         else:
-            if self.mode == 'enable_others' and self.primary_dimension.is_categorical() and len(domain) > MAX_CATEGORICAL_LEVELS:
+            if (self.mode == 'enable_others' or self.mode == 'omit_others') and \
+                self.primary_dimension.is_categorical() and len(domain) > MAX_CATEGORICAL_LEVELS:
                 primary_flag = True
                 domain = domain[:MAX_CATEGORICAL_LEVELS]
 
@@ -352,7 +353,7 @@ class DataTable(object):
                                          unfiltered_queryset,
                                          secondary_filter, secondary_exclude)
 
-            if self.mode == 'enable_others' and \
+            if (self.mode == 'enable_others' or self.mode == 'omit_others') and \
                 self.secondary_dimension.is_categorical() and \
                     len(domain) > MAX_CATEGORICAL_LEVELS:
                 secondary_flag = True
