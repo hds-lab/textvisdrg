@@ -292,20 +292,19 @@ LOGGING = {
         },
     },
     'loggers': {
+        'msgvis': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+        },
         'django.request': {
             'handlers': ['mail_admins'],
             'level': 'ERROR',
-            'propagate': True,
         },
     }
 }
 
 if DEBUG:
-    LOGGING['loggers'][''] = {
-        'handlers': ['console'],
-        'level': 'DEBUG',
-        'propagate': False,
-    }
+    LOGGING['loggers']['msgvis']['level'] = 'DEBUG'
 
 if DEBUG_DB:
     LOGGING['loggers']['django.db'] = {
@@ -325,28 +324,30 @@ WSGI_APPLICATION = '%s.wsgi.application' % SITE_NAME
 
 ########## TOOLBAR CONFIGURATION
 # See: http://south.readthedocs.org/en/latest/installation.html#configuring-your-django-installation
-INSTALLED_APPS += (
-    # Database migration helpers:
-    'debug_toolbar',
-)
+if bool(get_env_setting('DEBUG_TOOLBAR', False)):
+    INSTALLED_APPS += (
+        # Database migration helpers:
+        'debug_toolbar',
+    )
 
-# Only show the debug toolbar to users with the superuser flag.
-def custom_show_toolbar(request):
-    return DEBUG or request.user.is_superuser
+    # Only show the debug toolbar to users with the superuser flag.
+    def custom_show_toolbar(request):
+        return DEBUG or request.user.is_superuser
 
-DEBUG_TOOLBAR_CONFIG = {
-    'INTERCEPT_REDIRECTS': False,
-    'SHOW_TOOLBAR_CALLBACK': '%s.settings.common.custom_show_toolbar' % SITE_NAME,
-    'HIDE_DJANGO_SQL': True,
-    'TAG': 'body',
-    'SHOW_TEMPLATE_CONTEXT': True,
-    'ENABLE_STACKTRACES': True,
-}
+    DEBUG_TOOLBAR_CONFIG = {
+        'INTERCEPT_REDIRECTS': False,
+        'SHOW_TOOLBAR_CALLBACK': '%s.settings.common.custom_show_toolbar' % SITE_NAME,
+        'HIDE_DJANGO_SQL': True,
+        'TAG': 'body',
+        'SHOW_TEMPLATE_CONTEXT': True,
+        'ENABLE_STACKTRACES': True,
+    }
 
-# http://django-debug-toolbar.readthedocs.org/en/latest/installation.html
-INTERNAL_IPS = tuple(s.strip() for s in get_env_setting('INTERNAL_IPS', '127.0.0.1').split(','))
+    DEBUG_TOOLBAR_PATCH_SETTINGS = True
 
-DEBUG_TOOLBAR_PATCH_SETTINGS = True
+    # http://django-debug-toolbar.readthedocs.org/en/latest/installation.html
+    INTERNAL_IPS = tuple(s.strip() for s in get_env_setting('INTERNAL_IPS', '127.0.0.1').split(','))
+
 ########## END TOOLBAR CONFIGURATION
 
 
