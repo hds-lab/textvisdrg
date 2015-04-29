@@ -508,7 +508,7 @@
                             valueLabelsInverse[label.toString()] = "";
                     }
                 });
-
+                console.log(valueLabelsInverse);
                 var mapFn = function(value) {
                     return valueLabels[value] || value.toString();
                 };
@@ -517,7 +517,7 @@
                     // find the label in valueLabels.values
                     // or if it isn't there return null;
                     if ( dimension.is_time() ){
-                        label = moment(label).format("YYYY-MM-DDTHH:mm:ss") + "Z";
+                        label = moment(label).utc().format("YYYY-MM-DDTHH:mm:ss") + "Z";
                     }
                     return "" + valueLabelsInverse[label] || "";
                 };
