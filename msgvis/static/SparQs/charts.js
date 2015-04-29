@@ -516,7 +516,10 @@
                 mapFn.inverse = function(label) {
                     // find the label in valueLabels.values
                     // or if it isn't there return null;
-                    return valueLabelsInverse[label] || "";
+                    if ( dimension.is_time() ){
+                        label = moment(label).format("YYYY-MM-DDTHH:mm:ss") + "Z";
+                    }
+                    return "" + valueLabelsInverse[label] || "";
                 };
 
                 return mapFn;
@@ -729,10 +732,18 @@
                     legend: {
                         show: false
                     },
-                    tooltip: { },
+                    tooltip: {
+                        grouped: false // Default true
+                    },
+                    subchart: {
+                        show: function(primary){
+                            return primary.is_quantitative_or_time();
+                        }(primary)
+                    },
                     color: {
                         pattern: d3.scale.category20().range()
                     }
+
                 };
 
                 //If x is quantitative, use a line chart

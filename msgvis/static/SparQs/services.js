@@ -274,7 +274,7 @@
                         filters: filters,
                         exclude: exclude,
                         dimensions: dimension_keys,
-                        mode: "enable_others"
+                        mode: "omit_others"
                     };
 
                     var self = this;
