@@ -450,12 +450,46 @@
             var self = this;
             function dataClicked(data, element) {
                 console.log(data);
-
                 var primaryValue = self.primaryValueLabel.inverse(data.x);
-                var values = [primaryValue];
+                var values = [];
+
+                if ( self.primary.is_quantitative() ){
+                    var range = {'min': primaryValue};
+                    var next_value = self.primaryValueLabel.get_next_value(primaryValue);
+                    if ( typeof(next_value) !== "undefined" ){
+                        range.max = next_value;
+                    }
+                    primaryValue = range;
+                }
+                else if ( self.primary.is_time() ){
+                    var range = {'min_time': primaryValue};
+                    var next_value = self.primaryValueLabel.get_next_value(primaryValue);
+                    if ( typeof(next_value) !== "undefined" ){
+                        range.max_time = next_value;
+                    }
+                    primaryValue = range;
+                }
+                values.push(primaryValue);
+
                 var secondaryValue = undefined;
                 if (self.secondaryValueLabel){
                     secondaryValue = self.secondaryValueLabel.inverse(data.id);
+                    if ( self.primary.is_quantitative() ){
+                        var range = {'min': secondaryValue};
+                        var next_value = self.secondaryValueLabel.get_next_value(secondaryValue);
+                        if ( typeof(next_value) !== "undefined" ){
+                            range.max = next_value;
+                        }
+                        secondaryValue = range;
+                    }
+                    else if ( self.primary.is_time() ){
+                        var range = {'min_time': secondaryValue};
+                        var next_value = self.secondaryValueLabel.get_next_value(secondaryValue);
+                        if ( typeof(next_value) !== "undefined" ){
+                            range.max_time = next_value;
+                        }
+                        secondaryValue = range;
+                    }
                     values.push(secondaryValue);
                 }
 
@@ -487,7 +521,9 @@
             function valueLabelMap(dimension, domain, domain_labels, is_primary) {
                 var valueLabels = {};
                 var valueLabelsInverse = {};
-                domain.forEach(function (value, idx) {
+                var nextValue = {};
+                for (var idx = 0 ; idx < domain.length ; idx++ ){
+                    var value = domain[idx];
                     //Use the domain label or the value itself as the label
                     var label = value;
 
@@ -507,7 +543,15 @@
                         if (valueLabelsInverse[label.toString()] == null)
                             valueLabelsInverse[label.toString()] = "";
                     }
-                });
+
+                    if ( dimension.is_quantitative_or_time() ){
+                        if ( idx < domain.length - 1 ){
+                            nextValue[value] = domain[idx + 1];
+                        }else{
+                            nextValue[value] = undefined;
+                        }
+                    }
+                }
                 console.log(valueLabelsInverse);
                 var mapFn = function(value) {
                     return valueLabels[value] || value.toString();
@@ -521,6 +565,13 @@
                     }
                     return "" + valueLabelsInverse[label] || "";
                 };
+
+                if ( dimension.is_quantitative_or_time() ){
+                    mapFn.get_next_value = function(value){
+                            return nextValue[value];
+
+                    };
+                }
 
                 return mapFn;
             }
@@ -766,7 +817,7 @@
                             fit: false
                         };
 
-                        var tooltipDateFormat = d3.time.format('%c');
+                        var tooltipDateFormat = d3.time.format.utc('%c');
                         config.tooltip.format = {
                             title: function(d) {
                                 return tooltipDateFormat(d);
@@ -837,6 +888,8 @@
                     config.data.rows = table;
                     config.bindto = $element.find('.sparqs-vis-render-target')[0];
                     this.chart = c3.generate(config);
+                    self.primary = primary;
+                    self.secondary = secondary;
                 }
             };
         };

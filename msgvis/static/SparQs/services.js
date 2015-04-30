@@ -184,16 +184,11 @@
                         }
                     });
                 },
-                set_focus: function(click_point_values){
+                set_focus: function(focus_info){
                     var dimensions = this.dimensions();
                     current_focus = dimensions.map(function (d, i) {
-                        var dim = {};
+                        var dim = focus_info[i];
                         dim.dimension = dimensions[i].key;
-                        dim.value = click_point_values[i];
-
-                        if (typeof(dim.value) === "undefined") {
-                            dim.value = "";
-                        }
                         return dim;
                     });
                     this.changed('focus');
