@@ -449,7 +449,7 @@
 
             var self = this;
             function dataClicked(data, element) {
-                console.log(data);
+                
                 var primaryValue = self.primaryValueLabel.inverse(data.x);
                 var values = [];
 
@@ -469,12 +469,15 @@
                     }
                     primaryValue = range;
                 }
+                else{
+                    primaryValue = {'value': primaryValue };
+                }
                 values.push(primaryValue);
 
                 var secondaryValue = undefined;
                 if (self.secondaryValueLabel){
                     secondaryValue = self.secondaryValueLabel.inverse(data.id);
-                    if ( self.primary.is_quantitative() ){
+                    if ( self.secondary.is_quantitative() ){
                         var range = {'min': secondaryValue};
                         var next_value = self.secondaryValueLabel.get_next_value(secondaryValue);
                         if ( typeof(next_value) !== "undefined" ){
@@ -482,7 +485,7 @@
                         }
                         secondaryValue = range;
                     }
-                    else if ( self.primary.is_time() ){
+                    else if ( self.secondary.is_time() ){
                         var range = {'min_time': secondaryValue};
                         var next_value = self.secondaryValueLabel.get_next_value(secondaryValue);
                         if ( typeof(next_value) !== "undefined" ){
@@ -490,9 +493,11 @@
                         }
                         secondaryValue = range;
                     }
+                    else{
+                        secondaryValue = {'value': secondaryValue };
+                    }
                     values.push(secondaryValue);
                 }
-
                 onClicked(values);
             }
 
@@ -538,9 +543,12 @@
                     valueLabels[value] = label.toString();
                     if (is_primary && dimension.is_categorical()){
                         valueLabelsInverse[idx] = value;
+                        if (valueLabelsInverse[idx] === null)
+                            valueLabelsInverse[idx] = "";
+
                     }else{
                         valueLabelsInverse[label.toString()] = value;
-                        if (valueLabelsInverse[label.toString()] == null)
+                        if (valueLabelsInverse[label.toString()] === null)
                             valueLabelsInverse[label.toString()] = "";
                     }
 
@@ -552,7 +560,7 @@
                         }
                     }
                 }
-                console.log(valueLabelsInverse);
+
                 var mapFn = function(value) {
                     return valueLabels[value] || value.toString();
                 };
