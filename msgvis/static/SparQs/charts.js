@@ -449,10 +449,14 @@
 
             var self = this;
             function dataClicked(data, element) {
-                
-                var primaryValue = self.primaryValueLabel.inverse(data.x);
+
+                // save the info of each dimension of the clicked point value in a list
                 var values = [];
 
+                // get the primary dimension value
+                var primaryValue = self.primaryValueLabel.inverse(data.x);
+
+                // if it is a quantitative dimension, get its bucket info
                 if ( self.primary.is_quantitative() ){
                     var range = {'min': primaryValue};
                     var next_value = self.primaryValueLabel.get_next_value(primaryValue);
@@ -461,6 +465,7 @@
                     }
                     primaryValue = range;
                 }
+                // so as time dimension, but use different format as time filter is using min_time and max_time
                 else if ( self.primary.is_time() ){
                     var range = {'min_time': primaryValue};
                     var next_value = self.primaryValueLabel.get_next_value(primaryValue);
@@ -469,11 +474,13 @@
                     }
                     primaryValue = range;
                 }
+                // if not quan or time, just us exact filter
                 else{
                     primaryValue = {'value': primaryValue };
                 }
                 values.push(primaryValue);
 
+                // the flow below is the same as above, but it is for the secondary dimension
                 var secondaryValue = undefined;
                 if (self.secondaryValueLabel){
                     secondaryValue = self.secondaryValueLabel.inverse(data.id);
@@ -552,6 +559,7 @@
                             valueLabelsInverse[label.toString()] = "";
                     }
 
+                    // if the dimension is quan or time, save the next bucket of the current one in a dict
                     if ( dimension.is_quantitative_or_time() ){
                         if ( idx < domain.length - 1 ){
                             nextValue[value] = domain[idx + 1];
@@ -574,6 +582,7 @@
                     return "" + valueLabelsInverse[label] || "";
                 };
 
+                // if the dimension is quan or time, create the mapping function for the bucket info
                 if ( dimension.is_quantitative_or_time() ){
                     mapFn.get_next_value = function(value){
                             return nextValue[value];
