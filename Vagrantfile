@@ -27,6 +27,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     # the path on the guest to mount the folder. And the optional third
     # argument is a set of non-required options.
     config.vm.synced_folder ".", "/home/vagrant/textvisdrg"
+    config.vm.synced_folder "../django-mb-core", "/home/vagrant/django-mb-core"
 
     # Enable symlinks!
     # http://blog.rudylee.com/2014/10/27/symbolic-links-with-vagrant-windows/

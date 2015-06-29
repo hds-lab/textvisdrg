@@ -12,22 +12,14 @@ import sys
 import os
 from path import path
 import dj_database_url
+from mbcore import get_env_setting
 
 # Normally you should not import ANYTHING from Django directly
 # into your settings, but ImproperlyConfigured is an exception.
 from django.core.exceptions import ImproperlyConfigured
 
 
-def get_env_setting(setting, default=None):
-    """ Get the environment setting or return exception """
-    if default is not None:
-        return os.environ.get(setting, default)
-    else:
-        try:
-            return os.environ[setting]
-        except KeyError:
-            error_msg = "Set the %s env variable" % setting
-            raise ImproperlyConfigured(error_msg)
+
 
 ########## PATH CONFIGURATION
 # Absolute filesystem path to the django site folder
@@ -47,7 +39,7 @@ SITE_ID = 1
 
 ########## DEBUG CONFIGURATION
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = bool(get_env_setting('DEBUG', False))
+DEBUG = get_env_setting('DEBUG', False, type=bool)
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
 TEMPLATE_DEBUG = DEBUG
@@ -56,7 +48,7 @@ TEMPLATE_DEBUG = DEBUG
 # instances and False on stage/prod.
 DEV = False
 
-DEBUG_DB = bool(get_env_setting('DEBUG_DB', False))
+DEBUG_DB = get_env_setting('DEBUG_DB', False, type=bool)
 ########## END DEBUG CONFIGURATION
 
 
@@ -324,7 +316,7 @@ WSGI_APPLICATION = '%s.wsgi.application' % SITE_NAME
 
 ########## TOOLBAR CONFIGURATION
 # See: http://south.readthedocs.org/en/latest/installation.html#configuring-your-django-installation
-if bool(get_env_setting('DEBUG_TOOLBAR', False)):
+if get_env_setting('DEBUG_TOOLBAR', False, type=bool):
     INSTALLED_APPS += (
         # Database migration helpers:
         'debug_toolbar',
@@ -383,7 +375,7 @@ COMPRESS_PRECOMPILERS = (
 )
 
 # Don't actually compress the js
-if get_env_setting('DEBUG_JS', False):
+if get_env_setting('DEBUG_JS', False, type=bool):
     COMPRESS_JS_FILTERS = []
 
 COMPRESS_ROOT = STATIC_ROOT

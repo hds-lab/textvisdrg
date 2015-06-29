@@ -12,16 +12,11 @@ import sys
 
 # Make sure the project root is on the path
 from path import path
-PROJECT_ROOT = path(__file__).abspath().realpath().dirname().parent
-sys.path.append(PROJECT_ROOT)
+from mbcore import conf
 
-# Load the .env file
-sys.path.append(PROJECT_ROOT / 'setup')
-from fabutils import env_file
-env_file.load(PROJECT_ROOT / '.env')
-
-# Just in case that didn't do it...
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "msgvis.settings.prod")
+project_root = path(__file__).abspath().realpath().dirname().parent
+conf.configure(project_root, 'msgvis')
+conf.load_env(default_settings_module="msgvis.settings.prod")
 
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()

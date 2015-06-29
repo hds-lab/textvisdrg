@@ -8,16 +8,12 @@ import sys
 from path import path
 from fabric.api import run, env, prefix, quiet, abort
 
+from mbcore import conf
+from mbcore.fabutils import factories, utils as _utils
+from mbcore.fabutils.tasks import *
 
 PROJECT_ROOT = path(__file__).abspath().realpath().dirname()
-sys.path.append(PROJECT_ROOT / 'setup')
-
-from fabutils import conf
-
 conf.configure(PROJECT_ROOT, 'msgvis')
-
-from fabutils import factories
-from fabutils.tasks import *
 
 pip_requirements = {
     'dev': ('-r requirements/dev.txt',),
@@ -63,7 +59,7 @@ def generate_fixtures():
     """
     generated = []
     for model, fixturefile in model_fixtures:
-        fabutils.manage_py('dumpdata --indent=2 {model} > {out}'.format(
+        _utils.manage_py('dumpdata --indent=2 {model} > {out}'.format(
             model=model,
             out=PROJECT_ROOT / fixturefile,
         ))
@@ -79,25 +75,25 @@ def load_fixtures():
     Replaces the database tables with the contents of fixtures.
     """
     for model, fixturefile in model_fixtures:
-        fabutils.manage_py('syncdata %s' % (PROJECT_ROOT / fixturefile,))
+        _utils.manage_py('syncdata %s' % (PROJECT_ROOT / fixturefile,))
 
 
 def import_corpus(dataset_file_or_dir):
     """Import a dataset from a file"""
     dataset_file_or_dir = path(dataset_file_or_dir).abspath().realpath()
-    fabutils.manage_py('import_corpus %s' % dataset_file_or_dir)
+    _utils.manage_py('import_corpus %s' % dataset_file_or_dir)
 
 
 def restart_webserver():
     """Restart a local gunicorn process"""
     print green("Restarting gunicorn...")
-    fabutils.manage_py('supervisor restart webserver')
+    _utils.manage_py('supervisor restart webserver')
 
 
 def supervisor():
     """Starts the supervisor process"""
     print green("Supervisor launching...")
-    fabutils.manage_py('supervisor')
+    _utils.manage_py('supervisor')
 
 
 def deploy(branch=None):
@@ -111,7 +107,7 @@ def deploy(branch=None):
     Furthermore, the app must use a
     """
 
-    denv = fabutils.dot_env()
+    denv = _utils.dot_env()
 
     host = denv.get('DEPLOY_HOST', None)
     virtualenv = denv.get('DEPLOY_VIRTUALENV', None)
@@ -148,18 +144,18 @@ def deploy(branch=None):
 def topic_pipeline(dataset, name="my topic model", num_topics=30):
     """Run the topic pipeline on a dataset"""
     command = "extract_topics --topics %d --name '%s' %s" % (int(num_topics), name, dataset)
-    fabutils.manage_py(command)
+    _utils.manage_py(command)
 
 
 def info():
     """Print a bunch of info about the environment"""
-    fabutils.env_info()
+    _utils.env_info()
 
     print os.linesep, green("---------- Scientific computing packages ------------"), os.linesep
-    fabutils.try_load_module('nltk')
-    fabutils.try_load_module('gensim')
+    _utils.try_load_module('nltk')
+    _utils.try_load_module('gensim')
 
-    numpy = fabutils.try_load_module('numpy')
+    numpy = _utils.try_load_module('numpy')
     if numpy is not None:
 
         print "  Numpy sysinfo:"
@@ -175,7 +171,7 @@ nltk_init = factories.nltk_download_task(required_nltk_corpora)
 
 def memcached_status():
     """Display the status of the memcached server"""
-    denv = fabutils.dot_env(default={})
+    denv = _utils.dot_env(default={})
     if denv.get('MEMCACHED_LOCATION', None) is not None:
         local("watch -n1 -d 'memcstat --servers %s'" % denv.get('MEMCACHED_LOCATION', None))
     else:

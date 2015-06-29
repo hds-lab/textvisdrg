@@ -2,14 +2,11 @@
 
 import os, sys
 from path import path
+from mbcore import conf
 
-PROJECT_ROOT = path(__file__).abspath().realpath().dirname()
-sys.path.append(PROJECT_ROOT)
-
-# Load the .env file
-sys.path.append(PROJECT_ROOT / 'setup')
-from fabutils import env_file
-env_file.load(PROJECT_ROOT / '.env')
+project_root = path(__file__).abspath().realpath().dirname()
+conf.configure(project_root, 'msgvis')
+conf.load_env(default_settings_module="msgvis.settings.prod")
 
 bind = "%(ip)s:%(port)s" % {
     'port': os.environ.get('PORT', '8000'),
