@@ -118,10 +118,10 @@ class Importer(object):
                         print >> sys.stderr, "Import error on line %d" % self.line
                         traceback.print_exc()
 
-        if settings.DEBUG:
+        #if settings.DEBUG:
             # prevent memory leaks
-            from django.db import connection
-            connection.queries = []
+        #    from django.db import connection
+        #    connection.queries = []
 
 
     def run(self):
