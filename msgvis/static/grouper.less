@@ -71,9 +71,17 @@ body {
     height: @bottom-row-height - @stat-box-height;
 }
 #dimensions {
-    .dimension-name {
+    margin-left: 10px;
+    .dimension {
         font-size: 1.2em;
         font-weight: 600;
+    }
+    .dimension:hover {
+        cursor: pointer;
+        background-color: #afe0fe;
+    }
+    .active {
+        background-color: #99C6E4;
     }
 
 

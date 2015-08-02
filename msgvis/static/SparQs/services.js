@@ -123,7 +123,8 @@
         '$rootScope',
         'SparQs.services.Filtering',
         'SparQs.services.Dropzones',
-        function selectionFactory($rootScope, Filtering, Dropzones) {
+        'SparQs.services.Dimensions',
+        function selectionFactory($rootScope, Filtering, Dropzones, Dimensions) {
 
             var current_focus = [
                 //{
@@ -131,7 +132,9 @@
                 //    "value": "2015-02-02T01:19:09Z"
                 //}
             ];
-            var current_dimension = undefined;
+            // Default dimension
+            var current_dimension = Dimensions.get_by_key("time");
+
 
             var Selection = function () {
 
@@ -195,6 +198,9 @@
                 },
                 change_dimension: function(dimension){
                     current_dimension = dimension;
+                },
+                get_current_dimension: function(){
+                    return current_dimension;
                 }
 
             });

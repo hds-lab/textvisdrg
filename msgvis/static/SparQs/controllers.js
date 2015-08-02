@@ -73,6 +73,15 @@
                 Selection.change_dimension(dimension);
                 Selection.changed('dimensions');
         };
+        $scope.is_current_dimension = function(dimension){
+            return Selection.get_current_dimension() == dimension;
+        };
+        $scope.get_class = function(dimension){
+            if ($scope.is_current_dimension(dimension))
+                return "active";
+            else
+                return "";
+        }
     };
 
     DimensionController.$inject = [

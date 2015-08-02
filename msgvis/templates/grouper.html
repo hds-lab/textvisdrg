@@ -86,7 +86,7 @@
                 </div>
                 <div id="middle" class="col-md-7">
                     <div id="viz-wrapper" class="box">
-                    <div class="col-md-9">
+                    <div class="col-md-10">
                         <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
                             <div id="viz-content" class="heading-body">
                                 <sparqs-vis vis-data-table="datatable"
@@ -98,7 +98,7 @@
                             </div>
                         </div>
                     </div>
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             {% verbatim %}
                             <div id="dimensions" class="app-panel row"
                                  ng-controller="SparQs.controllers.DimensionController">
@@ -109,7 +109,7 @@
                                         <div class="group-members">
                                             <div ng-repeat="dimension in group.dimensions"
                                                  class="dimension"
-                                                 ng-class="dimension.dimension_class()"
+                                                 ng-class="get_class(dimension)"
                                                  ng-click="changeDimension(dimension)"   >
                                                 <span class="dimension-name" ng-bind="dimension.name"></span>
 
