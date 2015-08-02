@@ -98,7 +98,8 @@
         $scope.spinnerOptions = {
             radius: 20,
             width: 6,
-            length: 10
+            length: 10,
+            color: "#000000"
         };
 
         $scope.get_example_messages = function () {
@@ -240,7 +241,8 @@
         $scope.spinnerOptions = {
             radius: 20,
             width:6,
-            length: 10
+            length: 10,
+            color: "#000000"
         };
 
 
