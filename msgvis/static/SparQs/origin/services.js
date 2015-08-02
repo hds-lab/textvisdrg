@@ -123,8 +123,7 @@
         '$rootScope',
         'SparQs.services.Filtering',
         'SparQs.services.Dropzones',
-        'SparQs.services.Dimensions',
-        function selectionFactory($rootScope, Filtering, Dropzones, Dimensions) {
+        function selectionFactory($rootScope, Filtering, Dropzones) {
 
             var current_focus = [
                 //{
@@ -132,8 +131,6 @@
                 //    "value": "2015-02-02T01:19:09Z"
                 //}
             ];
-            // Default dimension
-            var current_dimension = Dimensions.get_by_key("time");
 
 
             var Selection = function () {
@@ -144,10 +141,11 @@
 
             angular.extend(Selection.prototype, {
                 dimensions: function () {
-                    var list = [];
-                    if (typeof(current_dimension) !== "undefined")
-                        list.push(current_dimension);
-                    return list;
+                    return Dropzones.zones.map(function(z) {
+                        return z.dimension;
+                    }).filter(function(dim) {
+                        return dim;
+                    });
                 },
                 filters: function () {
                     var with_filter = Filtering.get_filtered();
@@ -178,7 +176,6 @@
                         eventName = changedEvent + '[' + eventName + ']';
                         if (!scope) {
                             //Trigger the event
-                            console.log(eventName);
                             $rootScope.$emit(eventName);
                         } else {
                             //Register new listener
@@ -195,12 +192,6 @@
                         return dim;
                     });
                     this.changed('focus');
-                },
-                change_dimension: function(dimension){
-                    current_dimension = dimension;
-                },
-                get_current_dimension: function(){
-                    return current_dimension;
                 }
 
             });

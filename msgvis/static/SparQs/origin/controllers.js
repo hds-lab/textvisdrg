@@ -58,7 +58,6 @@
             //Unselect the dimension if it is on a zone
             if ($scope.dropped && $scope.dropped.zone &&
                     //And make sure the dropzone it was on has agreed to part with it
-
                 $scope.dropped.zone.dimension != $scope.dropped) {
 
                 //Turn off the zone of this dimension
@@ -68,20 +67,6 @@
             }
             $scope.dropped = undefined; // remove the dropped dimension
         };
-        $scope.changeDimension = function(dimension){
-                console.log(dimension);
-                Selection.change_dimension(dimension);
-                Selection.changed('dimensions');
-        };
-        $scope.is_current_dimension = function(dimension){
-            return Selection.get_current_dimension() == dimension;
-        };
-        $scope.get_class = function(dimension){
-            if ($scope.is_current_dimension(dimension))
-                return "active";
-            else
-                return "";
-        }
     };
 
     DimensionController.$inject = [
@@ -98,8 +83,7 @@
         $scope.spinnerOptions = {
             radius: 20,
             width: 6,
-            length: 10,
-            color: "#000000"
+            length: 10
         };
 
         $scope.get_example_messages = function () {
@@ -241,8 +225,7 @@
         $scope.spinnerOptions = {
             radius: 20,
             width:6,
-            length: 10,
-            color: "#000000"
+            length: 10
         };
 
 

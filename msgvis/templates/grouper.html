@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="{% static 'theme.less' %}" type="text/less">
 <link rel="stylesheet" href="{% static 'style.less' %}" type="text/less">
 <link rel="stylesheet" href="{% static 'bower/c3/c3.css' %}">
-<link rel="stylesheet" href="{% static 'sparqs.less' %}" type="text/less">
+<link rel="stylesheet" href="{% static 'grouper.less' %}" type="text/less">
 {% endblock %}
 
 {% block js %}
@@ -35,12 +35,12 @@
 <script src="{% static 'bower/d3/d3.js' %}"></script>
 <script src="{% static 'bower/c3/c3.js' %}"></script>
 
-<script src="{% static 'SparQs/origin/SparQs.js' %}"></script>
-<script src="{% static 'SparQs/origin/controllers.js' %}"></script>
-<script src="{% static 'SparQs/origin/services.js' %}"></script>
-<script src="{% static 'SparQs/origin/services/dimensions_service.js' %}"></script>
-<script src="{% static 'SparQs/origin/services/questions_service.js' %}"></script>
-<script src="{% static 'SparQs/origin/charts.js' %}"></script>
+<script src="{% static 'SparQs/SparQs.js' %}"></script>
+<script src="{% static 'SparQs/controllers.js' %}"></script>
+<script src="{% static 'SparQs/services.js' %}"></script>
+<script src="{% static 'SparQs/services/dimensions_service.js' %}"></script>
+<script src="{% static 'SparQs/services/questions_service.js' %}"></script>
+<script src="{% static 'SparQs/charts.js' %}"></script>
 {% endblock %}
 
 {% block navigation_bar %}
@@ -58,132 +58,89 @@
 {% endblock %}
 
 {% block content %}
-<div ng-app="SparQs" id="application" class="row col">
-    <div id="app-wrapper" class="row col">
-        <div id="titleWrap" class="row clearfix">
-            <div class="logo">
-                <img src="{% static 'images/part1_logo.png' %}"/>
-            </div>
+<div ng-app="SparQs" id="application" class="container-fluid">
+         <div id="titleWrap" class="row clearfix">
+
             <div class="logo-titles">
-                <span class="title">SparQs</span>
-                <span class="subtitle">Inspiring exploration of social media data</span>
+                <span class="title">Messager Grouper</span>
+
             </div>
         </div>
         <div id="content" class="row ng-cloak" ng-cloak>
-            <div id="left" class="col">
-                {% verbatim %}
-                <div id="dimensions" class="app-panel row"
-                     ng-controller="SparQs.controllers.DimensionController"
-                     data-drop="true"
-                     ng-model="dropped"
-                     jqyoui-droppable="{onDrop: 'onDimensionDrop'}">
-                    <div id="dimension-groups">
-                        <div ng-repeat="group in dimension_groups"
-                             class="dimension-group"
-                             id="group-{$ group.group_name $}">
-                            <div class="group-name">
-                                <span ng-bind="group.group_name"></span>
-                            </div>
-                            <div class="group-members">
-                                <div ng-repeat="dimension in group.dimensions"
-                                     class="dimension"
-                                     ng-class="dimension.dimension_class()"
-                                     ng-model="dimension.draggable"
-                                     data-drag="true"
-                                     jqyoui-draggable="{placeholder: 'keep'}"
-                                     data-jqyoui-options="draggableOptions">
-
-                                    <div class="dimension-border">
-                                        <span class="dimension-icon"></span>
-                                        <span class="dimension-name" ng-bind="dimension.name"></span>
-
-                                        <div class="dimension-filter"
-                                             ng-click="openFilter(dimension, $event)"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            <div id="top" class="row">
+                <div id="search" class="col-md-3">
+                    <div class="box">
+                        search
                     </div>
                 </div>
-                {% endverbatim %}
+                <div id="groups" class="col-md-9">
+                    groups
+                </div>
             </div>
-            <div id="middle" class="col">
-                <div id="questions" class="row app-panel"
-                     ng-controller="SparQs.controllers.SampleQuestionController" ng-class="selection.dimensions_class()">
-                    <div id="questions-content">
-                        <div class="heading"><span class="icon"></span>From the Literature</div>
-                        <div class="question">
-                            <span class="question-text" ng-bind-html="questions.current.text"></span>
-                            <br/>
-                            <span class="citation source-popover"
-                                  data-toggle="popover"
-                                  data-trigger="hover"
-                                  data-placement="bottom"
-                                  data-content="{$ get_full_source_info(questions.current.source) $}"
-                                  data-container="body">({$ get_authors(questions.current.source.authors) $} {$ questions.current.source.year $})</span>
-                        </div>
+            <div id="bottom" class="row">
 
-                        <span us-spinner="spinnerOptions" spinner-key="questions-spinner"></span>
+                <div id="left" class="col-md-3">
+                    <div id="search-results" class="box">
+                        Search Results
                     </div>
                 </div>
-                <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
-                    <div id="viz-content" class="heading-body">
-                        <sparqs-vis vis-data-table="datatable"
-                                        on-clicked="onVisClicked">
-                            <span us-spinner="spinnerOptions" spinner-key="vis-spinner"></span>
-                        </sparqs-vis>
+                <div id="middle" class="col-md-7">
+                    <div id="viz-wrapper" class="box">
+                    <div class="col-md-10">
+                        <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
+                            <div id="viz-content" class="heading-body">
+                                <sparqs-vis vis-data-table="datatable"
+                                                on-clicked="onVisClicked">
+                                    <span us-spinner="spinnerOptions" spinner-key="vis-spinner"></span>
+                                </sparqs-vis>
 
-                        <div class="dropzones"
-                             ng-controller="SparQs.controllers.DropzonesController">
-                            <div ng-repeat="zone in dropzones.zones"
-                                 class="dropzone"
-                                 ng-class="zone.zone_class()">
-                                <div class="dropzone-droppable"
-                                     ng-class="zone.dimension ? 'has-dimension' : ''"
-                                     ng-model="zone.dimension"
-                                     data-drop="true"
-                                     jqyoui-droppable="{onDrop: 'onDimensionDrop'}"
-                                     data-jqyoui-options="droppableOptions(zone)">
-                                    <div class="dropzone-background"></div>
-                                    <!-- This shows if there is a dimension occupying the zone -->
-                                    <div class="dimension-wrapper" ng-hide="!zone.dimension">
-                                        <div class="dimension dropzone-draggable"
-                                             ng-class="zone.dimension.dimension_class()"
-                                             ng-model="zone.dimension"
-                                             data-drag="true"
-                                             jqyoui-draggable="{placeholder: false}"
-                                             data-jqyoui-options="draggableOptions">
-                                            <span class="dimension-name">
-                                                {$ zone.dimension.name $}
-                                            </span>
-                                            <span class="dimension-icon"></span>
+
+                            </div>
+                        </div>
+                    </div>
+                        <div class="col-md-2">
+                            {% verbatim %}
+                            <div id="dimensions" class="app-panel row"
+                                 ng-controller="SparQs.controllers.DimensionController">
+                                <div id="dimension-groups">
+                                    <div ng-repeat="group in dimension_groups"
+                                         class="dimension-group"
+                                         id="group-{$ group.group_name $}">
+                                        <div class="group-members">
+                                            <div ng-repeat="dimension in group.dimensions"
+                                                 class="dimension"
+                                                 ng-class="get_class(dimension)"
+                                                 ng-click="changeDimension(dimension)"   >
+                                                <span class="dimension-name" ng-bind="dimension.name"></span>
+
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="zone-placeholder"
-                                        ng-hide="zone.dimension">
-                                    </div>
                                 </div>
                             </div>
+                            {% endverbatim %}
                         </div>
                     </div>
+
+
                 </div>
 
-            </div>
-            <div id="right" class="col">
-                <div id="messages" class="row app-panel" ng-controller="SparQs.controllers.ExampleMessageController">
-                    <div class="heading">Example Messages</div>
-                    <ul class="message-list heading-body">
-                        <li ng-repeat="message in messages.list">
-                            <div class="text"><span ng-bind="message.text"></span></div>
-                            <div class="meta">
-                                by
-                                <span class="meta-author" ng-bind="message.sender.full_name"></span>
-                                at
-                                <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
-                            </div>
-                        </li>
-                    </ul>
-                    <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
+                <div id="right" class="col-md-2">
+                    <div id="messages" class="app-panel box" ng-controller="SparQs.controllers.ExampleMessageController">
+                        <div class="heading">Example Messages</div>
+                        <ul class="message-list heading-body">
+                            <li ng-repeat="message in messages.list">
+                                <div class="text"><span ng-bind="message.text"></span></div>
+                                <div class="meta">
+                                    by
+                                    <span class="meta-author" ng-bind="message.sender.full_name"></span>
+                                    at
+                                    <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
+                                </div>
+                            </li>
+                        </ul>
+                        <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
+                    </div>
                 </div>
             </div>
         </div>
