@@ -69,6 +69,16 @@ body {
 #viz-wrapper {
     width: 100%;
     height: @bottom-row-height - @stat-box-height;
+    sparqs-vis {
+        .c3-area {
+            opacity: 0;
+        }
+        .c3-grid line {
+            stroke-dasharray: 0;
+            stroke: #E2E2E2;
+        }
+
+    }
 }
 #dimensions {
     margin-left: 10px;

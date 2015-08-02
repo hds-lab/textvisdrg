@@ -764,7 +764,7 @@
             function getC3Config(primary, secondary, domains) {
                 //Default setup: one-axis bar chart vs. counts
 
-                var defaultDotRadius = 5;
+                var defaultDotRadius = 3;
 
                 var config = {
                     point: {
@@ -810,6 +810,14 @@
                     },
                     color: {
                         pattern: d3.scale.category20().range()
+                    },
+                    grid: {
+                        x: {
+                            show: true
+                        },
+                        y: {
+                            show: true
+                        }
                     }
 
                 };
