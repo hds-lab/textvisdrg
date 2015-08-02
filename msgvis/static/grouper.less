@@ -1,0 +1,90 @@
+@import 'bower/components-bootstrap/less/mixins';
+
+/* Full page application */
+// http://blog.stevensanderson.com/2011/10/05/full-height-app-layouts-a-css-trick-to-make-it-easier/
+
+
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+body {
+    font-family: 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    font-size: 9pt;
+    background-color: rgb(230, 230, 230);
+}
+
+.box {
+    margin: 2px;
+    padding: 5px;
+    height: 100%;
+    -webkit-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+    -moz-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+    box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+    border-radius: 5px 5px 5px 5px;
+    -moz-border-radius: 5px 5px 5px 5px;
+    -webkit-border-radius: 5px 5px 5px 5px;
+    border: 0px solid #e3e3e3;
+    background-color: white;
+}
+#titleWrap {
+    height: 50px;
+    padding: 5px;
+    background-color: white;
+    -webkit-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+    -moz-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+    box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+
+    .title {
+        font-size: 2em;
+        font-weight: 700;
+    }
+}
+#content {
+    margin: 10px 0px;
+}
+
+@top-row-height: 130px;
+
+#search {
+    height: @top-row-height;
+}
+#groups {
+    height: @top-row-height;
+}
+
+#top {
+    margin-bottom: 10px;
+}
+
+@bottom-row-height: 550px;
+@stat-box-height: 150px;
+#search-results {
+    height: @bottom-row-height;
+}
+#viz-wrapper {
+    width: 100%;
+    height: @bottom-row-height - @stat-box-height;
+}
+#dimensions {
+    .dimension-name {
+        font-size: 1.2em;
+        font-weight: 600;
+    }
+
+
+}
+
+
+#messages {
+    height: @bottom-row-height;
+
+  .message-list {
+        height: 95%;
+        overflow-y: scroll;
+    }
+}

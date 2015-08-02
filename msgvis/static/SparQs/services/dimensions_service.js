@@ -464,7 +464,7 @@
                                 //this.get_by_key('contains_mention')
                             ]
                         },
-                        {
+                       /* {
                             "group_name": "Author",
                             "dimensions": [
                                 this.get_by_key('sender_name'),
@@ -475,7 +475,7 @@
                                 this.get_by_key('sender_friend_count'),
                                 this.get_by_key('sender_follower_count')
                             ]
-                        }
+                        }*/
                     ];
 
                     groups.forEach(function(group) {

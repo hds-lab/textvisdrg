@@ -58,6 +58,7 @@
             //Unselect the dimension if it is on a zone
             if ($scope.dropped && $scope.dropped.zone &&
                     //And make sure the dropzone it was on has agreed to part with it
+
                 $scope.dropped.zone.dimension != $scope.dropped) {
 
                 //Turn off the zone of this dimension
@@ -66,6 +67,11 @@
                 Selection.changed('dimensions');
             }
             $scope.dropped = undefined; // remove the dropped dimension
+        };
+        $scope.changeDimension = function(dimension){
+                console.log(dimension);
+                Selection.change_dimension(dimension);
+                Selection.changed('dimensions');
         };
     };
 

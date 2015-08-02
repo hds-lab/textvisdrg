@@ -131,7 +131,7 @@
                 //    "value": "2015-02-02T01:19:09Z"
                 //}
             ];
-
+            var current_dimension = undefined;
 
             var Selection = function () {
 
@@ -141,11 +141,10 @@
 
             angular.extend(Selection.prototype, {
                 dimensions: function () {
-                    return Dropzones.zones.map(function(z) {
-                        return z.dimension;
-                    }).filter(function(dim) {
-                        return dim;
-                    });
+                    var list = [];
+                    if (typeof(current_dimension) !== "undefined")
+                        list.push(current_dimension);
+                    return list;
                 },
                 filters: function () {
                     var with_filter = Filtering.get_filtered();
@@ -176,6 +175,7 @@
                         eventName = changedEvent + '[' + eventName + ']';
                         if (!scope) {
                             //Trigger the event
+                            console.log(eventName);
                             $rootScope.$emit(eventName);
                         } else {
                             //Register new listener
@@ -192,6 +192,9 @@
                         return dim;
                     });
                     this.changed('focus');
+                },
+                change_dimension: function(dimension){
+                    current_dimension = dimension;
                 }
 
             });

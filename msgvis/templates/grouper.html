@@ -1,0 +1,275 @@
+{% extends '_layouts/base.html' %}
+{% load staticfiles djangular_tags %}
+
+{% block page_title %}SparQs{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'theme.less' %}" type="text/less">
+<link rel="stylesheet" href="{% static 'style.less' %}" type="text/less">
+<link rel="stylesheet" href="{% static 'bower/c3/c3.css' %}">
+<link rel="stylesheet" href="{% static 'grouper.less' %}" type="text/less">
+{% endblock %}
+
+{% block js %}
+{{ block.super }}
+<script src="{% static 'bower/angular/angular.js' %}"></script>
+<script src="{% static 'bower/angular-cookies/angular-cookies.js' %}"></script>
+<script src="{% static 'bower/angular-route/angular-route.js' %}"></script>
+<script src="{% static 'bower/angular-resource/angular-resource.js' %}"></script>
+<script src="{% static 'bower/angular-animate/angular-animate.js' %}"></script>
+<script src="{% static 'bower/angular-sanitize/angular-sanitize.js' %}"></script>
+
+<script src="{% static 'bower/jquery-ui/ui/core.js' %}"></script>
+<script src="{% static 'bower/jquery-ui/ui/widget.js' %}"></script>
+<script src="{% static 'bower/jquery-ui/ui/mouse.js' %}"></script>
+<script src="{% static 'bower/jquery-ui/ui/draggable.js' %}"></script>
+<script src="{% static 'bower/jquery-ui/ui/droppable.js' %}"></script>
+<script src="{% static 'bower/angular-dragdrop/src/angular-dragdrop.js' %}"></script>
+
+<script src="{% static 'djangular/js/django-angular.js' %}"></script>
+
+<script src="{% static 'bower/spin.js/spin.js' %}"></script>
+<script src="{% static 'bower/angular-spinner/angular-spinner.js' %}"></script>
+    
+<script src="{% static 'bower/moment/moment.js' %}"></script>
+<script src="{% static 'bower/d3/d3.js' %}"></script>
+<script src="{% static 'bower/c3/c3.js' %}"></script>
+
+<script src="{% static 'SparQs/SparQs.js' %}"></script>
+<script src="{% static 'SparQs/controllers.js' %}"></script>
+<script src="{% static 'SparQs/services.js' %}"></script>
+<script src="{% static 'SparQs/services/dimensions_service.js' %}"></script>
+<script src="{% static 'SparQs/services/questions_service.js' %}"></script>
+<script src="{% static 'SparQs/charts.js' %}"></script>
+{% endblock %}
+
+{% block navigation_bar %}
+{% endblock %}
+
+{% block bootstrapping %}
+{{ block.super }}
+<script>
+    angular.module('ng.django.urls')
+        .constant('patterns', {% load_djng_urls %});
+
+    angular.module('SparQs.bootstrap')
+        .constant('SparQs.bootstrap.dataset', {{ object.pk }});
+</script>
+{% endblock %}
+
+{% block content %}
+<div ng-app="SparQs" id="application" class="container-fluid">
+         <div id="titleWrap" class="row clearfix">
+
+            <div class="logo-titles">
+                <span class="title">Messager Grouper</span>
+
+            </div>
+        </div>
+        <div id="content" class="row ng-cloak" ng-cloak>
+            <div id="top" class="row">
+                <div id="search" class="col-md-3">
+                    <div class="box">
+                        search
+                    </div>
+                </div>
+                <div id="groups" class="col-md-9">
+                    groups
+                </div>
+            </div>
+            <div id="bottom" class="row">
+
+                <div id="left" class="col-md-3">
+                    <div id="search-results" class="box">
+                        Search Results
+                    </div>
+                </div>
+                <div id="middle" class="col-md-7">
+                    <div id="viz-wrapper" class="box">
+                    <div class="col-md-9">
+                        <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
+                            <div id="viz-content" class="heading-body">
+                                <sparqs-vis vis-data-table="datatable"
+                                                on-clicked="onVisClicked">
+                                    <span us-spinner="spinnerOptions" spinner-key="vis-spinner"></span>
+                                </sparqs-vis>
+
+
+                            </div>
+                        </div>
+                    </div>
+                        <div class="col-md-3">
+                            {% verbatim %}
+                            <div id="dimensions" class="app-panel row"
+                                 ng-controller="SparQs.controllers.DimensionController">
+                                <div id="dimension-groups">
+                                    <div ng-repeat="group in dimension_groups"
+                                         class="dimension-group"
+                                         id="group-{$ group.group_name $}">
+                                        <div class="group-members">
+                                            <div ng-repeat="dimension in group.dimensions"
+                                                 class="dimension"
+                                                 ng-class="dimension.dimension_class()"
+                                                 ng-click="changeDimension(dimension)"   >
+                                                <span class="dimension-name" ng-bind="dimension.name"></span>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endverbatim %}
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <div id="right" class="col-md-2">
+                    <div id="messages" class="app-panel box" ng-controller="SparQs.controllers.ExampleMessageController">
+                        <div class="heading">Example Messages</div>
+                        <ul class="message-list heading-body">
+                            <li ng-repeat="message in messages.list">
+                                <div class="text"><span ng-bind="message.text"></span></div>
+                                <div class="meta">
+                                    by
+                                    <span class="meta-author" ng-bind="message.sender.full_name"></span>
+                                    at
+                                    <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
+                                </div>
+                            </li>
+                        </ul>
+                        <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="filter-popup"
+         class="ng-cloak" ng-cloak
+         ng-show="filtering.dimension.filtering"
+         ng-controller="SparQs.controllers.FilterController"
+         ng-style="{top:filtering.offset.top}">
+        <div ng-class="'filter-' + filtering.dimension.type">
+            <h3>
+                Filter on {$ filtering.dimension.name $}
+                <button type="button" class="close"
+                    ng-click="closeFilter()">
+                    <span>&times;</span>
+                </button>
+            </h3>
+            <div class="filter-body">
+                <form ng-submit="saveFilter()">
+                    <div class="description">{$ filtering.dimension.description $}</div>
+                    <div ng-switch="filtering.dimension.type">
+                        <div class="form-group" ng-switch-when="QuantitativeDimension">
+
+                            <quant-histogram
+                                dimension="filtering.dimension"
+                                brush-min="filtering.dimension.current_filter().min()"
+                                brush-max="filtering.dimension.current_filter().max()"
+                                on-brushed="onQuantitativeBrushed">
+                            </quant-histogram>
+
+                            <input type="text" class="filter-min form-control"
+                                   ng-model="filtering.dimension.current_filter().min"
+                                   ng-model-options="{ getterSetter: true }"
+                                   placeholder="min"/>
+                            <input type="text" class="filter-max form-control"
+                                   ng-model="filtering.dimension.current_filter().max"
+                                   ng-model-options="{ getterSetter: true }"
+                                   placeholder="max"/>
+
+
+                        </div>
+
+                        <div class="form-group" ng-switch-when="TimeDimension">
+
+                            <quant-histogram
+                                dimension="filtering.dimension"
+                                brush-min="filtering.dimension.current_filter().min_time()"
+                                brush-max="filtering.dimension.current_filter().max_time()"
+                                on-brushed="onQuantitativeBrushed">
+                            </quant-histogram>
+
+                            <input type="text" class="filter-min form-control"
+                                   ng-model="filtering.dimension.current_filter().min_time"
+                                   ng-model-options="{ getterSetter: true }"
+                                   placeholder="min" datetime-format />
+                            <input type="text" class="filter-max form-control"
+                                   ng-model="filtering.dimension.current_filter().max_time"
+                                   ng-model-options="{ getterSetter: true }"
+                                   placeholder="max" datetime-format/>
+
+                        </div>
+
+                        <div class="form-group" ng-switch-when="CategoricalDimension">
+
+                            <div class="level-select-button-group">
+                                <button type=button class="level-select-button all"
+                                        ng-click="filtering.dimension.switch_mode('exclude')"
+                                        ng-disabled="filtering.dimension.is_all_selected()"
+                                        >Select All</button>
+                                <button type=button class="level-select-button none"
+                                        ng-click="filtering.dimension.switch_mode('filter')"
+                                        ng-disabled="filtering.dimension.is_all_unselected()"
+                                        >Unselected All</button>
+                            </div>
+                            <hr />
+                            <div class="search" ng-show="filtering.dimension.show_search()">
+                                Search: <input type="text"
+                                               ng-enter="search()"
+                                               ng-blur="set_back_cur_search()"
+                                               ng-model="filtering.dimension.search_key_tmp" />
+                                <span class="glyphicon glyphicon-search"
+                                      ng-show="filtering.dimension.search_key_tmp"
+                                      ng-click="search()"   ></span>
+                                <span class="glyphicon glyphicon-remove"
+                                      ng-show="filtering.dimension.search_key_tmp"
+                                      ng-click="filtering.dimension.reset_search()"   ></span>
+                            </div>
+
+
+                            <div class="dimension-levels" when-scrolled="loadMore()">
+                                <categorical-histogram
+                                    dimension="filtering.dimension" >
+                                </categorical-histogram>
+                            </div>
+                            <hr />
+                            <!--
+                            <div class="selected-levels">
+                                <strong>Filter out levels:</strong> <br />
+                                <span class=dimension-level-filter
+                                      ng-repeat="d in filtering.dimension.distribution"
+                                      ng-show="!d.show">
+                                    ng-click="filtering.dimension.unfilter_level(d)"
+                                    {$ d.level $}
+                                </span>
+
+                            </div>
+                            -->
+                        </div>
+
+
+                    </div>
+
+
+                    <div class="form-group form-buttons">
+                        <button type="submit" class="btn btn-sm btn-primary apply-button"
+                                ng-disabled="!filtering.dimension.is_dirty()"
+                                ng-click="saveFilter()">Update</button>
+                        <button type="button" class="btn btn-sm btn-default clear-button"
+                                ng-disabled="filtering.dimension.is_not_applying_filters()"
+                                ng-click="resetFilter()">Clear</button>
+                    </div>
+
+                </form>
+                
+                <span us-spinner="spinnerOptions" spinner-key="filter-spinner"></span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block footer %}
+{% endblock %}
