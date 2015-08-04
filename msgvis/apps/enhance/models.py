@@ -3,7 +3,7 @@ from django.conf import settings
 import textblob
 
 from fields import PositiveBigIntegerField
-from msgvis.apps.corpus.models import Message
+from msgvis.apps.corpus.models import Message, Dataset
 from msgvis.apps.base import models as base_models
 
 # Create your models here.
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class Dictionary(models.Model):
     name = models.CharField(max_length=100)
-    dataset = models.CharField(max_length=100)
+    dataset = models.ForeignKey(Dataset, related_name="dictionary", null=True, blank=True, default=None)
     settings = models.TextField()
 
     time = models.DateTimeField(auto_now_add=True)

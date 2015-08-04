@@ -203,6 +203,70 @@ class ExampleMessagesView(APIView):
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class KeywordMessagesView(APIView):
+    """
+    Get some example messages matching the current filters and a focus
+    within the visualization.
+
+    **Request:** ``POST /api/messages``
+
+    **Format:**: (request should not have ``messages`` key)
+
+    ::
+
+        {
+            "dataset": 1,
+            "filters": [
+                {
+                    "dimension": "time",
+                    "min_time": "2015-02-25T00:23:53Z",
+                    "max_time": "2015-02-28T00:23:53Z"
+                }
+            ],
+            "focus": [
+                {
+                    "dimension": "time",
+                    "value": "2015-02-28T00:23:53Z"
+                }
+            ],
+            "messages": [
+                {
+                    "id": 52,
+                    "dataset": 1,
+                    "text": "Some sort of thing or other",
+                    "sender": {
+                        "id": 2,
+                        "dataset": 1
+                        "original_id": 2568434,
+                        "username": "my_name",
+                        "full_name": "My Name"
+                    },
+                    "time": "2015-02-25T00:23:53Z"
+                }
+            ]
+        }
+    """
+
+    def post(self, request, format=None):
+        input = serializers.KeywordMessageSerializer(data=request.data)
+        if input.is_valid():
+            data = input.validated_data
+
+            dataset = data['dataset']
+
+            keyword = data['keyword']
+
+            keyword_messages = dataset.get_example_messages_by_keyword(keyword)
+
+            # Just add the messages key to the response
+            response_data = data
+            response_data["messages"] = keyword_messages
+
+            output = serializers.KeywordMessageSerializer(response_data)
+            return Response(output.data, status=status.HTTP_200_OK)
+
+        return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ResearchQuestionsView(APIView):
     """

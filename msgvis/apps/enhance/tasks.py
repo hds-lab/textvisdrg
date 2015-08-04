@@ -186,15 +186,15 @@ class TopicContext(object):
         return results.last()
 
 
-    def build_dictionary(self):
+    def build_dictionary(self, dataset_id):
         texts = DbTextIterator(self.queryset)
 
         tokenized_texts = self.tokenizer(texts, *self.filters)
-
+        dataset = Dataset.objects.get(pk=dataset_id)
         return Dictionary._create_from_texts(tokenized_texts=tokenized_texts,
                                              name=self.name,
                                              minimum_frequency=self.minimum_frequency,
-                                             dataset=self.queryset.model.__name__,
+                                             dataset=dataset,
                                              settings=self.get_dict_settings())
 
     def bows_exist(self, dictionary):
@@ -229,10 +229,10 @@ class LambdaWordFilter(object):
         return self.fn(item)
 
 
-def standard_topic_pipeline(context, num_topics, **kwargs):
+def standard_topic_pipeline(context, dataset_id, num_topics, **kwargs):
     dictionary = context.find_dictionary()
     if dictionary is None:
-        dictionary = context.build_dictionary()
+        dictionary = context.build_dictionary(dataset_id=dataset_id)
 
     if not context.bows_exist(dictionary):
         context.build_bows(dictionary)

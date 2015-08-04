@@ -39,6 +39,17 @@ class Dataset(models.Model):
 
         return messages.order_by('?')[:10]
 
+    def get_example_messages_by_keyword(self, keyword):
+        results = []
+
+        dictionary = self.dictionary.all()
+        if len(dictionary) > 0:
+            dictionary = dictionary[0]
+            word = dictionary.words.get(text=keyword)
+            if word is not None:
+                results.extend(word.messages.all()[:10])
+        return results
+
 
 class MessageType(CachingMixin, models.Model):
     """The type of a message, e.g. retweet, reply, original, system..."""

@@ -196,6 +196,11 @@ class ExampleMessageSerializer(serializers.Serializer):
     focus = serializers.ListField(child=FilterSerializer(), required=False)
     messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
 
+class KeywordMessageSerializer(serializers.Serializer):
+    dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
+    keyword = serializers.CharField(required=True)
+    messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
+
 
 class SampleQuestionSerializer(serializers.Serializer):
     dimensions = serializers.ListField(child=serializers.CharField(), required=False)
