@@ -249,6 +249,44 @@
         }
     ]);
 
+    //A service for loading example messages.
+    module.factory('SparQs.services.KeywordMessages', [
+        '$http', 'djangoUrl',
+        function keywordMessagesFactory($http, djangoUrl) {
+
+            var apiUrl = djangoUrl.reverse('keyword-messages');
+
+            //A model class for messages
+            var Message = function (data) {
+                angular.extend(this, data);
+            };
+
+            var KeywordMessages = function () {
+                this.list = [];
+            };
+
+            angular.extend(KeywordMessages.prototype, {
+                load: function (dataset, keyword) {
+
+                    var request = {
+                        dataset: dataset,
+                        keyword: keyword
+                    };
+
+                    var self = this;
+                    return $http.post(apiUrl, request)
+                        .success(function (data) {
+                            self.list = data.messages.map(function (msgdata) {
+                                return new Message(msgdata);
+                            });
+                        });
+                }
+            });
+
+            return new KeywordMessages();
+        }
+    ]);
+
     //A service for loading datatables.
     module.factory('SparQs.services.DataTables', [
         '$http', 'djangoUrl',

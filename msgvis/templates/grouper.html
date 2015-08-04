@@ -69,8 +69,14 @@
         <div id="content" class="row ng-cloak" ng-cloak>
             <div id="top" class="row">
                 <div id="search" class="col-md-3">
-                    <div class="box">
-                        search
+                    <div class="box" ng-controller="SparQs.controllers.SearchController">
+                        <input type="text" ng-model="keyword" ng-enter="search()" />
+                        <span class="glyphicon glyphicon-search"
+                              ng-show="keyword"
+                              ng-click="search()"   ></span>
+                        <span class="glyphicon glyphicon-remove"
+                              ng-show="keyword"
+                              ng-click="reset_search()"   ></span>
                     </div>
                 </div>
                 <div id="groups" class="col-md-9">
@@ -80,8 +86,20 @@
             <div id="bottom" class="row">
 
                 <div id="left" class="col-md-3">
-                    <div id="search-results" class="box">
-                        Search Results
+                    <div id="search-results" class="box" ng-controller="SparQs.controllers.SearchController">
+                        <div class="heading">Search Results</div>
+                        <ul class="message-list heading-body">
+                            <li ng-repeat="message in messages.list">
+                                <div class="text"><span ng-bind="message.text"></span></div>
+                                <div class="meta">
+                                    by
+                                    <span class="meta-author" ng-bind="message.sender.full_name"></span>
+                                    at
+                                    <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
+                                </div>
+                            </li>
+                        </ul>
+                        <span us-spinner="spinnerOptions" spinner-key="search-spinner"></span>
                     </div>
                 </div>
                 <div id="middle" class="col-md-7">

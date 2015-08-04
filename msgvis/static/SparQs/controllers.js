@@ -130,6 +130,44 @@
     ];
     module.controller('SparQs.controllers.ExampleMessageController', ExampleMessageController);
 
+    var SearchController = function ($scope, KeywordMessages, Dataset, usSpinnerService) {
+
+        $scope.messages = KeywordMessages;
+        $scope.keyword = "";
+
+        $scope.spinnerOptions = {
+            radius: 20,
+            width: 6,
+            length: 10,
+            color: "#000000"
+        };
+
+        $scope.search = function () {
+            var keyword = $scope.keyword;
+            var request = KeywordMessages.load(Dataset.id, keyword);
+            if (request) {
+                usSpinnerService.spin('examples-spinner');
+
+                request.then(function() {
+                    usSpinnerService.stop('examples-spinner');
+                });
+            }
+        };
+
+        $scope.reset_search = function(){
+            $scope.keyword = "";
+        }
+
+
+    };
+    SearchController.$inject = [
+        '$scope',
+        'SparQs.services.KeywordMessages',
+        'SparQs.services.Dataset',
+        'usSpinnerService'
+    ];
+    module.controller('SparQs.controllers.SearchController', SearchController);
+    
     var SampleQuestionController = function ($scope, $timeout, Selection, SampleQuestions, usSpinnerService) {
 
         $scope.questions = SampleQuestions;
