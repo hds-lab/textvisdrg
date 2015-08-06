@@ -34,3 +34,7 @@ django-angular
 
 # TextBlob
 textblob
+
+
+# Twitter API Auth
+oauth2

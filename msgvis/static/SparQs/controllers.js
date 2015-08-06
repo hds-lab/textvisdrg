@@ -111,6 +111,7 @@
                 usSpinnerService.spin('examples-spinner');
 
                 request.then(function() {
+
                     usSpinnerService.stop('examples-spinner');
                 });
             }
@@ -146,10 +147,10 @@
             var keyword = $scope.keyword;
             var request = KeywordMessages.load(Dataset.id, keyword);
             if (request) {
-                usSpinnerService.spin('examples-spinner');
+                usSpinnerService.spin('search-spinner');
 
                 request.then(function() {
-                    usSpinnerService.stop('examples-spinner');
+                    usSpinnerService.stop('search-spinner');
                 });
             }
         };

@@ -138,10 +138,11 @@ class MessageSerializer(serializers.ModelSerializer):
     """
 
     sender = PersonSerializer()
+    embedded_html = serializers.CharField()
 
     class Meta:
         model = corpus_models.Message
-        fields = ('id', 'dataset', 'text', 'sender', 'time')
+        fields = ('id', 'dataset', 'text', 'sender', 'time', 'original_id', 'embedded_html')
 
 
 class ArticleSerializer(serializers.ModelSerializer):

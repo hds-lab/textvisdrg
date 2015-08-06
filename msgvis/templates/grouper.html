@@ -12,6 +12,7 @@
 
 {% block js %}
 {{ block.super }}
+
 <script src="{% static 'bower/angular/angular.js' %}"></script>
 <script src="{% static 'bower/angular-cookies/angular-cookies.js' %}"></script>
 <script src="{% static 'bower/angular-route/angular-route.js' %}"></script>
@@ -88,8 +89,12 @@
                 <div id="left" class="col-md-3">
                     <div id="search-results" class="box" ng-controller="SparQs.controllers.SearchController">
                         <div class="heading">Search Results</div>
-                        <ul class="message-list heading-body">
-                            <li ng-repeat="message in messages.list">
+                        <div class="message-list heading-body">
+                            <div ng-repeat="message in messages.list" class="tweet-wrapper">
+                                <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
+                                <div ng-bind-html="message.embedded_html"></div>
+
+                                <!--
                                 <div class="text"><span ng-bind="message.text"></span></div>
                                 <div class="meta">
                                     by
@@ -97,8 +102,9 @@
                                     at
                                     <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
                                 </div>
-                            </li>
-                        </ul>
+                                -->
+                            </div>
+                        </div>
                         <span us-spinner="spinnerOptions" spinner-key="search-spinner"></span>
                     </div>
                 </div>
@@ -146,8 +152,12 @@
                 <div id="right" class="col-md-2">
                     <div id="messages" class="app-panel box" ng-controller="SparQs.controllers.ExampleMessageController">
                         <div class="heading">Example Messages</div>
-                        <ul class="message-list heading-body">
-                            <li ng-repeat="message in messages.list">
+                        <div class="message-list heading-body">
+                            <div ng-repeat="message in messages.list" class="tweet-wrapper">
+                                <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
+                                <div ng-bind-html="message.embedded_html"></div>
+
+                                <!--
                                 <div class="text"><span ng-bind="message.text"></span></div>
                                 <div class="meta">
                                     by
@@ -155,8 +165,9 @@
                                     at
                                     <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
                                 </div>
-                            </li>
-                        </ul>
+                                -->
+                            </div>
+                        </div>
                         <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
                     </div>
                 </div>
@@ -288,6 +299,7 @@
         </div>
     </div>
 </div>
+
 {% endblock %}
 {% block footer %}
 {% endblock %}

@@ -73,6 +73,10 @@ body {
 }
 #search-results {
     height: @bottom-row-height;
+    .message-list{
+        height: 95%;
+        overflow-y: scroll;
+    }
 }
 #viz-wrapper {
     width: 100%;
@@ -109,8 +113,12 @@ body {
 #messages {
     height: @bottom-row-height;
 
-  .message-list {
+    .message-list {
         height: 95%;
         overflow-y: scroll;
+    }
+    .tweet-wrapper {
+        width: 95% !important;
+        font-size: 0.5em;
     }
 }
