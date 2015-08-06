@@ -31,6 +31,10 @@ body {
     border: 0px solid #e3e3e3;
     background-color: white;
 }
+.no-padding{
+    padding: 0;
+}
+
 #titleWrap {
     height: 50px;
     padding: 5px;
@@ -78,6 +82,12 @@ body {
         overflow-y: scroll;
     }
 }
+
+#middle{
+    padding-left: 0;
+    padding-right: 0;
+}
+
 #viz-wrapper {
     width: 100%;
     height: @bottom-row-height - @stat-box-height;
@@ -95,7 +105,6 @@ body {
 #dimensions {
     margin-left: 10px;
     .dimension {
-        font-size: 1.2em;
         font-weight: 600;
     }
     .dimension:hover {
