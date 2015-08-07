@@ -767,6 +767,9 @@
                 var defaultDotRadius = 3;
 
                 var config = {
+                    size: {
+                        height: 400
+                    },
                     point: {
                         r: defaultDotRadius
                     },

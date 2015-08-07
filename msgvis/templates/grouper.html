@@ -75,13 +75,7 @@
             <div id="top" class="row">
                 <div id="search" class="col-md-3">
                     <div class="box" ng-controller="SparQs.controllers.SearchController">
-                        <input type="text" ng-model="keyword" ng-enter="search()" />
-                        <span class="glyphicon glyphicon-search"
-                              ng-show="keyword"
-                              ng-click="search()"   ></span>
-                        <span class="glyphicon glyphicon-remove"
-                              ng-show="keyword"
-                              ng-click="reset_search()"   ></span>
+
                     </div>
                 </div>
                 <div id="groups" class="col-md-9">
@@ -92,7 +86,18 @@
 
                 <div id="left" class="col-md-3">
                     <div id="search-results" class="box" ng-controller="SparQs.controllers.SearchController">
-                        <div class="heading">Search Results</div>
+                        <div class="heading">Search</div>
+                        <form class="form-inline">
+                            <input class="form-control" id=search_keyword type="text" placeholder="Enter a search keyword"
+                                   ng-model="keyword" ng-enter="search()" />
+                            <span class="glyphicon glyphicon-search"
+                                  ng-show="keyword"
+                                  ng-click="search()"   ></span>
+                            <span class="glyphicon glyphicon-remove"
+                                  ng-show="keyword"
+                                  ng-click="reset_search()"   ></span>
+                        </form>
+                        <div class="heading">Results</div>
                         <div class="message-list heading-body">
                             <div ng-repeat="message in messages.list" class="tweet-wrapper">
                                 <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>

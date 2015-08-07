@@ -10,12 +10,14 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: hidden;
+    min-width: 1200px;
 }
 body {
     font-family: 'Open Sans', "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 400;
     font-size: 9pt;
     background-color: rgb(230, 230, 230);
+     min-width: 1200px;
 }
 
 .box {
@@ -33,6 +35,10 @@ body {
 }
 .no-padding{
     padding: 0;
+}
+
+#application {
+
 }
 
 #titleWrap {
@@ -65,7 +71,7 @@ body {
     margin-bottom: 10px;
 }
 
-@bottom-row-height: 550px;
+@bottom-row-height: 600px;
 @stat-box-height: 150px;
 #search{
 
@@ -77,8 +83,15 @@ body {
 }
 #search-results {
     height: @bottom-row-height;
+    #search_keyword{
+        width: 90%;
+    }
+    .heading {
+        font-weight: 600;
+        font-size: 1.2em;
+    }
     .message-list{
-        height: 95%;
+        height: @bottom-row-height - 100px;
         overflow-y: scroll;
     }
 }
@@ -121,9 +134,12 @@ body {
 
 #messages {
     height: @bottom-row-height;
-
+    .heading {
+        font-weight: 600;
+        font-size: 1.2em;
+    }
     .message-list {
-        height: 95%;
+        height: @bottom-row-height - 50px;
         overflow-y: scroll;
     }
     .tweet-wrapper {
