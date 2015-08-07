@@ -301,6 +301,12 @@ class Word(models.Model):
 
     messages = models.ManyToManyField(Message, through='MessageWord', related_name='words')
 
+    def __repr__(self):
+        return self.text
+
+    def __unicode__(self):
+        return self.__repr__()
+
 
 class TopicModel(models.Model):
     dictionary = models.ForeignKey(Dictionary)

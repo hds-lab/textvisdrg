@@ -246,6 +246,7 @@ LOCAL_APPS = (
     'msgvis.apps.importer',
     'msgvis.apps.enhance',
     'msgvis.apps.questions',
+    'msgvis.apps.groups',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

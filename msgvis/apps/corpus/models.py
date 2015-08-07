@@ -251,3 +251,9 @@ class Message(models.Model):
     @property
     def embedded_html(self):
         return utils.get_embedded_html(self.original_id)
+
+    def __repr__(self):
+        return str(self.time) + " || " + self.text
+
+    def __unicode__(self):
+        return self.__repr__()
