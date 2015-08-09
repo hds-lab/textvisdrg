@@ -92,7 +92,7 @@
                             </div>
                             <div class="btns">
                                 <button class="btn btn-primary">Search Tweets</button>
-                                <button class="btn btn-default">Create a Group</button>
+                                <button class="btn btn-default">Create a New Group</button>
                             </div>
 
 
@@ -110,38 +110,42 @@
                 <div id="left" class="col-md-3">
                     <div id="search" class="box" ng-controller="SparQs.controllers.SearchController">
                          <div id="search-tab" class="rotate">
-                            <span><a href="#tabs-1">Search</a></span>
-                            <span class="active"><a href="#tabs-2">Group Messages</a></span>
-                            <span><a href="#tabs-3">Info</a></span>
+                            <span ng-class="tab_class('search')"
+                                  ng-click="change_mode('search')">Search</span>
+                            <span ng-class="tab_class('group_messages')"
+                                  ng-click="change_mode('group_messages')">Group Messages</span>
+                            <span ng-class="tab_class('info')"
+                                  ng-click="change_mode('info')">Info</span>
                         </div>
 
+                        <div ng-show="is_mode('search')">
+                            <div class="heading">Search</div>
+                            <form class="form-inline">
+                                <input class="form-control" id=search_keyword type="text" placeholder="Enter a search keyword"
+                                       ng-model="keyword" ng-enter="search()" />
+                                <span class="glyphicon glyphicon-search"
+                                      ng-show="keyword"
+                                      ng-click="search()"   ></span>
+                                <span class="glyphicon glyphicon-remove"
+                                      ng-show="keyword"
+                                      ng-click="reset_search()"   ></span>
+                            </form>
+                            <div class="heading">Results</div>
+                            <div class="message-list heading-body">
+                                <div ng-repeat="message in messages.list" class="tweet-wrapper">
+                                    <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
+                                    <div ng-bind-html="message.embedded_html"></div>
 
-                        <div class="heading">Search</div>
-                        <form class="form-inline">
-                            <input class="form-control" id=search_keyword type="text" placeholder="Enter a search keyword"
-                                   ng-model="keyword" ng-enter="search()" />
-                            <span class="glyphicon glyphicon-search"
-                                  ng-show="keyword"
-                                  ng-click="search()"   ></span>
-                            <span class="glyphicon glyphicon-remove"
-                                  ng-show="keyword"
-                                  ng-click="reset_search()"   ></span>
-                        </form>
-                        <div class="heading">Results</div>
-                        <div class="message-list heading-body">
-                            <div ng-repeat="message in messages.list" class="tweet-wrapper">
-                                <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
-                                <div ng-bind-html="message.embedded_html"></div>
-
-                                <!--
-                                <div class="text"><span ng-bind="message.text"></span></div>
-                                <div class="meta">
-                                    by
-                                    <span class="meta-author" ng-bind="message.sender.full_name"></span>
-                                    at
-                                    <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
+                                    <!--
+                                    <div class="text"><span ng-bind="message.text"></span></div>
+                                    <div class="meta">
+                                        by
+                                        <span class="meta-author" ng-bind="message.sender.full_name"></span>
+                                        at
+                                        <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
+                                    </div>
+                                    -->
                                 </div>
-                                -->
                             </div>
                         </div>
                         <span us-spinner="spinnerOptions" spinner-key="search-spinner"></span>
