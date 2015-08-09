@@ -46,6 +46,7 @@
 <script src="{% static 'SparQs/services/dimensions_service.js' %}"></script>
 <script src="{% static 'SparQs/services/questions_service.js' %}"></script>
 <script src="{% static 'SparQs/charts.js' %}"></script>
+
 {% endblock %}
 
 {% block navigation_bar %}
@@ -60,6 +61,7 @@
     angular.module('SparQs.bootstrap')
         .constant('SparQs.bootstrap.dataset', {{ object.pk }});
 </script>
+
 {% endblock %}
 
 {% block content %}
@@ -73,8 +75,28 @@
         </div>
         <div id="content" class="row ng-cloak" ng-cloak>
             <div id="top" class="row">
-                <div id="search" class="col-md-3">
-                    <div class="box" ng-controller="SparQs.controllers.SearchController">
+                <div id="group-edit" class="col-md-3">
+                    <div class="box">
+                        <form class="form-inline">
+                            <div class="heading">Group Name</div>
+                            <input type="checkbox" class="show_vis"/>
+                            <div class="keyword-line">
+                            <label for="inclusive_keyword">Including</label>
+                            <input class="form-control" id="inclusive_keyword" type="text"
+                                    />
+                            </div>
+                            <div class="keyword-line">
+                            <label for="exclusive_keyword">Excluding</label>
+                            <input class="form-control" id="exclusive_keyword" type="text"
+                                    />
+                            </div>
+                            <div class="btns">
+                                <button class="btn btn-primary">Search Tweets</button>
+                                <button class="btn btn-default">Create a Group</button>
+                            </div>
+
+
+                        </form>
 
                     </div>
                 </div>
@@ -82,10 +104,18 @@
                     groups
                 </div>
             </div>
+
             <div id="bottom" class="row">
 
                 <div id="left" class="col-md-3">
-                    <div id="search-results" class="box" ng-controller="SparQs.controllers.SearchController">
+                    <div id="search" class="box" ng-controller="SparQs.controllers.SearchController">
+                         <div id="search-tab" class="rotate">
+                            <span><a href="#tabs-1">Search</a></span>
+                            <span class="active"><a href="#tabs-2">Group Messages</a></span>
+                            <span><a href="#tabs-3">Info</a></span>
+                        </div>
+
+
                         <div class="heading">Search</div>
                         <form class="form-inline">
                             <input class="form-control" id=search_keyword type="text" placeholder="Enter a search keyword"
