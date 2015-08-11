@@ -52,9 +52,9 @@ class Dataset(models.Model):
 
         dictionary = self.get_dictionary()
         if dictionary is not None:
-            word = dictionary.words.get(text=keyword)
-            if word is not None:
-                results.extend(word.messages.all()[:10])
+            word = dictionary.words.filter(text=keyword)
+            if word.count() > 0:
+                results.extend(word[0].messages.all()[:10])
         return results
 
 

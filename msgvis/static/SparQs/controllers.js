@@ -131,17 +131,18 @@
     ];
     module.controller('SparQs.controllers.ExampleMessageController', ExampleMessageController);
 
-    var SearchController = function ($scope, KeywordMessages, Dataset, usSpinnerService) {
+    var SearchController = function ($scope, KeywordMessages, Group, TabMode, Dataset, usSpinnerService) {
+
+        $scope.Group = Group;
 
         $scope.messages = KeywordMessages;
-        var mode = "search";
         $scope.keyword = "";
 
         $scope.is_mode = function(check_mode){
-            return mode == check_mode;
+            return TabMode.mode == check_mode;
         };
         $scope.change_mode = function(new_mode){
-            mode = new_mode;
+            TabMode.mode = new_mode;
         };
         $scope.tab_class = function(check_mode){
             return ($scope.is_mode(check_mode)) ? "active" : "";
@@ -176,12 +177,69 @@
     SearchController.$inject = [
         '$scope',
         'SparQs.services.KeywordMessages',
+        'SparQs.services.Group',
+        'SparQs.services.TabMode',
         'SparQs.services.Dataset',
         'usSpinnerService'
     ];
     module.controller('SparQs.controllers.SearchController', SearchController);
     
+    var GroupController = function ($scope, Group, TabMode, Dataset, usSpinnerService) {
 
+        $scope.Group = Group;
+
+        $scope.group = {
+            name: "",
+            inclusive_keywords: "",
+            exclusive_keywords: ""
+        };
+
+
+        $scope.spinnerOptions = {
+            radius: 20,
+            width: 6,
+            length: 10,
+            color: "#000000"
+        };
+
+        $scope.show_messages = function () {
+            var name = $scope.group.name;
+            var inclusive_keywords = $scope.group.inclusive_keywords;
+            var exclusive_keywords = $scope.group.exclusive_keywords;
+
+            if (name == "" || name == undefined){
+                name = "Group ";
+                name += (inclusive_keywords != "") ? "Including" + inclusive_keywords : "";
+                name += (exclusive_keywords != "") ? "Excluding" + exclusive_keywords : "";
+            }
+
+            inclusive_keywords = ((inclusive_keywords != "")) ? inclusive_keywords.split(" ") : [];
+            exclusive_keywords = ((exclusive_keywords != "")) ? exclusive_keywords.split(" ") : [];
+
+
+            var request = Group.show_messages(Dataset.id, name, inclusive_keywords, exclusive_keywords);
+            if (request) {
+                usSpinnerService.spin('search-spinner');
+
+                request.then(function() {
+                    usSpinnerService.stop('search-spinner');
+                    TabMode.mode = "group_messages";
+
+
+                });
+            }
+        };
+
+
+    };
+    GroupController.$inject = [
+        '$scope',
+        'SparQs.services.Group',
+        'SparQs.services.TabMode',
+        'SparQs.services.Dataset',
+        'usSpinnerService'
+    ];
+    module.controller('SparQs.controllers.GroupController', GroupController);
 
     var VisualizationController = function ($scope, Selection, DataTables, Dataset, usSpinnerService) {
 

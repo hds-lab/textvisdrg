@@ -287,6 +287,83 @@
         }
     ]);
 
+    //A service for Groups.
+    module.factory('SparQs.services.Group', [
+        '$http', 'djangoUrl',
+        function GroupFactory($http, djangoUrl) {
+
+            var apiUrl = djangoUrl.reverse('group');
+
+            //A model class for messages
+            var Message = function (data) {
+                angular.extend(this, data);
+            };
+
+            var Group = function () {
+                this.name = "";
+                this.messages = [];
+                this.current_group_id = -1;
+            };
+
+            angular.extend(Group.prototype, {
+                show_messages: function (dataset, name, inclusive_keywords, exclusive_keywords) {
+                    var self = this;
+
+                    var request = {
+                        dataset: dataset,
+                        name: name,
+                        inclusive_keywords: inclusive_keywords,
+                        exclusive_keywords: exclusive_keywords
+                    };
+                    if ( self.current_group_id != -1 ){
+                        request.id = self.current_group_id;
+                        return $http.put(apiUrl, request)
+                        .success(function (data) {
+                            self.name = data.name;
+                            self.messages = data.messages.map(function (msgdata) {
+                                return new Message(msgdata);
+                            });
+                        });
+                    }
+                    else{
+                        return $http.post(apiUrl, request)
+                            .success(function (data) {
+                                self.current_group_id = data.id;
+                                self.name = data.name;
+                                self.messages = data.messages.map(function (msgdata) {
+                                    return new Message(msgdata);
+                                });
+                            });
+                    }
+                },
+                create_new_group: function(){
+                    var self = this;
+                    self.name = "";
+                    self.current_group_id = -1;
+                }
+            });
+
+            return new Group();
+        }
+    ]);
+
+    //A service for tab mode.
+    module.factory('SparQs.services.TabMode', [
+        '$http', 'djangoUrl',
+        function GroupFactory($http, djangoUrl) {
+
+            var apiUrl = djangoUrl.reverse('group');
+
+
+            var TabMode = function () {
+                this.mode = "search";
+            };
+
+
+            return new TabMode();
+        }
+    ]);
+
     //A service for loading datatables.
     module.factory('SparQs.services.DataTables', [
         '$http', 'djangoUrl',

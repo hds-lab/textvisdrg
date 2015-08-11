@@ -75,25 +75,28 @@
         </div>
         <div id="content" class="row ng-cloak" ng-cloak>
             <div id="top" class="row">
-                <div id="group-edit" class="col-md-3">
+                <div id="group-edit" class="col-md-3" ng-controller="SparQs.controllers.GroupController">
                     <div class="box">
                         <form class="form-inline">
+                            {% csrf_token %}
                              <input class="form-control heading" id="group-name-field" type="text"
-                                    placeholder="Group Name"
+                                    placeholder="Group Name" ng-model="group.name"
                                     />
                             <input type="checkbox" class="show_vis"/>
                             <div class="keyword-line">
                             <label for="inclusive_keyword">Including</label>
                             <input class="form-control" id="inclusive-keyword-field" type="text"
+                                   ng-model="group.inclusive_keywords"
                                     />
                             </div>
                             <div class="keyword-line">
                             <label for="exclusive_keyword">Excluding</label>
                             <input class="form-control" id="exclusive-keyword-field" type="text"
+                                   ng-model="group.exclusive_keywords"
                                     />
                             </div>
                             <div class="btns">
-                                <button class="btn btn-primary">Search Tweets</button>
+                                <button class="btn btn-primary" ng-click="show_messages()">Search Tweets</button>
                                 <button class="btn btn-default">Create a New Group</button>
                             </div>
 
@@ -135,6 +138,25 @@
                             <div class="heading">Results</div>
                             <div class="message-list heading-body">
                                 <div ng-repeat="message in messages.list" class="tweet-wrapper">
+                                    <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
+                                    <div ng-bind-html="message.embedded_html"></div>
+
+                                    <!--
+                                    <div class="text"><span ng-bind="message.text"></span></div>
+                                    <div class="meta">
+                                        by
+                                        <span class="meta-author" ng-bind="message.sender.full_name"></span>
+                                        at
+                                        <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
+                                    </div>
+                                    -->
+                                </div>
+                            </div>
+                        </div>
+                        <div ng-show="is_mode('group_messages')">
+                            <div class="heading">Tweets in Group {$ Group.name $}</div>
+                            <div class="message-list heading-body">
+                                <div ng-repeat="message in Group.messages" class="tweet-wrapper">
                                     <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
                                     <div ng-bind-html="message.embedded_html"></div>
 

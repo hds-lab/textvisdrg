@@ -63,8 +63,9 @@ class Group(models.Model):
         if dictionary is not None:
             if keywords:
                 for in_keyword in keywords:
-                    word = dictionary.words.get(text=in_keyword)
-                    self.inclusive_keywords.add(word)
+                    word = dictionary.words.filter(text=in_keyword)
+                    if word.count() > 0:
+                        self.inclusive_keywords.add(word[0])
 
     def add_exclusive_keywords(self, keywords):
         self.exclusive_keywords.clear()
@@ -72,8 +73,10 @@ class Group(models.Model):
         if dictionary is not None:
             if keywords:
                 for in_keyword in keywords:
-                    word = dictionary.words.get(text=ex_keyword)
-                    self.exclusive_keywords.add(word)
+                    word = dictionary.words.filter(text=ex_keyword)
+                    if word.count() > 0:
+                        self.exclusive_keywords.add(word[0])
+
 
     def __repr__(self):
         return self.name
