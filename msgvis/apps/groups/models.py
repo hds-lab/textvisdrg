@@ -54,10 +54,29 @@ class Group(models.Model):
                             break
                     if flag is True:
                         results.add(msg)
-        return list(results)
+        #return len(list(results))
+        return list(results)[:10]
+
+    def add_inclusive_keywords(self, keywords):
+        self.inclusive_keywords.clear()
+        dictionary = self.dataset.get_dictionary()
+        if dictionary is not None:
+            if keywords:
+                for in_keyword in keywords:
+                    word = dictionary.words.get(text=in_keyword)
+                    self.inclusive_keywords.add(word)
+
+    def add_exclusive_keywords(self, keywords):
+        self.exclusive_keywords.clear()
+        dictionary = self.dataset.get_dictionary()
+        if dictionary is not None:
+            if keywords:
+                for in_keyword in keywords:
+                    word = dictionary.words.get(text=ex_keyword)
+                    self.exclusive_keywords.add(word)
 
     def __repr__(self):
-        return self.title
+        return self.name
 
     def __unicode__(self):
         return self.__repr__()

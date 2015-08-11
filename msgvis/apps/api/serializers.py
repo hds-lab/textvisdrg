@@ -15,6 +15,8 @@ from rest_framework import serializers
 
 import msgvis.apps.corpus.models as corpus_models
 import msgvis.apps.questions.models as questions_models
+import msgvis.apps.enhance.models as enhance_models
+import msgvis.apps.groups.models as groups_models
 from msgvis.apps.dimensions import registry
 
 
@@ -201,6 +203,48 @@ class KeywordMessageSerializer(serializers.Serializer):
     dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
     keyword = serializers.CharField(required=True)
     messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
+
+
+class GroupSerializer(serializers.Serializer):
+    id = serializers.IntegerField(required=False)
+    dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
+    name = serializers.CharField(allow_null=True, allow_blank=True, required=False)
+    inclusive_keywords = serializers.ListField(child=serializers.CharField(), required=False)
+    exclusive_keywords = serializers.ListField(child=serializers.CharField(), required=False)
+    messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
+
+    def create(self, validated_data):
+        group = groups_models.Group.objects.create(dataset=validated_data["dataset"],
+                                                   name=validated_data["name"])
+
+        dictionary = validated_data["dataset"].get_dictionary()
+        if dictionary is not None:
+            inclusive_keywords = validated_data.get("inclusive_keywords")
+            if inclusive_keywords:
+                group.add_inclusive_keywords(inclusive_keywords)
+
+            exclusive_keywords = validated_data.get("exclusive_keywords")
+            if exclusive_keywords:
+                group.add_exclusive_keywords(exclusive_keywords)
+
+        return group
+
+class WordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = enhance_models.Word
+
+    def to_representation(self, instance):
+        return instance.text
+
+class GroupListSerializer(serializers.ModelSerializer):
+    inclusive_keywords = WordSerializer(many=True, required=False)
+    exclusive_keywords = WordSerializer(many=True, required=False)
+    messages = MessageSerializer(many=True, required=False)
+    #messages = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = groups_models.Group
+        fields = ('id', 'dataset', 'name', 'inclusive_keywords', 'exclusive_keywords', 'messages' )
 
 
 class SampleQuestionSerializer(serializers.Serializer):

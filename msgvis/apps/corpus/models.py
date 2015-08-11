@@ -40,12 +40,18 @@ class Dataset(models.Model):
 
         return messages.order_by('?')[:10]
 
-    def get_example_messages_by_keyword(self, keyword):
-        results = []
-
+    def get_dictionary(self):
         dictionary = self.dictionary.all()
         if len(dictionary) > 0:
             dictionary = dictionary[0]
+            return dictionary
+        return None
+
+    def get_example_messages_by_keyword(self, keyword):
+        results = []
+
+        dictionary = self.get_dictionary()
+        if dictionary is not None:
             word = dictionary.words.get(text=keyword)
             if word is not None:
                 results.extend(word.messages.all()[:10])
