@@ -299,13 +299,35 @@
                 angular.extend(this, data);
             };
 
+            var GroupItem = function (data) {
+                angular.extend(this, data);
+            };
+
             var Group = function () {
                 this.name = "";
                 this.messages = [];
                 this.current_group_id = -1;
+                this.group_list = [];
             };
 
             angular.extend(Group.prototype, {
+                load: function (dataset) {
+                    // TODO: get groups that only belong to this dataset
+
+                    var self = this;
+                    var request = {
+                        params: {
+                            dataset: dataset
+                        }
+                    };
+                    return $http.get(apiUrl, request)
+                        .success(function (data) {
+                            self.group_list = data.map(function (groupdata) {
+                                return new GroupItem(groupdata);
+                            });
+                            console.log(self.group_list);
+                        });
+                },
                 show_messages: function (dataset, name, inclusive_keywords, exclusive_keywords) {
                     var self = this;
 

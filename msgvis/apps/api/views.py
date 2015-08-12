@@ -303,7 +303,10 @@ class GroupView(APIView):
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, format=None):
-        groups = groups_models.Group.objects.all()
+        if request.query_params.get('dataset'):
+            groups = groups_models.Group.objects.filter(dataset_id=int(request.query_params.get('dataset'))).all()
+        else:
+            groups = groups_models.Group.objects.all()
         output = serializers.GroupListSerializer(groups, many=True)
 
         return Response(output.data, status=status.HTTP_200_OK)

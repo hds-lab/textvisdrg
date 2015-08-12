@@ -78,13 +78,28 @@ body {
     margin: 10px 0px 10px 20px;
 }
 
-@top-row-height: 130px;
+@top-row-height: 165px;
 
 #search {
     height: @top-row-height;
 }
 #groups {
     height: @top-row-height;
+    overflow-x: auto;
+    #group-wrapper {
+        width: 2000px;
+    }
+    .heading {
+        font-weight: 700;
+        font-size: 1.1em;
+        line-height: 2em;
+        padding: 2px;
+    }
+    .group-box {
+        display: inline-block;
+        width: 200px;
+        height: @top-row-height - 25;
+    }
 }
 
 #top {
@@ -137,8 +152,8 @@ body {
           cursor: pointer;
       }
 
-
 }
+
 
 #search {
     height: @bottom-row-height;

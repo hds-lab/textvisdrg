@@ -72,7 +72,7 @@ class Group(models.Model):
         dictionary = self.dataset.get_dictionary()
         if dictionary is not None:
             if keywords:
-                for in_keyword in keywords:
+                for ex_keyword in keywords:
                     word = dictionary.words.filter(text=ex_keyword)
                     if word.count() > 0:
                         self.exclusive_keywords.add(word[0])

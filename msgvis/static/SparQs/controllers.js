@@ -187,6 +187,7 @@
     var GroupController = function ($scope, Group, TabMode, Dataset, usSpinnerService) {
 
         $scope.Group = Group;
+        $scope.Group.load(Dataset.id);
 
         $scope.group = {
             name: "",
