@@ -297,7 +297,7 @@ class GroupView(APIView):
 
             # Just add the messages key to the response
 
-            output = serializers.GroupListSerializer(group)
+            output = serializers.GroupListItemSerializer(group)
             return Response(output.data, status=status.HTTP_200_OK)
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -324,7 +324,7 @@ class GroupView(APIView):
             if data.get('exclusive_keywords'):
                 group.add_exclusive_keywords(data.get('exclusive_keywords'))
 
-            output = serializers.GroupListSerializer(group)
+            output = serializers.GroupListItemSerializer(group)
             return Response(output.data, status=status.HTTP_200_OK)
 
 
