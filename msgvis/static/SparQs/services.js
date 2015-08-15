@@ -307,7 +307,7 @@
                 this.name = "";
                 this.messages = [];
                 this.current_group_id = -1;
-                this.group_list = [];
+                this.group_list = {};
             };
 
             angular.extend(Group.prototype, {
@@ -322,8 +322,11 @@
                     };
                     return $http.get(apiUrl, request)
                         .success(function (data) {
-                            self.group_list = data.map(function (groupdata) {
+                            var groups = data.map(function (groupdata) {
                                 return new GroupItem(groupdata);
+                            });
+                            groups.forEach(function(d){
+                                self.group_list[d.id] = d;
                             });
                             console.log(self.group_list);
                         });
@@ -355,6 +358,9 @@
                                 self.messages = data.messages.map(function (msgdata) {
                                     return new Message(msgdata);
                                 });
+                                var new_group = new GroupItem(request);
+                                new_group.id = data.id;
+                                self.group_list[new_group.id] = new_group;
                             });
                     }
                 },
@@ -362,6 +368,9 @@
                     var self = this;
                     self.name = "";
                     self.current_group_id = -1;
+                },
+                switch_group: function(group){
+
                 }
             });
 
