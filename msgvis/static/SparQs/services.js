@@ -362,8 +362,8 @@
                                 });
                                 var new_group = new GroupItem(request);
                                 new_group.id = data.id;
-                                self.group_dict[self.current_group_id].name = name;
                                 self.group_dict[new_group.id] = new_group;
+                                self.group_dict[new_group.id].name = name;
                                 self.group_list.push(new_group);
                             });
                     }
