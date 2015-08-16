@@ -340,6 +340,7 @@
                         inclusive_keywords: inclusive_keywords,
                         exclusive_keywords: exclusive_keywords
                     };
+                    self.messages = [];
                     if ( self.current_group_id != -1 ){
                         request.id = self.current_group_id;
                         return $http.put(apiUrl, request)
@@ -380,6 +381,28 @@
                         exclusive_keywords: group.exclusive_keywords.join(" ")
                     };
                     return group_ctrl;
+                },
+                delete_group: function(group){
+                    var self = this;
+
+                    var request = {
+                        params: {
+                            id: group.id
+                        }
+                    };
+
+                    $http.delete(apiUrl, request)
+                        .success(function (data) {
+                            var index = self.group_list.indexOf(group);
+                            if (index == -1) return;
+
+                            self.group_list.splice(index, 1);
+                            delete self.group_dict[group.id];
+
+
+                            if (group.id == self.current_group_id)
+                                self.current_group_id = -1;
+                        });
                 }
             });
 

@@ -112,12 +112,22 @@
                              ng-click="switch_group(group)"
                              ng-class="group_class(group)">
                             <div class="box">
+                                <input type="checkbox" class="show_vis"/>
                                 <div class="heading">{$ group.name $}</div>
                                 <div class="keyword-list">
                                     Including: {$ group.inclusive_keywords.join(' ') $}
                                 </div>
                                 <div class="keyword-list">
                                     Excluding: {$ group.exclusive_keywords.join(' ') $}
+                                </div>
+                                <div class="bottom-bar">
+                                    <div class="count">
+                                        message count: {$ group.message_count $}
+                                    </div>
+                                    <div class="icon">
+                                        <span class="glyphicon glyphicon-trash"
+                                             ng-click="delete_group($event, group)" ></span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

@@ -252,7 +252,18 @@
             return (group.id == Group.current_group_id) ? "active" : "";
         };
 
+        $scope.delete_group = function($event, group){
 
+            if (group.id == Group.current_group_id) {
+                $scope.group = {
+                    name: "",
+                    inclusive_keywords: "",
+                    exclusive_keywords: ""
+                };
+            }
+            $event.stopPropagation();
+            Group.delete_group(group);
+        };
 
 
     };

@@ -239,9 +239,10 @@ class WordSerializer(serializers.ModelSerializer):
 class GroupListSerializer(serializers.ModelSerializer):
     inclusive_keywords = WordSerializer(many=True, required=False)
     exclusive_keywords = WordSerializer(many=True, required=False)
+    message_count = serializers.IntegerField(required=False)
     class Meta:
         model = groups_models.Group
-        fields = ('id', 'dataset', 'name', 'inclusive_keywords', 'exclusive_keywords' )
+        fields = ('id', 'dataset', 'name', 'inclusive_keywords', 'exclusive_keywords', 'message_count' )
 
 
 class GroupListItemSerializer(serializers.ModelSerializer):

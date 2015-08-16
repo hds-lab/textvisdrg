@@ -86,8 +86,15 @@ body {
 #groups {
     height: @top-row-height;
     overflow-x: auto;
+    padding-left: 0;
     #group-wrapper {
         white-space: nowrap;
+    }
+    position: relative;
+    .show_vis {
+        position: absolute;
+        top: 10px;
+        right: 7px;
     }
     .heading {
         font-weight: 700;
@@ -95,6 +102,7 @@ body {
         line-height: 2em;
         padding: 2px;
         text-overflow: ellipsis;
+        width: 91%;
         overflow: hidden;
     }
     .group-box {
@@ -102,7 +110,30 @@ body {
         width: 200px;
         height: @top-row-height - 25;
         transition:visibility 0s linear 0.5s,opacity 0.5s linear;
+        position: relative;
 
+        .bottom-bar {
+            .count {
+                position: absolute;
+                left: 10px;
+                bottom: 10px;
+                color: #aaa;
+            }
+            .icon {
+                position: absolute;
+                right: 10px;
+                bottom: 10px;
+                color: #aaa;
+            }
+            .glyphicon:hover {
+                cursor: pointer;
+            }
+        }
+
+
+    }
+    .group-box:hover {
+        cursor: pointer;
     }
     .group-box.active {
         .box {
@@ -122,8 +153,8 @@ body {
       position: relative;
       .show_vis {
           position: absolute;
-          top: 6%;
-          right: 8%;
+          top: 10px;
+          right: 25px;
       }
 
       #group-name-field {

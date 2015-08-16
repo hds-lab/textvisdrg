@@ -22,8 +22,7 @@ class Group(models.Model):
     exclusive_keywords = models.ManyToManyField(enhance_models.Word, null=True, blank=True, default=None, related_name='exclusive_keywords')
     """The set of :class:`enhance_models.Word` as exclusive keywords."""
 
-    @property
-    def messages(self):
+    def message_list(self):
         results = set()
 
         dictionary = self.dataset.dictionary.all()
@@ -55,7 +54,16 @@ class Group(models.Model):
                     if flag is True:
                         results.add(msg)
         #return len(list(results))
-        return list(results)[:10]
+        return list(results)
+
+    @property
+    def messages(self):
+        return self.message_list()[:10]
+
+    @property
+    def message_count(self):
+        return len(self.message_list())
+
 
     def add_inclusive_keywords(self, keywords):
         self.inclusive_keywords.clear()

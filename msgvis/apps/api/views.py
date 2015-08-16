@@ -327,9 +327,14 @@ class GroupView(APIView):
             output = serializers.GroupListItemSerializer(group)
             return Response(output.data, status=status.HTTP_200_OK)
 
-
-
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, format=None):
+        if request.query_params.get('id'):
+            group = groups_models.Group.objects.get(id=request.query_params.get('id'))
+            group.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class ResearchQuestionsView(APIView):
     """
