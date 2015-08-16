@@ -304,10 +304,10 @@
             };
 
             var Group = function () {
-                this.name = "";
                 this.messages = [];
                 this.current_group_id = -1;
-                this.group_list = {};
+                this.group_list = [];
+                this.group_dict = {};
             };
 
             angular.extend(Group.prototype, {
@@ -322,11 +322,11 @@
                     };
                     return $http.get(apiUrl, request)
                         .success(function (data) {
-                            var groups = data.map(function (groupdata) {
+                            self.group_list = data.map(function (groupdata) {
                                 return new GroupItem(groupdata);
                             });
-                            groups.forEach(function(d){
-                                self.group_list[d.id] = d;
+                            self.group_list.forEach(function(d){
+                                self.group_dict[d.id] = d;
                             });
                             console.log(self.group_list);
                         });
@@ -344,33 +344,42 @@
                         request.id = self.current_group_id;
                         return $http.put(apiUrl, request)
                         .success(function (data) {
-                            self.name = data.name;
                             self.messages = data.messages.map(function (msgdata) {
                                 return new Message(msgdata);
                             });
+                            self.group_dict[self.current_group_id].name = name;
+                            self.group_dict[self.current_group_id].inclusive_keywords = inclusive_keywords;
+                            self.group_dict[self.current_group_id].exclusive_keywords = exclusive_keywords;
                         });
                     }
                     else{
                         return $http.post(apiUrl, request)
                             .success(function (data) {
                                 self.current_group_id = data.id;
-                                self.name = data.name;
                                 self.messages = data.messages.map(function (msgdata) {
                                     return new Message(msgdata);
                                 });
                                 var new_group = new GroupItem(request);
                                 new_group.id = data.id;
-                                self.group_list[new_group.id] = new_group;
+                                self.group_dict[self.current_group_id].name = name;
+                                self.group_dict[new_group.id] = new_group;
+                                self.group_list.push(new_group);
                             });
                     }
                 },
                 create_new_group: function(){
                     var self = this;
-                    self.name = "";
                     self.current_group_id = -1;
                 },
                 switch_group: function(group){
-
+                    var self = this;
+                    self.current_group_id = group.id;
+                    var group_ctrl = {
+                        name: group.name,
+                        inclusive_keywords: group.inclusive_keywords.join(" "),
+                        exclusive_keywords: group.exclusive_keywords.join(" ")
+                    };
+                    return group_ctrl;
                 }
             });
 

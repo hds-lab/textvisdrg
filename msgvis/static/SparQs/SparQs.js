@@ -22,4 +22,6 @@
         $http.defaults.headers.post['X-CSRFToken'] = $cookies.csrftoken;
         $http.defaults.headers.put['X-CSRFToken'] = $cookies.csrftoken;
     }]);
+
+
 })();

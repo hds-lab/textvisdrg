@@ -74,8 +74,8 @@
             </div>
         </div>
         <div id="content" class="row ng-cloak" ng-cloak>
-            <div id="top" class="row">
-                <div id="group-edit" class="col-md-3" ng-controller="SparQs.controllers.GroupController">
+            <div id="top" class="row" ng-controller="SparQs.controllers.GroupController">
+                <div id="group-edit" class="col-md-3">
                     <div class="box">
                         <form class="form-inline">
                             {% csrf_token %}
@@ -97,7 +97,7 @@
                             </div>
                             <div class="btns">
                                 <button class="btn btn-primary" ng-click="show_messages()">Show Tweets</button>
-                                <button class="btn btn-default">Create a New Group</button>
+                                <button class="btn btn-default" ng-click="create_new_group()">Create a New Group</button>
                             </div>
 
 
@@ -105,9 +105,12 @@
 
                     </div>
                 </div>
-                <div id="groups" class="col-md-9" ng-controller="SparQs.controllers.GroupController">
+                <div id="groups" class="col-md-9">
                     <div id="group-wrapper">
-                        <div class="group-box" ng-repeat="group in Group.group_list">
+                        <div ng-animate="'animate'" class="group-box"
+                             ng-repeat="group in Group.group_list | orderBy:'id':true"
+                             ng-click="switch_group(group)"
+                             ng-class="group_class(group)">
                             <div class="box">
                                 <div class="heading">{$ group.name $}</div>
                                 <div class="keyword-list">

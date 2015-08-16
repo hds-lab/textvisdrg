@@ -184,7 +184,7 @@
     ];
     module.controller('SparQs.controllers.SearchController', SearchController);
     
-    var GroupController = function ($scope, Group, TabMode, Dataset, usSpinnerService) {
+    var GroupController = function ($scope, $timeout, Group, TabMode, Dataset, usSpinnerService) {
 
         $scope.Group = Group;
         $scope.Group.load(Dataset.id);
@@ -210,8 +210,9 @@
 
             if (name == "" || name == undefined){
                 name = "Group ";
-                name += (inclusive_keywords != "") ? "Including" + inclusive_keywords : "";
-                name += (exclusive_keywords != "") ? "Excluding" + exclusive_keywords : "";
+                name += (inclusive_keywords != "") ? "including " + inclusive_keywords + " " : "";
+                name += (exclusive_keywords != "") ? "excluding " + exclusive_keywords + " " : "";
+                $scope.group.name = name;
             }
 
             inclusive_keywords = ((inclusive_keywords != "")) ? inclusive_keywords.split(" ") : [];
@@ -231,10 +232,33 @@
             }
         };
 
+        $scope.create_new_group = function(){
+            $scope.group = {
+                name: "",
+                inclusive_keywords: "",
+                exclusive_keywords: ""
+            };
+
+            Group.create_new_group();
+        };
+
+        $scope.switch_group = function(group){
+            $scope.group = Group.switch_group(group);
+            $scope.show_messages();
+
+        };
+
+        $scope.group_class = function(group){
+            return (group.id == Group.current_group_id) ? "active" : "";
+        };
+
+
+
 
     };
     GroupController.$inject = [
         '$scope',
+        '$timeout',
         'SparQs.services.Group',
         'SparQs.services.TabMode',
         'SparQs.services.Dataset',
@@ -338,5 +362,26 @@
             });
         };
     });
+
+    module.animation('.slide', [function() {
+        return {
+        // make note that other events (like addClass/removeClass)
+        // have different function input parameters
+        enter: function(element, doneFn) {
+          jQuery(element).fadeIn(1000, doneFn);
+
+          // remember to call doneFn so that angular
+          // knows that the animation has concluded
+        },
+
+        move: function(element, doneFn) {
+          jQuery(element).fadeIn(1000, doneFn);
+        },
+
+        leave: function(element, doneFn) {
+          jQuery(element).fadeOut(1000, doneFn);
+        }
+        }
+    }]);
 
 })();
