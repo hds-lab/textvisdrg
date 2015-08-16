@@ -254,7 +254,7 @@ class GroupListItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = groups_models.Group
-        fields = ('id', 'dataset', 'name', 'inclusive_keywords', 'exclusive_keywords', 'messages' )
+        fields = ('id', 'dataset', 'name', 'inclusive_keywords', 'exclusive_keywords', 'messages', 'message_count' )
 
 
 class SampleQuestionSerializer(serializers.Serializer):

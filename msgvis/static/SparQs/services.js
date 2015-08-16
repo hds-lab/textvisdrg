@@ -351,6 +351,7 @@
                             self.group_dict[self.current_group_id].name = name;
                             self.group_dict[self.current_group_id].inclusive_keywords = inclusive_keywords;
                             self.group_dict[self.current_group_id].exclusive_keywords = exclusive_keywords;
+                            self.group_dict[self.current_group_id].message_count = data.message_count;
                         });
                     }
                     else{
@@ -362,6 +363,7 @@
                                 });
                                 var new_group = new GroupItem(request);
                                 new_group.id = data.id;
+                                new_group.message_count = data.message_count;
                                 self.group_dict[new_group.id] = new_group;
                                 self.group_list.push(new_group);
                             });
