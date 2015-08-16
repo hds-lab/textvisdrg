@@ -72,8 +72,6 @@ class GroupTest(TestCase):
         self.add_word_msg_connection(dictionary, self.word_obj_dict["OAO"], msg3)
         self.add_word_msg_connection(dictionary, self.word_obj_dict["book"], msg3)
 
-        print json.dumps(map(lambda x: str(x), self.word_obj_dict["blah"].messages.all()))
-
         return [msg1, msg2, msg3]
 
     def create_some_groups(self):
