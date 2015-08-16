@@ -249,6 +249,7 @@ class GroupListItemSerializer(serializers.ModelSerializer):
     inclusive_keywords = WordSerializer(many=True, required=False)
     exclusive_keywords = WordSerializer(many=True, required=False)
     messages = MessageSerializer(many=True, required=False)
+    message_count = serializers.IntegerField(required=False)
     #messages = serializers.IntegerField(required=False)
 
     class Meta:
