@@ -28,4 +28,9 @@ class Command(BaseCommand):
         from msgvis.apps.enhance.tasks import default_topic_context, standard_topic_pipeline
 
         context = default_topic_context(name, dataset_id=dataset_id)
-        standard_topic_pipeline(context, dataset_id=dataset_id, num_topics=int(num_topics))
+        dictionary = context.find_dictionary()
+        if dictionary is None:
+            dictionary = context.build_dictionary(dataset_id=dataset_id)
+
+        if not context.bows_exist(dictionary):
+            context.build_bows(dictionary)

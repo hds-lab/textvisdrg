@@ -21,11 +21,14 @@ from rest_framework.views import APIView, Response
 from django.core.urlresolvers import NoReverseMatch
 from rest_framework.reverse import reverse
 from rest_framework.compat import get_resolver_match, OrderedDict
+from django.core.context_processors import csrf
+from django.views.decorators.csrf import csrf_exempt
 
 from msgvis.apps.api import serializers
 from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.questions import models as questions_models
 from msgvis.apps.datatable import models as datatable_models
+import msgvis.apps.groups.models as groups_models
 import logging
 
 logger = logging.getLogger(__name__)
@@ -202,6 +205,135 @@ class ExampleMessagesView(APIView):
             return Response(output.data, status=status.HTTP_200_OK)
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class KeywordMessagesView(APIView):
+    """
+    Get some example messages matching the keyword.
+
+    **Request:** ``POST /api/search``
+
+    **Format:**: (request should not have ``messages`` key)
+
+    ::
+
+        {
+            "dataset": 1,
+            "keyword": "like",
+            "messages": [
+                {
+                    "id": 52,
+                    "dataset": 1,
+                    "text": "Some sort of thing or other",
+                    "sender": {
+                        "id": 2,
+                        "dataset": 1
+                        "original_id": 2568434,
+                        "username": "my_name",
+                        "full_name": "My Name"
+                    },
+                    "time": "2015-02-25T00:23:53Z"
+                }
+            ]
+        }
+    """
+
+    def post(self, request, format=None):
+        input = serializers.KeywordMessageSerializer(data=request.data)
+        if input.is_valid():
+            data = input.validated_data
+
+            dataset = data['dataset']
+
+            keyword = data['keyword']
+
+            keyword_messages = dataset.get_example_messages_by_keyword(keyword)
+
+            # Just add the messages key to the response
+            response_data = data
+            response_data["messages"] = keyword_messages
+
+            output = serializers.KeywordMessageSerializer(response_data)
+            return Response(output.data, status=status.HTTP_200_OK)
+
+        return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class GroupView(APIView):
+    """
+    Get some example messages matching the keyword.
+
+    **Request:** ``POST /api/group``
+
+    **Format:**: (request should not have ``messages`` key)
+
+    ::
+
+        {
+            "dataset": 1,
+            "keyword": "like",
+            "messages": [
+                {
+                    "id": 52,
+                    "dataset": 1,
+                    "text": "Some sort of thing or other",
+                    "sender": {
+                        "id": 2,
+                        "dataset": 1
+                        "original_id": 2568434,
+                        "username": "my_name",
+                        "full_name": "My Name"
+                    },
+                    "time": "2015-02-25T00:23:53Z"
+                }
+            ]
+        }
+    """
+
+
+    def post(self, request, format=None):
+        input = serializers.GroupSerializer(data=request.data)
+        if input.is_valid():
+            data = input.validated_data
+            group = input.save()
+
+            # Just add the messages key to the response
+
+            output = serializers.GroupListItemSerializer(group)
+            return Response(output.data, status=status.HTTP_200_OK)
+
+        return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request, format=None):
+        if request.query_params.get('dataset'):
+            groups = groups_models.Group.objects.filter(dataset_id=int(request.query_params.get('dataset'))).all()
+        else:
+            groups = groups_models.Group.objects.all()
+        output = serializers.GroupListSerializer(groups, many=True)
+
+        return Response(output.data, status=status.HTTP_200_OK)
+
+    def put(self, request, format=None):
+        input = serializers.GroupSerializer(data=request.data)
+        if input.is_valid():
+            data = input.validated_data
+            group = groups_models.Group.objects.get(id=data["id"])
+            if data.get('name') is not None:
+                group.name = data["name"]
+                group.save()
+            if data.get('inclusive_keywords'):
+                group.add_inclusive_keywords(data.get('inclusive_keywords'))
+            if data.get('exclusive_keywords'):
+                group.add_exclusive_keywords(data.get('exclusive_keywords'))
+
+            output = serializers.GroupListItemSerializer(group)
+            return Response(output.data, status=status.HTTP_200_OK)
+
+        return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, format=None):
+        if request.query_params.get('id'):
+            group = groups_models.Group.objects.get(id=request.query_params.get('id'))
+            group.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ResearchQuestionsView(APIView):

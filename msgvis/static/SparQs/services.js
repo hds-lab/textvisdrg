@@ -249,6 +249,184 @@
         }
     ]);
 
+    //A service for loading example messages.
+    module.factory('SparQs.services.KeywordMessages', [
+        '$http', 'djangoUrl',
+        function keywordMessagesFactory($http, djangoUrl) {
+
+            var apiUrl = djangoUrl.reverse('keyword-messages');
+
+            //A model class for messages
+            var Message = function (data) {
+                angular.extend(this, data);
+            };
+
+            var KeywordMessages = function () {
+                this.list = [];
+            };
+
+            angular.extend(KeywordMessages.prototype, {
+                load: function (dataset, keyword) {
+
+                    var request = {
+                        dataset: dataset,
+                        keyword: keyword
+                    };
+
+                    var self = this;
+                    return $http.post(apiUrl, request)
+                        .success(function (data) {
+                            self.list = data.messages.map(function (msgdata) {
+                                return new Message(msgdata);
+                            });
+                        });
+                }
+            });
+
+            return new KeywordMessages();
+        }
+    ]);
+
+    //A service for Groups.
+    module.factory('SparQs.services.Group', [
+        '$http', 'djangoUrl',
+        function GroupFactory($http, djangoUrl) {
+
+            var apiUrl = djangoUrl.reverse('group');
+
+            //A model class for messages
+            var Message = function (data) {
+                angular.extend(this, data);
+            };
+
+            var GroupItem = function (data) {
+                angular.extend(this, data);
+            };
+
+            var Group = function () {
+                this.messages = [];
+                this.current_group_id = -1;
+                this.group_list = [];
+                this.group_dict = {};
+            };
+
+            angular.extend(Group.prototype, {
+                load: function (dataset) {
+                    // TODO: get groups that only belong to this dataset
+
+                    var self = this;
+                    var request = {
+                        params: {
+                            dataset: dataset
+                        }
+                    };
+                    return $http.get(apiUrl, request)
+                        .success(function (data) {
+                            self.group_list = data.map(function (groupdata) {
+                                return new GroupItem(groupdata);
+                            });
+                            self.group_list.forEach(function(d){
+                                self.group_dict[d.id] = d;
+                            });
+                            console.log(self.group_list);
+                        });
+                },
+                show_messages: function (dataset, name, inclusive_keywords, exclusive_keywords) {
+                    var self = this;
+
+                    var request = {
+                        dataset: dataset,
+                        name: name,
+                        inclusive_keywords: inclusive_keywords,
+                        exclusive_keywords: exclusive_keywords
+                    };
+                    self.messages = [];
+                    if ( self.current_group_id != -1 ){
+                        request.id = self.current_group_id;
+                        return $http.put(apiUrl, request)
+                        .success(function (data) {
+                            self.messages = data.messages.map(function (msgdata) {
+                                return new Message(msgdata);
+                            });
+                            self.group_dict[self.current_group_id].name = name;
+                            self.group_dict[self.current_group_id].inclusive_keywords = inclusive_keywords;
+                            self.group_dict[self.current_group_id].exclusive_keywords = exclusive_keywords;
+                        });
+                    }
+                    else{
+                        return $http.post(apiUrl, request)
+                            .success(function (data) {
+                                self.current_group_id = data.id;
+                                self.messages = data.messages.map(function (msgdata) {
+                                    return new Message(msgdata);
+                                });
+                                var new_group = new GroupItem(request);
+                                new_group.id = data.id;
+                                self.group_dict[self.current_group_id].name = name;
+                                self.group_dict[new_group.id] = new_group;
+                                self.group_list.push(new_group);
+                            });
+                    }
+                },
+                create_new_group: function(){
+                    var self = this;
+                    self.current_group_id = -1;
+                },
+                switch_group: function(group){
+                    var self = this;
+                    self.current_group_id = group.id;
+                    var group_ctrl = {
+                        name: group.name,
+                        inclusive_keywords: group.inclusive_keywords.join(" "),
+                        exclusive_keywords: group.exclusive_keywords.join(" ")
+                    };
+                    return group_ctrl;
+                },
+                delete_group: function(group){
+                    var self = this;
+
+                    var request = {
+                        params: {
+                            id: group.id
+                        }
+                    };
+
+                    $http.delete(apiUrl, request)
+                        .success(function (data) {
+                            var index = self.group_list.indexOf(group);
+                            if (index == -1) return;
+
+                            self.group_list.splice(index, 1);
+                            delete self.group_dict[group.id];
+
+
+                            if (group.id == self.current_group_id)
+                                self.current_group_id = -1;
+                        });
+                }
+            });
+
+            return new Group();
+        }
+    ]);
+
+    //A service for tab mode.
+    module.factory('SparQs.services.TabMode', [
+        '$http', 'djangoUrl',
+        function GroupFactory($http, djangoUrl) {
+
+            var apiUrl = djangoUrl.reverse('group');
+
+
+            var TabMode = function () {
+                this.mode = "search";
+            };
+
+
+            return new TabMode();
+        }
+    ]);
+
     //A service for loading datatables.
     module.factory('SparQs.services.DataTables', [
         '$http', 'djangoUrl',

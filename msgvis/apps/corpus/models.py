@@ -2,6 +2,7 @@ from django.db import models
 from caching.base import CachingManager, CachingMixin
 
 from msgvis.apps.base import models as base_models
+from msgvis.apps.corpus import utils
 
 class Dataset(models.Model):
     """A top-level dataset object containing messages."""
@@ -38,6 +39,23 @@ class Dataset(models.Model):
             messages = dimension.filter(messages, **params)
 
         return messages.order_by('?')[:10]
+
+    def get_dictionary(self):
+        dictionary = self.dictionary.all()
+        if len(dictionary) > 0:
+            dictionary = dictionary[0]
+            return dictionary
+        return None
+
+    def get_example_messages_by_keyword(self, keyword):
+        results = []
+
+        dictionary = self.get_dictionary()
+        if dictionary is not None:
+            word = dictionary.words.filter(text=keyword)
+            if word.count() > 0:
+                results.extend(word[0].messages.all()[:10])
+        return results
 
 
 class MessageType(CachingMixin, models.Model):
@@ -236,3 +254,12 @@ class Message(models.Model):
     text = base_models.Utf8TextField(null=True, blank=True, default="")
     """The actual text of the message."""
 
+    @property
+    def embedded_html(self):
+        return utils.get_embedded_html(self.original_id)
+
+    def __repr__(self):
+        return str(self.time) + " || " + self.text
+
+    def __unicode__(self):
+        return self.__repr__()

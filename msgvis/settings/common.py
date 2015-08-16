@@ -246,6 +246,7 @@ LOCAL_APPS = (
     'msgvis.apps.importer',
     'msgvis.apps.enhance',
     'msgvis.apps.questions',
+    'msgvis.apps.groups',
 )
 
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -430,3 +431,4 @@ TWITTER_ACCESS_TOKEN_SECRET = get_env_setting('TWITTER_ACCESS_TOKEN_SECRET', '')
 ######### DIMENSION SETTINGS
 QUANTITATIVE_DIMENSION_BINS = 50
 ######### END DIMENSION SETTINGS
+

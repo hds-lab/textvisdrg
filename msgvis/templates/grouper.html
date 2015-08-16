@@ -3,6 +3,10 @@
 
 {% block page_title %}SparQs{% endblock %}
 
+{% block meta %}
+<meta name="twitter:widgets:csp" content="on">
+{% endblock %}
+
 {% block css %}
 <link rel="stylesheet" href="{% static 'theme.less' %}" type="text/less">
 <link rel="stylesheet" href="{% static 'style.less' %}" type="text/less">
@@ -12,6 +16,7 @@
 
 {% block js %}
 {{ block.super }}
+
 <script src="{% static 'bower/angular/angular.js' %}"></script>
 <script src="{% static 'bower/angular-cookies/angular-cookies.js' %}"></script>
 <script src="{% static 'bower/angular-route/angular-route.js' %}"></script>
@@ -41,6 +46,7 @@
 <script src="{% static 'SparQs/services/dimensions_service.js' %}"></script>
 <script src="{% static 'SparQs/services/questions_service.js' %}"></script>
 <script src="{% static 'SparQs/charts.js' %}"></script>
+
 {% endblock %}
 
 {% block navigation_bar %}
@@ -55,6 +61,7 @@
     angular.module('SparQs.bootstrap')
         .constant('SparQs.bootstrap.dataset', {{ object.pk }});
 </script>
+
 {% endblock %}
 
 {% block content %}
@@ -67,26 +74,135 @@
             </div>
         </div>
         <div id="content" class="row ng-cloak" ng-cloak>
-            <div id="top" class="row">
-                <div id="search" class="col-md-3">
+            <div id="top" class="row" ng-controller="SparQs.controllers.GroupController">
+                <div id="group-edit" class="col-md-3">
                     <div class="box">
-                        search
+                        <form class="form-inline">
+                            {% csrf_token %}
+                             <input class="form-control heading" id="group-name-field" type="text"
+                                    placeholder="Group Name" ng-model="group.name"
+                                    />
+                            <input type="checkbox" class="show_vis"/>
+                            <div class="keyword-line">
+                            <label for="inclusive_keyword">Including</label>
+                            <input class="form-control" id="inclusive-keyword-field" type="text"
+                                   ng-model="group.inclusive_keywords"
+                                    />
+                            </div>
+                            <div class="keyword-line">
+                            <label for="exclusive_keyword">Excluding</label>
+                            <input class="form-control" id="exclusive-keyword-field" type="text"
+                                   ng-model="group.exclusive_keywords"
+                                    />
+                            </div>
+                            <div class="btns">
+                                <button class="btn btn-primary" ng-click="show_messages()">Show Tweets</button>
+                                <button class="btn btn-default" ng-click="create_new_group()">Create a New Group</button>
+                            </div>
+
+
+                        </form>
+
                     </div>
                 </div>
                 <div id="groups" class="col-md-9">
-                    groups
+                    <div id="group-wrapper">
+                        <div ng-animate="'animate'" class="group-box"
+                             ng-repeat="group in Group.group_list | orderBy:'id':true"
+                             ng-click="switch_group(group)"
+                             ng-class="group_class(group)">
+                            <div class="box">
+                                <input type="checkbox" class="show_vis"/>
+                                <div class="heading">{$ group.name $}</div>
+                                <div class="keyword-list">
+                                    Including: {$ group.inclusive_keywords.join(' ') $}
+                                </div>
+                                <div class="keyword-list">
+                                    Excluding: {$ group.exclusive_keywords.join(' ') $}
+                                </div>
+                                <div class="bottom-bar">
+                                    <div class="count">
+                                        message count: {$ group.message_count $}
+                                    </div>
+                                    <div class="icon">
+                                        <span class="glyphicon glyphicon-trash"
+                                             ng-click="delete_group($event, group)" ></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
             <div id="bottom" class="row">
 
                 <div id="left" class="col-md-3">
-                    <div id="search-results" class="box">
-                        Search Results
+                    <div id="search" class="box" ng-controller="SparQs.controllers.SearchController">
+                         <div id="search-tab" class="rotate">
+                            <span ng-class="tab_class('search')"
+                                  ng-click="change_mode('search')">Search</span>
+                            <span ng-class="tab_class('group_messages')"
+                                  ng-click="change_mode('group_messages')">Group Messages</span>
+                            <span ng-class="tab_class('info')"
+                                  ng-click="change_mode('info')">Info</span>
+                        </div>
+
+                        <div ng-show="is_mode('search')">
+                            <div class="heading">Search</div>
+                            <form class="form-inline">
+                                <input class="form-control" id=search_keyword type="text" placeholder="Enter a search keyword"
+                                       ng-model="keyword" ng-enter="search()" />
+                                <span class="glyphicon glyphicon-search"
+                                      ng-show="keyword"
+                                      ng-click="search()"   ></span>
+                                <span class="glyphicon glyphicon-remove"
+                                      ng-show="keyword"
+                                      ng-click="reset_search()"   ></span>
+                            </form>
+                            <div class="heading">Results</div>
+                            <div class="message-list heading-body">
+                                <div ng-repeat="message in messages.list" class="tweet-wrapper">
+                                    <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
+                                    <div ng-bind-html="message.embedded_html"></div>
+
+                                    <!--
+                                    <div class="text"><span ng-bind="message.text"></span></div>
+                                    <div class="meta">
+                                        by
+                                        <span class="meta-author" ng-bind="message.sender.full_name"></span>
+                                        at
+                                        <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
+                                    </div>
+                                    -->
+                                </div>
+                            </div>
+                        </div>
+                        <div ng-show="is_mode('group_messages')">
+                            <div class="heading">Tweets in Group {$ Group.name $}</div>
+                            <div class="message-list heading-body">
+                                <div ng-repeat="message in Group.messages" class="tweet-wrapper">
+                                    <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
+                                    <div ng-bind-html="message.embedded_html"></div>
+
+                                    <!--
+                                    <div class="text"><span ng-bind="message.text"></span></div>
+                                    <div class="meta">
+                                        by
+                                        <span class="meta-author" ng-bind="message.sender.full_name"></span>
+                                        at
+                                        <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
+                                    </div>
+                                    -->
+                                </div>
+                            </div>
+                        </div>
+                        <span us-spinner="spinnerOptions" spinner-key="search-spinner"></span>
                     </div>
                 </div>
-                <div id="middle" class="col-md-7">
+                <div id="middle" class="col-md-6">
                     <div id="viz-wrapper" class="box">
-                    <div class="col-md-10">
+                    <div class="col-md-9">
                         <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
                             <div id="viz-content" class="heading-body">
                                 <sparqs-vis vis-data-table="datatable"
@@ -98,7 +214,7 @@
                             </div>
                         </div>
                     </div>
-                        <div class="col-md-2">
+                        <div class="col-md-3">
                             {% verbatim %}
                             <div id="dimensions" class="app-panel row"
                                  ng-controller="SparQs.controllers.DimensionController">
@@ -125,11 +241,15 @@
 
                 </div>
 
-                <div id="right" class="col-md-2">
+                <div id="right" class="col-md-3">
                     <div id="messages" class="app-panel box" ng-controller="SparQs.controllers.ExampleMessageController">
                         <div class="heading">Example Messages</div>
-                        <ul class="message-list heading-body">
-                            <li ng-repeat="message in messages.list">
+                        <div class="message-list heading-body">
+                            <div ng-repeat="message in messages.list" class="tweet-wrapper">
+                                <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
+                                <div ng-bind-html="message.embedded_html"></div>
+
+                                <!--
                                 <div class="text"><span ng-bind="message.text"></span></div>
                                 <div class="meta">
                                     by
@@ -137,8 +257,9 @@
                                     at
                                     <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
                                 </div>
-                            </li>
-                        </ul>
+                                -->
+                            </div>
+                        </div>
                         <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
                     </div>
                 </div>
@@ -270,6 +391,7 @@
         </div>
     </div>
 </div>
+
 {% endblock %}
 {% block footer %}
 {% endblock %}

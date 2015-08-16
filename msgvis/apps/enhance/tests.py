@@ -23,7 +23,7 @@ class TopicsTest(TestCase):
 
         self.dictionary = models.Dictionary.objects.create(
             name="test dictionary",
-            dataset="test dataset",
+            dataset=self.dataset,
         )
 
         self.topic_model = self.dictionary.topicmodel_set.create(
@@ -96,7 +96,7 @@ class TopicsTest(TestCase):
             )
 
         context = tasks.default_topic_context("test_topic_modeling", dataset_id=self.dataset.id)
-        tasks.standard_topic_pipeline(context, num_topics=num_topics, multicore=False)
+        tasks.standard_topic_pipeline(context, dataset_id=self.dataset.id, num_topics=num_topics, multicore=False)
 
         dictionary = models.Dictionary.objects.get(name='test_topic_modeling')
 
