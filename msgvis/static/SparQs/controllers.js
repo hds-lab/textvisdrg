@@ -203,7 +203,7 @@
             color: "#000000"
         };
 
-        $scope.show_messages = function () {
+        $scope.update_messages = function () {
             var name = $scope.group.name;
             var inclusive_keywords = $scope.group.inclusive_keywords;
             var exclusive_keywords = $scope.group.exclusive_keywords;
@@ -219,13 +219,13 @@
             exclusive_keywords = ((exclusive_keywords != "")) ? exclusive_keywords.split(" ") : [];
 
 
-            var request = Group.show_messages(Dataset.id, name, inclusive_keywords, exclusive_keywords);
+            var request = Group.update_messages(Dataset.id, name, inclusive_keywords, exclusive_keywords);
             if (request) {
-                usSpinnerService.spin('search-spinner');
+                TabMode.mode = "group_messages";
+                usSpinnerService.spin('group-spinner');
 
                 request.then(function() {
-                    usSpinnerService.stop('search-spinner');
-                    TabMode.mode = "group_messages";
+                    usSpinnerService.stop('group-spinner');
 
 
                 });
@@ -240,11 +240,22 @@
             };
 
             Group.create_new_group();
+            TabMode.mode = "search";
         };
 
         $scope.switch_group = function(group){
             $scope.group = Group.switch_group(group);
-            $scope.show_messages();
+            var request = Group.show_messages();
+            if (request) {
+                TabMode.mode = "group_messages";
+                usSpinnerService.spin('group-spinner');
+
+                request.then(function() {
+                    usSpinnerService.stop('group-spinner');
+
+
+                });
+            }
 
         };
 

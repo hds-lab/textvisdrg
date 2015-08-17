@@ -294,6 +294,7 @@ class GroupView(APIView):
         if input.is_valid():
             data = input.validated_data
             group = input.save()
+            group.update_messages_in_group()
 
 
             # Just add the messages key to the response

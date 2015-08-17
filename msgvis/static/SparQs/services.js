@@ -331,7 +331,7 @@
                             console.log(self.group_list);
                         });
                 },
-                show_messages: function (dataset, name, inclusive_keywords, exclusive_keywords) {
+                update_messages: function (dataset, name, inclusive_keywords, exclusive_keywords) {
                     var self = this;
 
                     var request = {
@@ -345,7 +345,7 @@
                         request.id = self.current_group_id;
                         return $http.put(apiUrl, request)
                         .success(function (data) {
-                            self.messages = data.messages.map(function (msgdata) {
+                            self.messages = data.messages.results.map(function (msgdata) {
                                 return new Message(msgdata);
                             });
                             self.group_dict[self.current_group_id].name = name;
@@ -358,7 +358,7 @@
                         return $http.post(apiUrl, request)
                             .success(function (data) {
                                 self.current_group_id = data.id;
-                                self.messages = data.messages.map(function (msgdata) {
+                                self.messages = data.messages.results.map(function (msgdata) {
                                     return new Message(msgdata);
                                 });
                                 var new_group = new GroupItem(request);
@@ -369,9 +369,28 @@
                             });
                     }
                 },
+                show_messages: function(){
+                    var self = this;
+                    if (self.current_group_id == -1) return;
+
+                    var request = {
+                        params: {
+                            group_id: self.current_group_id
+                        }
+                    };
+
+                    return $http.get(apiUrl, request)
+                        .success(function (data) {
+                            self.messages = data.messages.results.map(function (msgdata) {
+                                return new Message(msgdata);
+                            });
+                        });
+
+                },
                 create_new_group: function(){
                     var self = this;
                     self.current_group_id = -1;
+                    self.messages = [];
                 },
                 switch_group: function(group){
                     var self = this;
@@ -381,6 +400,7 @@
                         inclusive_keywords: group.inclusive_keywords.join(" "),
                         exclusive_keywords: group.exclusive_keywords.join(" ")
                     };
+
                     return group_ctrl;
                 },
                 delete_group: function(group){

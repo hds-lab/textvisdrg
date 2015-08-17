@@ -227,7 +227,6 @@ class GroupSerializer(serializers.Serializer):
             exclusive_keywords = validated_data.get("exclusive_keywords")
             if exclusive_keywords:
                 group.add_exclusive_keywords(exclusive_keywords)
-            group.update_messages_in_group()
 
         return group
 
