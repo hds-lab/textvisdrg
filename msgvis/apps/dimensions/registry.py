@@ -239,3 +239,10 @@ register(models.RelatedQuantitativeDimension, dict(
     field_name='sender__follower_count',
 ))
 # END SENDER DIMENSIONS
+
+register(models.RelatedCategoricalDimension, dict(
+    key='groups',
+    name='Groups',
+    description='Groups of message',
+    field_name='groups__name',
+))

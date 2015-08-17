@@ -10,8 +10,9 @@ This module defines serializers for the main API data objects:
     QuestionSerializer
 
 """
+from django.core.paginator import Paginator
 
-from rest_framework import serializers
+from rest_framework import serializers, pagination
 
 import msgvis.apps.corpus.models as corpus_models
 import msgvis.apps.questions.models as questions_models
@@ -226,6 +227,7 @@ class GroupSerializer(serializers.Serializer):
             exclusive_keywords = validated_data.get("exclusive_keywords")
             if exclusive_keywords:
                 group.add_exclusive_keywords(exclusive_keywords)
+            group.update_messages_in_group()
 
         return group
 
@@ -244,17 +246,35 @@ class GroupListSerializer(serializers.ModelSerializer):
         model = groups_models.Group
         fields = ('id', 'dataset', 'name', 'inclusive_keywords', 'exclusive_keywords', 'message_count' )
 
+class PaginatedMessageSerializer(pagination.PaginationSerializer):
+    class Meta:
+        object_serializer_class = MessageSerializer
+
+
+
 
 class GroupListItemSerializer(serializers.ModelSerializer):
     inclusive_keywords = WordSerializer(many=True, required=False)
     exclusive_keywords = WordSerializer(many=True, required=False)
-    messages = MessageSerializer(many=True, required=False)
+    messages = serializers.SerializerMethodField('paginated_messages')
     message_count = serializers.IntegerField(required=False)
     #messages = serializers.IntegerField(required=False)
 
     class Meta:
         model = groups_models.Group
         fields = ('id', 'dataset', 'name', 'inclusive_keywords', 'exclusive_keywords', 'messages', 'message_count' )
+
+    def paginated_messages(self, obj):
+        paginator = Paginator(obj.messages.all(), 10)
+        page = 1
+        request = self.context.get('request')
+
+        if request and request.query_params.get('page'):
+            page = request.query_params.get('page')
+        messages = paginator.page(page)
+
+        serializer = PaginatedMessageSerializer(messages)
+        return serializer.data
 
 
 class SampleQuestionSerializer(serializers.Serializer):

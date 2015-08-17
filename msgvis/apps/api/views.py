@@ -295,9 +295,10 @@ class GroupView(APIView):
             data = input.validated_data
             group = input.save()
 
+
             # Just add the messages key to the response
 
-            output = serializers.GroupListItemSerializer(group)
+            output = serializers.GroupListItemSerializer(group, context={'request': request})
             return Response(output.data, status=status.HTTP_200_OK)
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -305,11 +306,16 @@ class GroupView(APIView):
     def get(self, request, format=None):
         if request.query_params.get('dataset'):
             groups = groups_models.Group.objects.filter(dataset_id=int(request.query_params.get('dataset'))).all()
+            output = serializers.GroupListSerializer(groups, many=True)
+            return Response(output.data, status=status.HTTP_200_OK)
+        elif request.query_params.get('group_id'):
+            group = groups_models.Group.objects.get(id=int(request.query_params.get('group_id')))
+            output = serializers.GroupListItemSerializer(group, context={'request': request})
+            return Response(output.data, status=status.HTTP_200_OK)
         else:
             groups = groups_models.Group.objects.all()
-        output = serializers.GroupListSerializer(groups, many=True)
-
-        return Response(output.data, status=status.HTTP_200_OK)
+            output = serializers.GroupListSerializer(groups, many=True)
+            return Response(output.data, status=status.HTTP_200_OK)
 
     def put(self, request, format=None):
         input = serializers.GroupSerializer(data=request.data)
@@ -325,7 +331,7 @@ class GroupView(APIView):
                 group.add_exclusive_keywords(data.get('exclusive_keywords'))
 
             group.update_messages_in_group()
-            output = serializers.GroupListItemSerializer(group)
+            output = serializers.GroupListItemSerializer(group, context={'request': request})
             return Response(output.data, status=status.HTTP_200_OK)
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
