@@ -48,8 +48,7 @@ class Group(models.Model):
                         #        results.add(msg)
                         results.extend(word.messages.all())
 
-        import pdb
-        pdb.set_trace()
+
 
 
         #return len(list(results))
