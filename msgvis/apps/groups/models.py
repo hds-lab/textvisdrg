@@ -22,6 +22,9 @@ class Group(models.Model):
     exclusive_keywords = models.ManyToManyField(enhance_models.Word, null=True, blank=True, default=None, related_name='exclusive_keywords')
     """The set of :class:`enhance_models.Word` as exclusive keywords."""
 
+    messages = models.ManyToManyField(corpus_models.Message, null=True, blank=True, default=None, related_name='groups')
+    """The set of :class:`corpus_models.Message` that belong to this group."""
+
     def message_list(self):
         results = set()
 
@@ -56,13 +59,18 @@ class Group(models.Model):
         #return len(list(results))
         return list(results)
 
+    def update_messages_in_group(self):
+        self.messages.clear()
+        self.messages = self.message_list()
+        print "message count:" + str(self.messages.count())
+
     @property
-    def messages(self):
+    def messages_online(self):
         return self.message_list()[:10]
 
     @property
     def message_count(self):
-        return len(self.message_list())
+        return self.messages.count()
 
 
     def add_inclusive_keywords(self, keywords):

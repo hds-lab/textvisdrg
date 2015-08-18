@@ -13,8 +13,8 @@ class DimensionRegistryTest(TestCase):
         self.assertIsInstance(time, models.TimeDimension)
 
     def test_registry_size(self):
-        """The number of dimensions registered should be 24"""
-        self.assertEquals(len(registry.get_dimension_ids()), 24)
+        """The number of dimensions registered should be 25"""
+        self.assertEquals(len(registry.get_dimension_ids()), 25)
 
     def test_registry_rejects_unknown_keys(self):
         """Trying to get a dimension for a nonexistent key raises an exeption"""

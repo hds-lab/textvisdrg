@@ -81,35 +81,34 @@ class GroupTest(TestCase):
             name="group 1",
             dataset=self.dataset
         )
-        group1.inclusive_keywords.add(self.word_obj_dict["blah"])
-        group1.save()
+        group1.add_inclusive_keywords(["blah"])
+        group1.update_messages_in_group()
         groups.append(group1)
 
         group2 = Group.objects.create(
             name="group 2",
             dataset=self.dataset
         )
-        group2.exclusive_keywords.add(self.word_obj_dict["QQ"])
-        group2.save()
+        group2.add_exclusive_keywords(["QQ"])
+        group2.update_messages_in_group()
         groups.append(group2)
 
         group3 = Group.objects.create(
             name="group 3",
             dataset=self.dataset
         )
-        group3.inclusive_keywords.add(self.word_obj_dict["book"])
-        group3.exclusive_keywords.add(self.word_obj_dict["QQ"])
-        group3.save()
+        group3.add_inclusive_keywords(["book"])
+        group3.add_exclusive_keywords(["QQ"])
+        group3.update_messages_in_group()
         groups.append(group3)
 
         group4 = Group.objects.create(
             name="group 4",
             dataset=self.dataset
         )
-        group4.inclusive_keywords.add(self.word_obj_dict["blah"])
-        group4.inclusive_keywords.add(self.word_obj_dict["book"])
-        group4.exclusive_keywords.add(self.word_obj_dict["QQ"])
-        group4.save()
+        group4.add_inclusive_keywords(["blah", "book"])
+        group4.add_exclusive_keywords(["QQ"])
+        group4.update_messages_in_group()
         groups.append(group4)
 
         return groups
@@ -131,9 +130,11 @@ class GroupTest(TestCase):
 
 
     def test_get_messages(self):
-        self.assertEquals(len(self.groups[0].messages), 2)
-        self.assertEquals(len(self.groups[1].messages), 2)
-        self.assertEquals(len(self.groups[2].messages), 1)
-        self.assertEquals(len(self.groups[3].messages), 2)
+        self.assertEquals(self.groups[0].message_count, 2)
+        self.assertEquals(self.groups[1].message_count, 2)
+        self.assertEquals(self.groups[2].message_count, 1)
+        self.assertEquals(self.groups[3].message_count, 2)
+
+
 
     

@@ -184,7 +184,7 @@
     ];
     module.controller('SparQs.controllers.SearchController', SearchController);
     
-    var GroupController = function ($scope, $timeout, Group, TabMode, Dataset, usSpinnerService) {
+    var GroupController = function ($scope, Selection, Group, TabMode, Dataset, usSpinnerService) {
 
         $scope.Group = Group;
         $scope.Group.load(Dataset.id);
@@ -203,13 +203,13 @@
             color: "#000000"
         };
 
-        $scope.show_messages = function () {
+        $scope.update_messages = function () {
             var name = $scope.group.name;
             var inclusive_keywords = $scope.group.inclusive_keywords;
             var exclusive_keywords = $scope.group.exclusive_keywords;
 
             if (name == "" || name == undefined){
-                name = "Group ";
+                name = "";
                 name += (inclusive_keywords != "") ? "including " + inclusive_keywords + " " : "";
                 name += (exclusive_keywords != "") ? "excluding " + exclusive_keywords + " " : "";
                 $scope.group.name = name;
@@ -219,13 +219,13 @@
             exclusive_keywords = ((exclusive_keywords != "")) ? exclusive_keywords.split(" ") : [];
 
 
-            var request = Group.show_messages(Dataset.id, name, inclusive_keywords, exclusive_keywords);
+            var request = Group.update_messages(Dataset.id, name, inclusive_keywords, exclusive_keywords);
             if (request) {
-                usSpinnerService.spin('search-spinner');
+                TabMode.mode = "group_messages";
+                usSpinnerService.spin('group-spinner');
 
                 request.then(function() {
-                    usSpinnerService.stop('search-spinner');
-                    TabMode.mode = "group_messages";
+                    usSpinnerService.stop('group-spinner');
 
 
                 });
@@ -240,11 +240,28 @@
             };
 
             Group.create_new_group();
+            TabMode.mode = "search";
         };
 
         $scope.switch_group = function(group){
             $scope.group = Group.switch_group(group);
-            $scope.show_messages();
+            var request = Group.show_messages();
+            if (request) {
+                TabMode.mode = "group_messages";
+                usSpinnerService.spin('search-spinner');
+
+                request.then(function() {
+                    usSpinnerService.stop('search-spinner');
+
+
+                });
+            }
+
+        };
+        $scope.select_group = function($event, group){
+            $event.stopPropagation();
+            Group.select_group(group);
+            Selection.changed('filters');
 
         };
 
@@ -269,7 +286,7 @@
     };
     GroupController.$inject = [
         '$scope',
-        '$timeout',
+        'SparQs.services.Selection',
         'SparQs.services.Group',
         'SparQs.services.TabMode',
         'SparQs.services.Dataset',
