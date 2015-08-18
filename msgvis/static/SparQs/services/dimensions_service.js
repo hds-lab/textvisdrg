@@ -464,6 +464,7 @@
                                 //this.get_by_key('contains_mention')
                             ]
                         },
+
                        /* {
                             "group_name": "Author",
                             "dimensions": [
@@ -626,6 +627,12 @@
                     "name": "Num. Followers",
                     "type": "QuantitativeDimension",
                     "description": "Number of people following a message's author."
+                },
+                {
+                    "key": "groups",
+                    "name": "Groups",
+                    "type": "CategoricalDimension",
+                    "description": "Groups of messages."
                 }
             ]);
         }

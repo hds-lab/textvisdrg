@@ -244,5 +244,5 @@ register(models.RelatedCategoricalDimension, dict(
     key='groups',
     name='Groups',
     description='Groups of message',
-    field_name='groups__name',
+    field_name='groups__id',
 ))

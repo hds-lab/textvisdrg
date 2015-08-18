@@ -184,7 +184,7 @@
     ];
     module.controller('SparQs.controllers.SearchController', SearchController);
     
-    var GroupController = function ($scope, $timeout, Group, TabMode, Dataset, usSpinnerService) {
+    var GroupController = function ($scope, Selection, Group, TabMode, Dataset, usSpinnerService) {
 
         $scope.Group = Group;
         $scope.Group.load(Dataset.id);
@@ -209,7 +209,7 @@
             var exclusive_keywords = $scope.group.exclusive_keywords;
 
             if (name == "" || name == undefined){
-                name = "Group ";
+                name = "";
                 name += (inclusive_keywords != "") ? "including " + inclusive_keywords + " " : "";
                 name += (exclusive_keywords != "") ? "excluding " + exclusive_keywords + " " : "";
                 $scope.group.name = name;
@@ -248,14 +248,20 @@
             var request = Group.show_messages();
             if (request) {
                 TabMode.mode = "group_messages";
-                usSpinnerService.spin('group-spinner');
+                usSpinnerService.spin('search-spinner');
 
                 request.then(function() {
-                    usSpinnerService.stop('group-spinner');
+                    usSpinnerService.stop('search-spinner');
 
 
                 });
             }
+
+        };
+        $scope.select_group = function($event, group){
+            $event.stopPropagation();
+            Group.select_group(group);
+            Selection.changed('filters');
 
         };
 
@@ -280,7 +286,7 @@
     };
     GroupController.$inject = [
         '$scope',
-        '$timeout',
+        'SparQs.services.Selection',
         'SparQs.services.Group',
         'SparQs.services.TabMode',
         'SparQs.services.Dataset',

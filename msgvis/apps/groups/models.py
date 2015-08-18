@@ -26,7 +26,7 @@ class Group(models.Model):
     """The set of :class:`corpus_models.Message` that belong to this group."""
 
     def message_list(self):
-        results = []
+        results = set()
 
         dictionary = self.dataset.dictionary.all()
         if len(dictionary) > 0:
@@ -37,25 +37,30 @@ class Group(models.Model):
                 for keyword in inclusive_keywords:
                     word = dictionary.words.get(text=keyword)
                     if word is not None:
-                        #for msg in word.messages.all():
-                        #    flag = True
-                        #    for exclusive_keyword in exclusive_keywords:
-                        #        exclusive_word = dictionary.words.get(text=exclusive_keyword)
-                        #        if exclusive_word in msg.words.all():
-                        #            flag = False
-                        #            break
-                        #    if flag is True:
-                        #        results.add(msg)
-                        results.extend(word.messages.all())
-
-
-
-
+                        for msg in word.messages.all():
+                            flag = True
+                            for exclusive_keyword in exclusive_keywords:
+                                exclusive_word = dictionary.words.get(text=exclusive_keyword)
+                                if exclusive_word in msg.words.all():
+                                    flag = False
+                                    break
+                            if flag is True:
+                                results.add(msg)
+            elif len(exclusive_keywords) > 0:
+                for msg in corpus_models.Message.objects.filter(dataset=self.dataset):
+                    flag = True
+                    for exclusive_keyword in exclusive_keywords:
+                        exclusive_word = dictionary.words.get(text=exclusive_keyword)
+                        if exclusive_word in msg.words.all():
+                            flag = False
+                            break
+                    if flag is True:
+                        results.add(msg)
         #return len(list(results))
-        return results
+        return list(results)
 
     def update_messages_in_group(self):
-        self.messages.all().delete()
+        self.messages.clear()
         self.messages = self.message_list()
         print "message count:" + str(self.messages.count())
 
