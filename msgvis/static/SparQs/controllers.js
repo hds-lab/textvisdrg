@@ -222,10 +222,10 @@
             var request = Group.update_messages(Dataset.id, name, inclusive_keywords, exclusive_keywords);
             if (request) {
                 TabMode.mode = "group_messages";
-                usSpinnerService.spin('group-spinner');
+                usSpinnerService.spin('search-spinner');
 
                 request.then(function() {
-                    usSpinnerService.stop('group-spinner');
+                    usSpinnerService.stop('search-spinner');
 
 
                 });
