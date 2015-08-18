@@ -221,11 +221,12 @@
 
             var request = Group.update_messages(Dataset.id, name, inclusive_keywords, exclusive_keywords);
             if (request) {
+
+                usSpinnerService.spin('group-spinner');
                 TabMode.mode = "group_messages";
-                usSpinnerService.spin('search-spinner');
 
                 request.then(function() {
-                    usSpinnerService.stop('search-spinner');
+                    usSpinnerService.stop('group-spinner');
 
 
                 });
@@ -247,11 +248,12 @@
             $scope.group = Group.switch_group(group);
             var request = Group.show_messages();
             if (request) {
+
+                usSpinnerService.spin('group-spinner');
                 TabMode.mode = "group_messages";
-                usSpinnerService.spin('search-spinner');
 
                 request.then(function() {
-                    usSpinnerService.stop('search-spinner');
+                    usSpinnerService.stop('group-spinner');
 
 
                 });
