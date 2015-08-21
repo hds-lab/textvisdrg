@@ -402,3 +402,14 @@ def set_message_sentiment(message, save=True):
     message.sentiment = int(round(textblob.TextBlob(message.text).sentiment.polarity))
     if save:
         message.save()
+
+class TweetWord(models.Model):
+    dataset = models.ForeignKey(Dataset, related_name="tweet_words", null=True, blank=True, default=None)
+    text = base_models.Utf8CharField(max_length=100)
+    messages = models.ManyToManyField(Message, related_name='tweet_words')
+
+    def __repr__(self):
+        return self.text
+
+    def __unicode__(self):
+        return self.__repr__()
