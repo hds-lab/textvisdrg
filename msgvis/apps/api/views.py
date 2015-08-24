@@ -117,6 +117,7 @@ class DataTableView(APIView):
             exclude = data.get('exclude', [])
             search_key = data.get('search_key')
             mode = data.get('mode')
+            groups = data.get('groups')
 
             page_size = 30
             page = None
@@ -129,7 +130,7 @@ class DataTableView(APIView):
             datatable = datatable_models.DataTable(*dimensions)
             if mode is not None:
                 datatable.set_mode(mode)
-            result = datatable.generate(dataset, filters, exclude, page_size, page, search_key)
+            result = datatable.generate(dataset, filters, exclude, page_size, page, search_key, groups)
 
             # Just add the result key
             response_data = data

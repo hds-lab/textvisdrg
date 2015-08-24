@@ -308,3 +308,4 @@ class DataTableSerializer(serializers.Serializer):
     page = serializers.IntegerField(required=False)
     search_key = serializers.CharField(allow_null=True, allow_blank=True, required=False)
     mode = serializers.CharField(allow_null=True, allow_blank=True, required=False)
+    groups = serializers.ListField(child=serializers.IntegerField(), required=False)
