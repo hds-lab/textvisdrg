@@ -135,8 +135,10 @@
 
         $scope.Group = Group;
 
+        $scope.group_name = "";
         $scope.messages = KeywordMessages;
-        $scope.keyword = "";
+        $scope.inclusive_keywords = "";
+        $scope.exclusive_keywords = "";
 
         $scope.is_mode = function(check_mode){
             return TabMode.mode == check_mode;
@@ -147,6 +149,9 @@
         $scope.tab_class = function(check_mode){
             return ($scope.is_mode(check_mode)) ? "active" : "";
         };
+        $scope.highlight_current_page = function(page){
+            return page == $scope.messages.current_page ? "current-page" : "";
+        };
 
 
         $scope.spinnerOptions = {
@@ -156,9 +161,20 @@
             color: "#000000"
         };
 
-        $scope.search = function () {
-            var keyword = $scope.keyword;
-            var request = KeywordMessages.load(Dataset.id, keyword);
+        $scope.search = function (page) {
+
+            var request = KeywordMessages.load(Dataset.id, page, $scope.inclusive_keywords, $scope.exclusive_keywords);
+            if (request) {
+                usSpinnerService.spin('search-spinner');
+
+                request.then(function() {
+                    usSpinnerService.stop('search-spinner');
+                });
+            }
+        };
+        $scope.update_page = function (page) {
+
+            var request = KeywordMessages.load(Dataset.id, page);
             if (request) {
                 usSpinnerService.spin('search-spinner');
 
@@ -169,7 +185,9 @@
         };
 
         $scope.reset_search = function(){
-            $scope.keyword = "";
+            $scope.messages = KeywordMessages;
+            $scope.messages.inclusive_keywords = "";
+            $scope.messages.exclusive_keywords = "";
         }
 
 
@@ -241,7 +259,7 @@
             };
 
             Group.create_new_group();
-            TabMode.mode = "search";
+            //TabMode.mode = "search";
         };
 
         $scope.switch_group = function(group){

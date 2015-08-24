@@ -1,8 +1,11 @@
+import operator
 from django.db import models
+from django.db.models import Q
 from caching.base import CachingManager, CachingMixin
 
 from msgvis.apps.base import models as base_models
 from msgvis.apps.corpus import utils
+
 
 class Dataset(models.Model):
     """A top-level dataset object containing messages."""
@@ -47,15 +50,22 @@ class Dataset(models.Model):
             return dictionary
         return None
 
-    def get_example_messages_by_keyword(self, keyword):
-        results = []
+    def get_advanced_search_results(self, inclusive_keywords, exclusive_keywords):
 
-        dictionary = self.get_dictionary()
-        if dictionary is not None:
-            word = dictionary.words.filter(text=keyword)
-            if word.count() > 0:
-                results.extend(word[0].messages.all()[:10])
-        return results
+        queryset = self.message_set.all()
+        if len(inclusive_keywords) > 0:
+            #inclusive_keywords = map(lambda x: ("words__text__icontains", x), inclusive_keywords)
+            inclusive_keywords = map(lambda x: ("words__text", x), inclusive_keywords)
+            queryset = queryset.filter(reduce(operator.and_, [Q(x) for x in inclusive_keywords]))
+            #print queryset.count()
+
+        if len(exclusive_keywords) > 0:
+            #exclusive_keywords = map(lambda x: ("words__text__icontains", x), exclusive_keywords)
+            exclusive_keywords = map(lambda x: ("words__text", x), exclusive_keywords)
+            queryset = queryset.exclude(reduce(operator.and_, [Q(x) for x in exclusive_keywords]))
+            #print queryset.count()
+
+        return queryset
 
 
 class MessageType(CachingMixin, models.Model):

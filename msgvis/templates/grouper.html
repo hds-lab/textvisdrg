@@ -74,29 +74,29 @@
             </div>
         </div>
         <div id="content" class="row ng-cloak" ng-cloak>
-            <div id="top" class="row" ng-controller="SparQs.controllers.GroupController">
-                <div id="group-edit" class="col-md-3">
+            <div id="top" class="row">
+                <div id="group-edit" class="col-md-3" ng-controller="SparQs.controllers.SearchController">
                     <div class="box">
                         <form class="form-inline">
                             {% csrf_token %}
                              <input class="form-control heading" id="group-name-field" type="text"
-                                    placeholder="Group Name" ng-model="group.name"
+                                    placeholder="Group Name" ng-model="group_name"
                                     />
                             <div class="keyword-line">
                             <label for="inclusive_keyword">Including</label>
                             <input class="form-control" id="inclusive-keyword-field" type="text"
-                                   ng-model="group.inclusive_keywords"
+                                   ng-model="inclusive_keywords"
                                     />
                             </div>
                             <div class="keyword-line">
                             <label for="exclusive_keyword">Excluding</label>
                             <input class="form-control" id="exclusive-keyword-field" type="text"
-                                   ng-model="group.exclusive_keywords"
+                                   ng-model="exclusive_keywords"
                                     />
                             </div>
                             <div class="btns">
-                                <button class="btn btn-primary" ng-click="update_messages()">Show Tweets</button>
-                                <button class="btn btn-default" ng-click="create_new_group()">Create a New Group</button>
+                                <button class="btn btn-primary" ng-click="search()">Search</button>
+                                <button class="btn btn-default" ng-click="create_new_group()">Save</button>
                             </div>
 
 
@@ -104,7 +104,7 @@
 
                     </div>
                 </div>
-                <div id="groups" class="col-md-9">
+                <div id="groups" class="col-md-9" ng-controller="SparQs.controllers.GroupController">
                     <div id="group-wrapper">
                         <div ng-animate="'animate'" class="group-box"
                              ng-repeat="group in Group.group_list | orderBy:'id':true"
@@ -139,27 +139,25 @@
                 <div id="left" class="col-md-3">
                     <div id="search" class="box" ng-controller="SparQs.controllers.SearchController">
                          <div id="search-tab" class="rotate">
-                            <span ng-class="tab_class('search')"
+                            <!--<span ng-class="tab_class('search')"
                                   ng-click="change_mode('search')">Search</span>
                             <span ng-class="tab_class('group_messages')"
                                   ng-click="change_mode('group_messages')">Group Messages</span>
                             <span ng-class="tab_class('info')"
-                                  ng-click="change_mode('info')">Info</span>
+                                  ng-click="change_mode('info')">Info</span>-->
                         </div>
 
                         <div ng-show="is_mode('search')">
-                            <div class="heading">Search</div>
-                            <form class="form-inline">
-                                <input class="form-control" id=search_keyword type="text" placeholder="Enter a search keyword"
-                                       ng-model="keyword" ng-enter="search()" />
-                                <span class="glyphicon glyphicon-search"
-                                      ng-show="keyword"
-                                      ng-click="search()"   ></span>
-                                <span class="glyphicon glyphicon-remove"
-                                      ng-show="keyword"
-                                      ng-click="reset_search()"   ></span>
-                            </form>
-                            <div class="heading">Results</div>
+                            <div class="heading">Results <span ng-show="messages.count">({$ messages.count $})</span></div>
+                            <div class="pages">
+                                <span ng-show="messages.count">Pages:</span>
+                                <a ng-show="messages.prev_page" ng-click="update_page(messages.prev_page)"
+                                      class="page-link glyphicon glyphicon-chevron-left"> </a>
+                                <a ng-repeat="i in messages.pages" ng-click="search(i)"
+                                      ng-class="highlight_current_page(i)" class="page-link"  > {$ i $} </a>
+                                <a ng-show="messages.next_page" ng-click="update_page(messages.next_page)"
+                                      class="page-link glyphicon glyphicon-chevron-right"> </a>
+                            </div>
                             <div class="message-list heading-body">
                                 <div ng-repeat="message in messages.list" class="tweet-wrapper">
                                     <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
@@ -174,10 +172,12 @@
                                         <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
                                     </div>
                                     -->
+
                                 </div>
                             </div>
                             <span us-spinner="spinnerOptions" spinner-key="search-spinner"></span>
                         </div>
+                        <!--
                         <div ng-show="is_mode('group_messages')">
                             <div class="heading">Tweets in Group {$ Group.name $}</div>
                             <div class="message-list heading-body">
@@ -193,11 +193,12 @@
                                         at
                                         <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
                                     </div>
-                                    -->
+
                                 </div>
                             </div>
                             <span us-spinner="spinnerOptions" spinner-key="group-spinner"></span>
                         </div>
+                         -->
 
                     </div>
 

@@ -244,15 +244,18 @@ class KeywordMessagesView(APIView):
 
             dataset = data['dataset']
 
-            keyword = data['keyword']
+            inclusive_keywords = data.get('inclusive_keywords') or []
+            exclusive_keywords = data.get('exclusive_keywords') or []
+            #import pdb
+            #pdb.set_trace()
 
-            keyword_messages = dataset.get_example_messages_by_keyword(keyword)
+            messages = dataset.get_advanced_search_results(inclusive_keywords, exclusive_keywords)
 
             # Just add the messages key to the response
             response_data = data
-            response_data["messages"] = keyword_messages
+            response_data["messages"] = messages
 
-            output = serializers.KeywordMessageSerializer(response_data)
+            output = serializers.KeywordMessageSerializer(response_data, context={'request': request})
             return Response(output.data, status=status.HTTP_200_OK)
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
