@@ -373,7 +373,6 @@
 
             angular.extend(Group.prototype, {
                 load: function (dataset) {
-                    // TODO: get groups that only belong to this dataset
 
                     var self = this;
                     var request = {
@@ -392,7 +391,7 @@
                             console.log(self.group_list);
                         });
                 },
-                update_messages: function (dataset, name, inclusive_keywords, exclusive_keywords) {
+                save: function (dataset, name, inclusive_keywords, exclusive_keywords) {
                     var self = this;
 
                     var request = {
@@ -418,7 +417,7 @@
                     else{
                         return $http.post(apiUrl, request)
                             .success(function (data) {
-                                self.current_group_id = data.id;
+                                //self.current_group_id = data.id;
                                 self.messages = data.messages.results.map(function (msgdata) {
                                     return new Message(msgdata);
                                 });

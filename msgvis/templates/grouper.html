@@ -96,13 +96,14 @@
                             </div>
                             <div class="btns">
                                 <button class="btn btn-primary" ng-click="search()">Search</button>
-                                <button class="btn btn-default" ng-click="create_new_group()">Save</button>
+                                <button class="btn btn-default" ng-click="save()">Save</button>
                             </div>
 
 
                         </form>
 
                     </div>
+                    <span us-spinner="spinnerOptions" spinner-key="save-spinner"></span>
                 </div>
                 <div id="groups" class="col-md-9" ng-controller="SparQs.controllers.GroupController">
                     <div id="group-wrapper">

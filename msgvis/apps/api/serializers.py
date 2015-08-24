@@ -229,7 +229,7 @@ class GroupSerializer(serializers.Serializer):
     name = serializers.CharField(allow_null=True, allow_blank=True, required=False)
     inclusive_keywords = serializers.ListField(child=serializers.CharField(), required=False)
     exclusive_keywords = serializers.ListField(child=serializers.CharField(), required=False)
-    messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
+    #messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
 
     def create(self, validated_data):
         group = groups_models.Group.objects.create(dataset=validated_data["dataset"],

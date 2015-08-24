@@ -186,9 +186,39 @@
 
         $scope.reset_search = function(){
             $scope.messages = KeywordMessages;
-            $scope.messages.inclusive_keywords = "";
-            $scope.messages.exclusive_keywords = "";
-        }
+            $scope.group_name = "";
+            $scope.inclusive_keywords = "";
+            $scope.exclusive_keywords = "";
+        };
+
+        $scope.save = function () {
+            var name = $scope.group_name;
+            var inclusive_keywords = $scope.inclusive_keywords;
+            var exclusive_keywords = $scope.exclusive_keywords;
+
+            if (name == "" || name == undefined){
+                name = "";
+                name += (inclusive_keywords != "") ? "including " + inclusive_keywords + " " : "";
+                name += (exclusive_keywords != "") ? "excluding " + exclusive_keywords + " " : "";
+            }
+
+            inclusive_keywords = ((inclusive_keywords != "")) ? inclusive_keywords.split(" ") : [];
+            exclusive_keywords = ((exclusive_keywords != "")) ? exclusive_keywords.split(" ") : [];
+
+
+            var request = Group.save(Dataset.id, name, inclusive_keywords, exclusive_keywords);
+            if (request) {
+
+                usSpinnerService.spin('save-spinner');
+
+                request.then(function() {
+                    usSpinnerService.stop('save-spinner');
+                    $scope.reset_search();
+
+
+                });
+            }
+        };
 
 
     };
