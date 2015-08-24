@@ -55,16 +55,20 @@ class Dataset(models.Model):
         queryset = self.message_set.all()
         if len(inclusive_keywords) > 0:
             #inclusive_keywords = map(lambda x: ("words__text__icontains", x), inclusive_keywords)
-            inclusive_keywords = map(lambda x: ("words__text", x), inclusive_keywords)
-            queryset = queryset.filter(reduce(operator.and_, [Q(x) for x in inclusive_keywords]))
+            #inclusive_keywords = map(lambda x: ("words__text", x), inclusive_keywords)
+            #queryset = queryset.filter(reduce(operator.and_, [Q(x) for x in inclusive_keywords]))
+            queryset = Message.objects.all()
+            for inclusive_keyword in inclusive_keywords:
+                queryset &= inclusive_keyword.messages.all()
             #print queryset.count()
 
         if len(exclusive_keywords) > 0:
             #exclusive_keywords = map(lambda x: ("words__text__icontains", x), exclusive_keywords)
-            exclusive_keywords = map(lambda x: ("words__text", x), exclusive_keywords)
-            queryset = queryset.exclude(reduce(operator.and_, [Q(x) for x in exclusive_keywords]))
+            #for word in exclusive_keywords:
+            #    queryset = queryset.exclude(words__text=word.text)
+            exclusive_keywords = map(lambda x: ("words__text", x.text), exclusive_keywords)
+            queryset = queryset.filter(reduce(operator.or_, [~Q(x) for x in exclusive_keywords]))
             #print queryset.count()
-
         return queryset
 
 

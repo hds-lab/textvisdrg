@@ -28,6 +28,7 @@ from msgvis.apps.api import serializers
 from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.questions import models as questions_models
 from msgvis.apps.datatable import models as datatable_models
+from msgvis.apps.enhance import models as enhance_models
 import msgvis.apps.groups.models as groups_models
 import logging
 
@@ -117,7 +118,9 @@ class DataTableView(APIView):
             exclude = data.get('exclude', [])
             search_key = data.get('search_key')
             mode = data.get('mode')
-            groups = data.get('groups')
+            groups = data.get('groups', [])
+            if len(groups) == 0:
+                groups = None
 
             page_size = 30
             page = None
@@ -130,6 +133,7 @@ class DataTableView(APIView):
             datatable = datatable_models.DataTable(*dimensions)
             if mode is not None:
                 datatable.set_mode(mode)
+
             result = datatable.generate(dataset, filters, exclude, page_size, page, search_key, groups)
 
             # Just add the result key
@@ -247,8 +251,11 @@ class KeywordMessagesView(APIView):
 
             inclusive_keywords = data.get('inclusive_keywords') or []
             exclusive_keywords = data.get('exclusive_keywords') or []
-            #import pdb
-            #pdb.set_trace()
+
+            # convert to Word object
+            inclusive_keywords = filter(lambda x: x is not None, map(lambda x: enhance_models.Word.objects.get(text=x), inclusive_keywords))
+            exclusive_keywords = filter(lambda x: x is not None, map(lambda x: enhance_models.Word.objects.get(text=x), exclusive_keywords))
+
 
             messages = dataset.get_advanced_search_results(inclusive_keywords, exclusive_keywords)
 

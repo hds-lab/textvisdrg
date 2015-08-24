@@ -106,7 +106,8 @@
             var filters = Selection.filters();
             var exclude = Selection.exclude();
             var focus = Selection.focus();
-            var request = ExampleMessages.load(Dataset.id, filters, focus, exclude);
+            var groups = Selection.groups();
+            var request = ExampleMessages.load(Dataset.id, filters, focus, exclude, groups);
             if (request) {
                 usSpinnerService.spin('examples-spinner');
 
@@ -198,7 +199,7 @@
 
             if (name == "" || name == undefined){
                 name = "";
-                name += (inclusive_keywords != "") ? "including " + inclusive_keywords + " " : "";
+                name += (inclusive_keywords != "") ? inclusive_keywords + " " : "";
                 name += (exclusive_keywords != "") ? "excluding " + exclusive_keywords + " " : "";
             }
 
@@ -311,7 +312,7 @@
         $scope.select_group = function($event, group){
             $event.stopPropagation();
             Group.select_group(group);
-            Selection.changed('filters');
+            Selection.changed('groups');
 
         };
 
@@ -353,8 +354,9 @@
             var dimensions = Selection.dimensions();
             var filters = Selection.filters();
             var exclude = Selection.exclude();
+            var groups = Selection.groups();
 
-            var request = DataTables.load(Dataset.id, dimensions, filters, exclude);
+            var request = DataTables.load(Dataset.id, dimensions, filters, exclude, groups);
 
             if (request) {
                 usSpinnerService.spin('vis-spinner');
@@ -367,7 +369,7 @@
 
         $scope.get_data_table();
 
-        Selection.changed('dimensions,filters', $scope, $scope.get_data_table);
+        Selection.changed('dimensions,filters,groups', $scope, $scope.get_data_table);
 
         $scope.onVisClicked = function(data) {
             Selection.set_focus(data);

@@ -49,11 +49,16 @@ class DataTable(object):
         if isinstance(primary_dimension, basestring):
             primary_dimension = registry.get_dimension(primary_dimension)
 
+        # a dirty way
+        if secondary_dimension is not None and secondary_dimension.key == "groups":
+            secondary_dimension = None
+
         if secondary_dimension is not None and isinstance(secondary_dimension, basestring):
             secondary_dimension = registry.get_dimension(secondary_dimension)
 
         self.primary_dimension = primary_dimension
         self.secondary_dimension = secondary_dimension
+
         self.mode = "default"
 
     def set_mode(self, mode):
@@ -253,7 +258,7 @@ class DataTable(object):
 
     def generate(self, dataset, filters=None, exclude=None, page_size=30, page=None, search_key=None, groups=None):
         """
-        Generate a complete data table response.
+        Generate a complete data group table response.
 
         This includes 'table', which provides the non-zero
         message frequency for each combination of primary and secondary dimension values,
@@ -270,11 +275,22 @@ class DataTable(object):
             queryset = corpus_models.Message.objects.none()
             group_querysets = []
             group_labels = []
+            #message_list = set()
             for group in groups:
                 group_obj = groups_models.Group.objects.get(id=group)
-                group_querysets.append(group_obj.messages)
+                group_queryset = group_obj.messages_online()
+                group_querysets.append(group_queryset)
                 group_labels.append(group_obj.name)
-                queryset |= group_obj.messages
+                queryset |= group_obj.messages_inclusive_only()
+                #TODO: fix union problem
+                #print group
+                #for message in group_queryset.all():
+                #    message_list.add(message.id)
+
+            #queryset = dataset.message_set.filter(id__in=list(message_list))
+            #import pdb
+            #pdb.set_trace()
+
 
 
         # Filter out null time
@@ -406,7 +422,7 @@ class DataTable(object):
             group_tables = []
             for group_queryset in group_querysets:
                 # Render a table
-                table = self.render(group_queryset)
+                table = self.render(group_queryset & queryset)
 
                 if self.mode == "enable_others" and queryset_for_others is not None:
                     # adding others to the results

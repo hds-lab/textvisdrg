@@ -153,12 +153,7 @@
                     return list;
                 },
                 filters: function () {
-                    if (Group.selected_groups.length > 0){
-                        var filter = {};
-                        filter.dimension = "groups";
-                        filter.levels = Group.selected_groups.map(function(d){ return d.id; });
-                        return [filter];
-                    }
+
                     var with_filter = Filtering.get_filtered();
 
                     //Prepare filter data
@@ -176,6 +171,12 @@
                 },
                 focus: function () {
                     return current_focus;
+                },
+                groups: function() {
+                    if (Group.selected_groups.length > 0){
+                        var groups = Group.selected_groups.map(function(d){ return d.id; });
+                        return groups;
+                    }
                 },
                 changed: function (eventType, scope, callback) {
                     // Register for one or more events:
@@ -235,13 +236,14 @@
             };
 
             angular.extend(ExampleMessages.prototype, {
-                load: function (dataset, filters, focus, exclude) {
+                load: function (dataset, filters, focus, exclude, groups) {
 
                     var request = {
                         dataset: dataset,
                         filters: filters,
                         exclude: exclude,
-                        focus: focus
+                        focus: focus,
+                        groups: groups
                     };
 
                     var self = this;
@@ -278,7 +280,7 @@
                 self.list = [];
                 self.current_page = 1;
                 self.pages = 0;
-                self.count = undefined;
+                self.count = -1;
             };
 
             angular.extend(KeywordMessages.prototype, {
@@ -324,7 +326,7 @@
                                     self.pages.push(i);
                                 }
                             }
-                            else {
+                            else if ( self.page_num > 0 ) {
 
                                 for (i = self.current_page - range ; i <= self.current_page ; i++){
 
@@ -537,7 +539,7 @@
             };
 
             angular.extend(DataTables.prototype, {
-                load: function (dataset, dimensions, filters, exclude) {
+                load: function (dataset, dimensions, filters, exclude, groups) {
                     if (!dimensions.length) {
                         return;
                     }
@@ -551,7 +553,8 @@
                         filters: filters,
                         exclude: exclude,
                         dimensions: dimension_keys,
-                        mode: "omit_others"
+                        mode: "omit_others",
+                        groups: groups
                     };
 
                     var self = this;
