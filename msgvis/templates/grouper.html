@@ -258,7 +258,11 @@
 
                 <div id="right" class="col-md-3">
                     <div id="messages" class="app-panel box" ng-controller="SparQs.controllers.ExampleMessageController">
-                        <div class="heading">Example Messages</div>
+                        <div class="heading">Example Messages from Current View
+                            <span class="glyphicon glyphicon-refresh" ng-click="refresh()"></span>
+                        </div>
+                        {$ messages.prev_request $}
+                        <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
                         <div class="message-list heading-body">
                             <div ng-repeat="message in messages.list" class="tweet-wrapper">
                                 <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
@@ -275,7 +279,7 @@
                                 -->
                             </div>
                         </div>
-                        <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
+
                     </div>
                 </div>
             </div>

@@ -43,6 +43,18 @@ class Dataset(models.Model):
 
         return messages.order_by('?')[:10]
 
+    def get_example_messages_by_groups(self, groups):
+        per_group = int(10 / len(groups))
+        messages = []
+        for group in groups:
+            group_obj = self.groups.get(id=group)
+            messages.extend(group_obj.messages.order_by('?')[:per_group])
+        return messages
+
+
+
+
+
     def get_dictionary(self):
         dictionary = self.dictionary.all()
         if len(dictionary) > 0:

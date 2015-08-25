@@ -199,6 +199,7 @@ class ExampleMessageSerializer(serializers.Serializer):
     filters = serializers.ListField(child=FilterSerializer(), required=False)
     focus = serializers.ListField(child=FilterSerializer(), required=False)
     messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
+    groups = serializers.ListField(child=serializers.IntegerField(), required=False)
 
 class KeywordMessageSerializer(serializers.Serializer):
     dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())

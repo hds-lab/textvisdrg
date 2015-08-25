@@ -199,8 +199,12 @@ class ExampleMessagesView(APIView):
 
             filters = data['filters']
             focus = data.get('focus', [])
+            groups = data.get('groups')
 
-            example_messages = dataset.get_example_messages(filters + focus)
+            if groups is None:
+                example_messages = dataset.get_example_messages(filters + focus)
+            else:
+                example_messages = dataset.get_example_messages_by_groups(groups)
 
             # Just add the messages key to the response
             response_data = data

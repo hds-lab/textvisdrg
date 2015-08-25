@@ -117,10 +117,22 @@
                 });
             }
         };
+        $scope.refresh = function () {
+            var request = ExampleMessages.refresh();
+            if (request) {
+                usSpinnerService.spin('examples-spinner');
 
-        Selection.changed('filters,focus', $scope, $scope.get_example_messages);
+                request.then(function() {
+
+                    usSpinnerService.stop('examples-spinner');
+                });
+            }
+        };
+
+        Selection.changed('filters,focus,groups', $scope, $scope.get_example_messages);
 
         $scope.get_example_messages();
+
 
     };
     ExampleMessageController.$inject = [

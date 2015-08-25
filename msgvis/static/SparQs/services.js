@@ -252,6 +252,16 @@
                             self.list = data.messages.map(function (msgdata) {
                                 return new Message(msgdata);
                             });
+                            self.prev_request = request;
+                        });
+                },
+                refresh: function(){
+                    var self = this;
+                    return $http.post(apiUrl, self.prev_request)
+                        .success(function (data) {
+                            self.list = data.messages.map(function (msgdata) {
+                                return new Message(msgdata);
+                            });
                         });
                 }
             });

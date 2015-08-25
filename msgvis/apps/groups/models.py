@@ -10,7 +10,7 @@ class Group(models.Model):
     name = models.CharField(max_length=250, default=None, blank=True)
     """The group name."""
 
-    dataset = models.ForeignKey(corpus_models.Dataset)
+    dataset = models.ForeignKey(corpus_models.Dataset, related_name='groups')
     """Which :class:`corpus_models.Dataset` this group belongs to"""
 
     created_at = models.DateTimeField(auto_now_add=True)
