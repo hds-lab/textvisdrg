@@ -1,7 +1,8 @@
 import logging
 
-from models import Dictionary, MessageWord, Word, MessageTopic
-from msgvis.apps.corpus.models import Dataset
+from models import Dictionary, MessageWord, Word, MessageTopic, TweetWord
+from msgvis.apps.corpus.models import Dataset, Message
+import codecs, re
 
 
 logger = logging.getLogger(__name__)
@@ -255,3 +256,39 @@ def default_topic_context(name, dataset_id):
                         tokenizer=SimpleTokenizer,
                         filters=filters,
                         minimum_frequency=4)
+
+
+def import_from_tweet_parser_results(dataset_id, filename):
+    current_msg_id = -1
+    current_msg = None
+    word_list = []
+    with codecs.open(filename, encoding='utf-8', mode='r') as f:
+        for line in f:
+            if re.search("ID=(\d+)", line):
+
+                # save the previous word list
+                if len(word_list) > 0:
+                    current_msg.tweet_words.add(*word_list)
+                    word_list = []
+
+                results = re.match('ID=(\d+)', line)
+                groups = results.groups()
+                current_msg_id = int(groups[0])
+                print "current msg id = %d" %(current_msg_id)
+                current_msg = Message.objects.get(id=current_msg_id)
+
+
+            elif re.search("(.+)\t(.+)\t(.+)", line):
+                results = re.match('(.+)\t(.+)\t(.+)', line)
+                groups = results.groups()
+                pos = groups[1]
+                word = groups[2]
+                if re.search('[,~U]', pos):
+                    continue
+                else:
+                    word_obj, created = TweetWord.objects.get_or_create(dataset_id=dataset_id, text=word)
+                    word_list.append(word_obj)
+        # save the previous word list
+        if len(word_list) > 0:
+            current_msg.tweet_words.add(*word_list)
+            word_list = []

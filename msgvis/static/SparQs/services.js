@@ -153,12 +153,7 @@
                     return list;
                 },
                 filters: function () {
-                    if (Group.selected_groups.length > 0){
-                        var filter = {};
-                        filter.dimension = "groups";
-                        filter.levels = Group.selected_groups.map(function(d){ return d.id; });
-                        return [filter];
-                    }
+
                     var with_filter = Filtering.get_filtered();
 
                     //Prepare filter data
@@ -176,6 +171,12 @@
                 },
                 focus: function () {
                     return current_focus;
+                },
+                groups: function() {
+                    if (Group.selected_groups.length > 0){
+                        var groups = Group.selected_groups.map(function(d){ return d.id; });
+                        return groups;
+                    }
                 },
                 changed: function (eventType, scope, callback) {
                     // Register for one or more events:
@@ -235,17 +236,28 @@
             };
 
             angular.extend(ExampleMessages.prototype, {
-                load: function (dataset, filters, focus, exclude) {
+                load: function (dataset, filters, focus, exclude, groups) {
 
                     var request = {
                         dataset: dataset,
                         filters: filters,
                         exclude: exclude,
-                        focus: focus
+                        focus: focus,
+                        groups: groups
                     };
 
                     var self = this;
                     return $http.post(apiUrl, request)
+                        .success(function (data) {
+                            self.list = data.messages.map(function (msgdata) {
+                                return new Message(msgdata);
+                            });
+                            self.prev_request = request;
+                        });
+                },
+                refresh: function(){
+                    var self = this;
+                    return $http.post(apiUrl, self.prev_request)
                         .success(function (data) {
                             self.list = data.messages.map(function (msgdata) {
                                 return new Message(msgdata);
@@ -271,23 +283,74 @@
             };
 
             var KeywordMessages = function () {
-                this.list = [];
+                var self = this;
+                self.inclusive_keywords = "";
+                self.exclusive_keywords = "";
+
+                self.list = [];
+                self.current_page = 1;
+                self.pages = 0;
+                self.count = -1;
             };
 
             angular.extend(KeywordMessages.prototype, {
-                load: function (dataset, keyword) {
+                load: function (dataset, page, inclusive_keywords, exclusive_keywords) {
+                    var self = this;
+
+                    // using current lists if the lists are not given
+                    inclusive_keywords = inclusive_keywords || self.inclusive_keywords;
+                    exclusive_keywords = exclusive_keywords || self.exclusive_keywords;
 
                     var request = {
                         dataset: dataset,
-                        keyword: keyword
+                        inclusive_keywords: ((inclusive_keywords != "")) ? inclusive_keywords.trim().split(" ") : [],
+                        exclusive_keywords: ((exclusive_keywords != "")) ? exclusive_keywords.trim().split(" ") : []
                     };
+                    var messages_per_page = 10;
+                    var apiUrl_with_param = apiUrl + "?messages_per_page=" + messages_per_page;
+                    if ($.isNumeric(page)){
+                        apiUrl_with_param += "&page=" + page;
+                        self.current_page = page;
+                    }
+                    else {
+                        self.current_page = 1;
+                    }
 
-                    var self = this;
-                    return $http.post(apiUrl, request)
+
+                    return $http.post(apiUrl_with_param, request)
                         .success(function (data) {
-                            self.list = data.messages.map(function (msgdata) {
+                            self.list = data.messages.results.map(function (msgdata) {
                                 return new Message(msgdata);
                             });
+                            self.count = data.messages.count;
+                            self.page_num = Math.ceil(self.count / messages_per_page);
+                            self.pages = [];
+                            var i, range = 5;
+                            if ( self.current_page < 2 * range ){
+                                for (i = 1 ; i <= 2 * range ; i++ ){
+                                    self.pages.push(i);
+                                }
+                            }
+                            else if ( self.current_page > self.page_num - range ){
+                                for (i = self.page_num - 2 * range + 1 ; i <= self.page_num ; i++ ){
+                                    self.pages.push(i);
+                                }
+                            }
+                            else if ( self.page_num > 0 ) {
+
+                                for (i = self.current_page - range ; i <= self.current_page ; i++){
+
+                                    self.pages.push(i);
+                                }
+                                for (i = self.current_page + 1 ; i <= self.page_num && i < self.current_page + range; i++){
+                                    self.pages.push(i);
+                                }
+                            }
+                            self.prev_page = (self.current_page > 1) ? self.current_page - 1 : false;
+                            self.next_page = (self.current_page < self.page_num) ? self.current_page + 1 : false;
+                            self.inclusive_keywords = inclusive_keywords;
+                            self.exclusive_keywords = exclusive_keywords;
+
                         });
                 }
             });
@@ -322,7 +385,6 @@
 
             angular.extend(Group.prototype, {
                 load: function (dataset) {
-                    // TODO: get groups that only belong to this dataset
 
                     var self = this;
                     var request = {
@@ -341,7 +403,7 @@
                             console.log(self.group_list);
                         });
                 },
-                update_messages: function (dataset, name, inclusive_keywords, exclusive_keywords) {
+                save: function (dataset, name, inclusive_keywords, exclusive_keywords) {
                     var self = this;
 
                     var request = {
@@ -350,9 +412,15 @@
                         inclusive_keywords: inclusive_keywords,
                         exclusive_keywords: exclusive_keywords
                     };
+
                     self.messages = [];
                     if ( self.current_group_id != -1 ){
                         request.id = self.current_group_id;
+                        if (inclusive_keywords.join(" ") == self.group_dict[self.current_group_id].inclusive_keywords.join(" ") &&
+                            exclusive_keywords.join(" ") == self.group_dict[self.current_group_id].exclusive_keywords.join(" ") &&
+                            name.trim() == self.group_dict[self.current_group_id].name.trim())
+                            return false;
+
                         return $http.put(apiUrl, request)
                         .success(function (data) {
                             self.messages = data.messages.results.map(function (msgdata) {
@@ -367,7 +435,7 @@
                     else{
                         return $http.post(apiUrl, request)
                             .success(function (data) {
-                                self.current_group_id = data.id;
+                                //self.current_group_id = data.id;
                                 self.messages = data.messages.results.map(function (msgdata) {
                                     return new Message(msgdata);
                                 });
@@ -455,22 +523,6 @@
         }
     ]);
 
-    //A service for tab mode.
-    module.factory('SparQs.services.TabMode', [
-        '$http', 'djangoUrl',
-        function GroupFactory($http, djangoUrl) {
-
-            var apiUrl = djangoUrl.reverse('group');
-
-
-            var TabMode = function () {
-                this.mode = "search";
-            };
-
-
-            return new TabMode();
-        }
-    ]);
 
     //A service for loading datatables.
     module.factory('SparQs.services.DataTables', [
@@ -487,7 +539,7 @@
             };
 
             angular.extend(DataTables.prototype, {
-                load: function (dataset, dimensions, filters, exclude) {
+                load: function (dataset, dimensions, filters, exclude, groups) {
                     if (!dimensions.length) {
                         return;
                     }
@@ -501,7 +553,8 @@
                         filters: filters,
                         exclude: exclude,
                         dimensions: dimension_keys,
-                        mode: "omit_others"
+                        mode: "omit_others",
+                        groups: groups
                     };
 
                     var self = this;

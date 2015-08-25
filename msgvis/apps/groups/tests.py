@@ -82,7 +82,6 @@ class GroupTest(TestCase):
             dataset=self.dataset
         )
         group1.add_inclusive_keywords(["blah"])
-        group1.update_messages_in_group()
         groups.append(group1)
 
         group2 = Group.objects.create(
@@ -90,7 +89,6 @@ class GroupTest(TestCase):
             dataset=self.dataset
         )
         group2.add_exclusive_keywords(["QQ"])
-        group2.update_messages_in_group()
         groups.append(group2)
 
         group3 = Group.objects.create(
@@ -99,16 +97,14 @@ class GroupTest(TestCase):
         )
         group3.add_inclusive_keywords(["book"])
         group3.add_exclusive_keywords(["QQ"])
-        group3.update_messages_in_group()
         groups.append(group3)
 
         group4 = Group.objects.create(
             name="group 4",
             dataset=self.dataset
         )
-        group4.add_inclusive_keywords(["blah", "book"])
-        group4.add_exclusive_keywords(["QQ"])
-        group4.update_messages_in_group()
+        group4.add_inclusive_keywords(["blah", "pink"])
+        group4.add_exclusive_keywords(["book"])
         groups.append(group4)
 
         return groups
@@ -133,7 +129,7 @@ class GroupTest(TestCase):
         self.assertEquals(self.groups[0].message_count, 2)
         self.assertEquals(self.groups[1].message_count, 2)
         self.assertEquals(self.groups[2].message_count, 1)
-        self.assertEquals(self.groups[3].message_count, 2)
+        self.assertEquals(self.groups[3].message_count, 1)
 
 
 

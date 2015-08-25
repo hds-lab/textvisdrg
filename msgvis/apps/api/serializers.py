@@ -199,11 +199,29 @@ class ExampleMessageSerializer(serializers.Serializer):
     filters = serializers.ListField(child=FilterSerializer(), required=False)
     focus = serializers.ListField(child=FilterSerializer(), required=False)
     messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
+    groups = serializers.ListField(child=serializers.IntegerField(), required=False)
 
 class KeywordMessageSerializer(serializers.Serializer):
     dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
-    keyword = serializers.CharField(required=True)
-    messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
+    inclusive_keywords = serializers.ListField(child=serializers.CharField(), required=False)
+    exclusive_keywords = serializers.ListField(child=serializers.CharField(), required=False)
+    #messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
+    messages = serializers.SerializerMethodField('paginated_messages')
+    def paginated_messages(self, obj):
+        request = self.context.get('request')
+        messages_per_page = 10
+        page = 1
+
+        if request and request.query_params.get('page'):
+            page = request.query_params.get('page')
+        if request and request.query_params.get('messages_per_page'):
+            messages_per_page = request.query_params.get('messages_per_page')
+
+        paginator = Paginator(obj["messages"].all(), messages_per_page)
+        messages = paginator.page(page)
+
+        serializer = PaginatedMessageSerializer(messages)
+        return serializer.data
 
 
 class GroupSerializer(serializers.Serializer):
@@ -212,7 +230,7 @@ class GroupSerializer(serializers.Serializer):
     name = serializers.CharField(allow_null=True, allow_blank=True, required=False)
     inclusive_keywords = serializers.ListField(child=serializers.CharField(), required=False)
     exclusive_keywords = serializers.ListField(child=serializers.CharField(), required=False)
-    messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
+    #messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
 
     def create(self, validated_data):
         group = groups_models.Group.objects.create(dataset=validated_data["dataset"],
@@ -291,3 +309,4 @@ class DataTableSerializer(serializers.Serializer):
     page = serializers.IntegerField(required=False)
     search_key = serializers.CharField(allow_null=True, allow_blank=True, required=False)
     mode = serializers.CharField(allow_null=True, allow_blank=True, required=False)
+    groups = serializers.ListField(child=serializers.IntegerField(), required=False)

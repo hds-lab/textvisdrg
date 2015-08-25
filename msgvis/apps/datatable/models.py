@@ -5,6 +5,7 @@ import operator
 
 from msgvis.apps.base.models import MappedValuesQuerySet
 from msgvis.apps.corpus import models as corpus_models
+from msgvis.apps.groups import models as groups_models
 from msgvis.apps.dimensions import registry
 
 MAX_CATEGORICAL_LEVELS = 10
@@ -51,8 +52,13 @@ class DataTable(object):
         if secondary_dimension is not None and isinstance(secondary_dimension, basestring):
             secondary_dimension = registry.get_dimension(secondary_dimension)
 
+        # a dirty way
+        if secondary_dimension is not None and hasattr(secondary_dimension, 'key') and secondary_dimension.key == "groups":
+            secondary_dimension = None
+
         self.primary_dimension = primary_dimension
         self.secondary_dimension = secondary_dimension
+
         self.mode = "default"
 
     def set_mode(self, mode):
@@ -250,9 +256,9 @@ class DataTable(object):
 
         return match_domain, match_labels
 
-    def generate(self, dataset, filters=None, exclude=None, page_size=30, page=None, search_key=None):
+    def generate(self, dataset, filters=None, exclude=None, page_size=30, page=None, search_key=None, groups=None):
         """
-        Generate a complete data table response.
+        Generate a complete data group table response.
 
         This includes 'table', which provides the non-zero
         message frequency for each combination of primary and secondary dimension values,
@@ -263,7 +269,29 @@ class DataTable(object):
         dimension irrespective of filters (except on those actual dimensions).
         """
 
-        queryset = dataset.message_set.all()
+        if (groups is None):
+            queryset = dataset.message_set.all()
+        else:
+            queryset = corpus_models.Message.objects.none()
+            group_querysets = []
+            group_labels = []
+            #message_list = set()
+            for group in groups:
+                group_obj = groups_models.Group.objects.get(id=group)
+                group_queryset = group_obj.messages_online()
+                group_querysets.append(group_queryset)
+                group_labels.append(group_obj.name)
+                queryset |= group_obj.messages_inclusive_only()
+                #TODO: fix union problem
+                #print group
+                #for message in group_queryset.all():
+                #    message_list.add(message.id)
+
+            #queryset = dataset.message_set.filter(id__in=list(message_list))
+            #import pdb
+            #pdb.set_trace()
+
+
 
         # Filter out null time
         queryset = queryset.exclude(time__isnull=True)
@@ -371,21 +399,73 @@ class DataTable(object):
             if labels is not None:
                 domain_labels[self.secondary_dimension.key] = labels
 
-        # Render a table
-        table = self.render(queryset)
+        if groups is None:
+            # Render a table
+            table = self.render(queryset)
 
-        if self.mode == "enable_others" and queryset_for_others is not None:
-            # adding others to the results
-            table_for_others = self.render_others(queryset_for_others, domains, primary_flag, secondary_flag)
-            table = list(table)
-            table.extend(table_for_others)
+            if self.mode == "enable_others" and queryset_for_others is not None:
+                # adding others to the results
+                table_for_others = self.render_others(queryset_for_others, domains, primary_flag, secondary_flag)
+                table = list(table)
+                table.extend(table_for_others)
 
-        results = {
-            'table': table,
-            'domains': domains,
-            'domain_labels': domain_labels
-        }
-        if max_page is not None:
-            results['max_page'] = max_page
+            results = {
+                'table': table,
+                'domains': domains,
+                'domain_labels': domain_labels
+            }
+            if max_page is not None:
+                results['max_page'] = max_page
+
+        else:
+
+            group_tables = []
+            for group_queryset in group_querysets:
+                # Render a table
+                table = self.render(group_queryset & queryset)
+
+                if self.mode == "enable_others" and queryset_for_others is not None:
+                    # adding others to the results
+                    table_for_others = self.render_others(queryset_for_others, domains, primary_flag, secondary_flag)
+                    table = list(table)
+                    table.extend(table_for_others)
+
+                group_tables.append(table)
+
+
+
+
+            if self.secondary_dimension is None:
+                final_table = []
+                for idx, group_table in enumerate(group_tables):
+                    for item in group_table:
+                        item['groups'] = groups[idx]
+                    final_table.extend(group_table)
+
+                domains['groups'] = groups
+                domain_labels['groups'] = group_labels
+                results = {
+                    'table': final_table,
+                    'domains': domains,
+                    'domain_labels': domain_labels
+                }
+
+            else:
+                tables = []
+                for idx, group_table in enumerate(group_tables):
+                    tables.append({
+                        'group_id': groups[idx],
+                        'group_name': group_labels[idx],
+                        'table': group_table
+                    })
+                results = {
+                    'tables': tables,
+                    'domains': domains,
+                    'domain_labels': domain_labels
+                }
+
+
+            if max_page is not None:
+                results['max_page'] = max_page
 
         return results

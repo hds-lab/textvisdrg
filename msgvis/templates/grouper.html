@@ -73,61 +73,98 @@
 
             </div>
         </div>
-        <div id="content" class="row ng-cloak" ng-cloak>
-            <div id="top" class="row" ng-controller="SparQs.controllers.GroupController">
+        <div id="content" class="row ng-cloak" ng-cloak  ng-controller="SparQs.controllers.SearchAndGroupController">
+            <div id="top" class="row">
                 <div id="group-edit" class="col-md-3">
                     <div class="box">
                         <form class="form-inline">
                             {% csrf_token %}
                              <input class="form-control heading" id="group-name-field" type="text"
-                                    placeholder="Group Name" ng-model="group.name"
+                                    placeholder="Group Name" ng-model="group_name"
                                     />
                             <div class="keyword-line">
                             <label for="inclusive_keyword">Including</label>
                             <input class="form-control" id="inclusive-keyword-field" type="text"
-                                   ng-model="group.inclusive_keywords"
+                                   ng-model="inclusive_keywords"
+                                   placeholder="filtering keywords (separate by space)"
                                     />
                             </div>
                             <div class="keyword-line">
                             <label for="exclusive_keyword">Excluding</label>
                             <input class="form-control" id="exclusive-keyword-field" type="text"
-                                   ng-model="group.exclusive_keywords"
+                                   ng-model="exclusive_keywords"
+                                   placeholder="excluding keywords (separate by space)"
                                     />
                             </div>
                             <div class="btns">
-                                <button class="btn btn-primary" ng-click="update_messages()">Show Tweets</button>
-                                <button class="btn btn-default" ng-click="create_new_group()">Create a New Group</button>
+                                <button class="btn btn-primary" ng-click="search()">Search</button>
+                                <button class="btn btn-default" ng-click="reset_search()">Reset</button>
+                                <button class="btn btn-default" ng-click="save()">Save</button>
                             </div>
 
 
                         </form>
+                        <div class="mask" ng-show="edit_mode"></div>
 
                     </div>
+                    <span us-spinner="spinnerOptions" spinner-key="save-spinner"></span>
                 </div>
                 <div id="groups" class="col-md-9">
                     <div id="group-wrapper">
-                        <div ng-animate="'animate'" class="group-box"
+                        <div class="group-box"
                              ng-repeat="group in Group.group_list | orderBy:'id':true"
-                             ng-click="switch_group(group)"
                              ng-class="group_class(group)">
-                            <div class="box">
-                                <input type="checkbox" class="show_vis" ng-model="group.selected" ng-click="select_group($event, group)" />
-                                <div class="heading">#{$ group.id $} {$ group.name $}</div>
-                                <div class="keyword-list">
-                                    Including: {$ group.inclusive_keywords.join(' ') $}
-                                </div>
-                                <div class="keyword-list">
-                                    Excluding: {$ group.exclusive_keywords.join(' ') $}
-                                </div>
-                                <div class="bottom-bar">
-                                    <div class="count">
-                                        message count: {$ group.message_count $}
+                            <div class="box" ng-class="editing_class(group)" id="group_{$ group.id $}">
+                                <div class="group-content" ng-hide="is_being_editing(group)"
+                                    ng-click="toggle_group($event, group)">
+                                    <div class="heading">#{$ group.id $} {$ group.name $}</div>
+                                    <div class="keyword-list">
+                                        Including: {$ group.inclusive_keywords.join(' ') $}
                                     </div>
-                                    <div class="icon">
-                                        <span class="glyphicon glyphicon-trash"
-                                             ng-click="delete_group($event, group)" ></span>
+                                    <div class="keyword-list">
+                                        Excluding: {$ group.exclusive_keywords.join(' ') $}
+                                    </div>
+                                    <div class="bottom-bar">
+                                        <div class="count">
+                                            message count: {$ group.message_count $}
+                                        </div>
+                                        <div class="icon">
+                                            <span class="glyphicon glyphicon-pencil"
+                                                 ng-click="edit_group($event, group)" ></span>
+                                            <span class="glyphicon glyphicon-trash"
+                                                 ng-click="delete_group($event, group)" ></span>
+                                        </div>
                                     </div>
                                 </div>
+                                <div class="mask" ng-show="show_mask(group)"></div>
+                                <div class="edit-form" ng-show="is_being_editing(group)">
+                                    <form class="form-inline">
+                                    {% csrf_token %}
+                                     <input class="form-control heading" id="group-name-field" type="text"
+                                            placeholder="Group Name" ng-model="new_param.group_name"
+                                            />
+                                    <div class="keyword-line">
+                                    <label for="inclusive_keyword">Including</label>
+                                    <input class="form-control" id="inclusive-keyword-field" type="text"
+                                           ng-model="new_param.inclusive_keywords"
+                                           placeholder="filtering keywords (separate by space)"
+                                            />
+                                    </div>
+                                    <div class="keyword-line">
+                                    <label for="exclusive_keyword">Excluding</label>
+                                    <input class="form-control" id="exclusive-keyword-field" type="text"
+                                           ng-model="new_param.exclusive_keywords"
+                                           placeholder="excluding keywords (separate by space)"
+                                            />
+                                    </div>
+                                    <div class="btns">
+                                        <button class="btn btn-primary" ng-click="search($event)">Search</button>
+                                        <button class="btn btn-default" ng-click="finish_edit($event)">Cancel</button>
+                                        <button class="btn btn-default" ng-click="save($event)">Save</button>
+                                    </div>
+                                    <span us-spinner="spinnerOptions" spinner-key="update-spinner"></span>
+                                </div>
+                            </form>
                             </div>
                         </div>
                     </div>
@@ -137,29 +174,24 @@
             <div id="bottom" class="row">
 
                 <div id="left" class="col-md-3">
-                    <div id="search" class="box" ng-controller="SparQs.controllers.SearchController">
-                         <div id="search-tab" class="rotate">
-                            <span ng-class="tab_class('search')"
-                                  ng-click="change_mode('search')">Search</span>
-                            <span ng-class="tab_class('group_messages')"
-                                  ng-click="change_mode('group_messages')">Group Messages</span>
-                            <span ng-class="tab_class('info')"
-                                  ng-click="change_mode('info')">Info</span>
+                    <div id="search" class="box">
+                        <div class="heading" ng-show="!edit_mode">Search Results <span ng-hide="is_empty()">({$ messages.count $})</span></div>
+                        <div class="heading" ng-show="edit_mode">Messages in the group <span ng-hide="is_empty()">({$ messages.count $})</span></div>
+                        <div ng-show="is_empty()" class="search-results-place-holder">
+                            Start from the search box above.
                         </div>
-
-                        <div ng-show="is_mode('search')">
-                            <div class="heading">Search</div>
-                            <form class="form-inline">
-                                <input class="form-control" id=search_keyword type="text" placeholder="Enter a search keyword"
-                                       ng-model="keyword" ng-enter="search()" />
-                                <span class="glyphicon glyphicon-search"
-                                      ng-show="keyword"
-                                      ng-click="search()"   ></span>
-                                <span class="glyphicon glyphicon-remove"
-                                      ng-show="keyword"
-                                      ng-click="reset_search()"   ></span>
-                            </form>
-                            <div class="heading">Results</div>
+                        <div ng-hide="is_empty()">
+                            <div class="pages">
+                                <span ng-show="messages.count>0">Pages:</span>
+                                <a ng-show="messages.prev_page" ng-click="update_page(messages.prev_page)"
+                                      class="page-link glyphicon glyphicon-chevron-left"> </a>
+                                <a ng-show="messages.count>0"
+                                   ng-repeat="i in messages.pages" ng-click="update_page(i)"
+                                   ng-class="highlight_current_page(i)" class="page-link"  > {$ i $} </a>
+                                <a ng-show="messages.next_page" ng-click="update_page(messages.next_page)"
+                                      class="page-link glyphicon glyphicon-chevron-right"> </a>
+                                <span ng-show="messages.count==0">No search results.</span>
+                            </div>
                             <div class="message-list heading-body">
                                 <div ng-repeat="message in messages.list" class="tweet-wrapper">
                                     <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
@@ -174,30 +206,11 @@
                                         <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
                                     </div>
                                     -->
-                                </div>
-                            </div>
-                            <span us-spinner="spinnerOptions" spinner-key="search-spinner"></span>
-                        </div>
-                        <div ng-show="is_mode('group_messages')">
-                            <div class="heading">Tweets in Group {$ Group.name $}</div>
-                            <div class="message-list heading-body">
-                                <div ng-repeat="message in Group.messages" class="tweet-wrapper">
-                                    <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
-                                    <div ng-bind-html="message.embedded_html"></div>
 
-                                    <!--
-                                    <div class="text"><span ng-bind="message.text"></span></div>
-                                    <div class="meta">
-                                        by
-                                        <span class="meta-author" ng-bind="message.sender.full_name"></span>
-                                        at
-                                        <span class="meta-time" ng-bind="message.time | date : 'yyyy-MM-dd HH:mm:ss' : 'UTC'"></span>
-                                    </div>
-                                    -->
                                 </div>
                             </div>
-                            <span us-spinner="spinnerOptions" spinner-key="group-spinner"></span>
                         </div>
+                        <span us-spinner="spinnerOptions" spinner-key="search-spinner"></span>
 
                     </div>
 
@@ -245,7 +258,11 @@
 
                 <div id="right" class="col-md-3">
                     <div id="messages" class="app-panel box" ng-controller="SparQs.controllers.ExampleMessageController">
-                        <div class="heading">Example Messages</div>
+                        <div class="heading">Example Messages
+                            <span class="glyphicon glyphicon-refresh" ng-click="refresh()"></span>
+                        </div>
+                        <span ng-bind="convert_request_to_readable_str()"></span>
+                        <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
                         <div class="message-list heading-body">
                             <div ng-repeat="message in messages.list" class="tweet-wrapper">
                                 <script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
@@ -262,7 +279,7 @@
                                 -->
                             </div>
                         </div>
-                        <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
+
                     </div>
                 </div>
             </div>

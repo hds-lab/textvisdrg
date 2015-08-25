@@ -28,6 +28,7 @@ from msgvis.apps.api import serializers
 from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.questions import models as questions_models
 from msgvis.apps.datatable import models as datatable_models
+from msgvis.apps.enhance import models as enhance_models
 import msgvis.apps.groups.models as groups_models
 import logging
 
@@ -117,6 +118,9 @@ class DataTableView(APIView):
             exclude = data.get('exclude', [])
             search_key = data.get('search_key')
             mode = data.get('mode')
+            groups = data.get('groups', [])
+            if len(groups) == 0:
+                groups = None
 
             page_size = 30
             page = None
@@ -129,7 +133,8 @@ class DataTableView(APIView):
             datatable = datatable_models.DataTable(*dimensions)
             if mode is not None:
                 datatable.set_mode(mode)
-            result = datatable.generate(dataset, filters, exclude, page_size, page, search_key)
+
+            result = datatable.generate(dataset, filters, exclude, page_size, page, search_key, groups)
 
             # Just add the result key
             response_data = data
@@ -194,8 +199,12 @@ class ExampleMessagesView(APIView):
 
             filters = data['filters']
             focus = data.get('focus', [])
+            groups = data.get('groups')
 
-            example_messages = dataset.get_example_messages(filters + focus)
+            if groups is None:
+                example_messages = dataset.get_example_messages(filters + focus)
+            else:
+                example_messages = dataset.get_example_messages_by_groups(groups)
 
             # Just add the messages key to the response
             response_data = data
@@ -244,15 +253,21 @@ class KeywordMessagesView(APIView):
 
             dataset = data['dataset']
 
-            keyword = data['keyword']
+            inclusive_keywords = data.get('inclusive_keywords') or []
+            exclusive_keywords = data.get('exclusive_keywords') or []
 
-            keyword_messages = dataset.get_example_messages_by_keyword(keyword)
+            # convert to Word object
+            inclusive_keywords = filter(lambda x: x is not None, map(lambda x: enhance_models.Word.objects.get(text=x), inclusive_keywords))
+            exclusive_keywords = filter(lambda x: x is not None, map(lambda x: enhance_models.Word.objects.get(text=x), exclusive_keywords))
+
+
+            messages = dataset.get_advanced_search_results(inclusive_keywords, exclusive_keywords)
 
             # Just add the messages key to the response
             response_data = data
-            response_data["messages"] = keyword_messages
+            response_data["messages"] = messages
 
-            output = serializers.KeywordMessageSerializer(response_data)
+            output = serializers.KeywordMessageSerializer(response_data, context={'request': request})
             return Response(output.data, status=status.HTTP_200_OK)
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -294,8 +309,6 @@ class GroupView(APIView):
         if input.is_valid():
             data = input.validated_data
             group = input.save()
-            group.update_messages_in_group()
-
 
             # Just add the messages key to the response
 
@@ -331,7 +344,6 @@ class GroupView(APIView):
             if data.get('exclusive_keywords'):
                 group.add_exclusive_keywords(data.get('exclusive_keywords'))
 
-            group.update_messages_in_group()
             output = serializers.GroupListItemSerializer(group, context={'request': request})
             return Response(output.data, status=status.HTTP_200_OK)
 
