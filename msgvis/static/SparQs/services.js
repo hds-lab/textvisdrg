@@ -402,9 +402,15 @@
                         inclusive_keywords: inclusive_keywords,
                         exclusive_keywords: exclusive_keywords
                     };
+
                     self.messages = [];
                     if ( self.current_group_id != -1 ){
                         request.id = self.current_group_id;
+                        if (inclusive_keywords.join(" ") == self.group_dict[self.current_group_id].inclusive_keywords.join(" ") &&
+                            exclusive_keywords.join(" ") == self.group_dict[self.current_group_id].exclusive_keywords.join(" ") &&
+                            name.trim() == self.group_dict[self.current_group_id].name.trim())
+                            return false;
+
                         return $http.put(apiUrl, request)
                         .success(function (data) {
                             self.messages = data.messages.results.map(function (msgdata) {
@@ -507,22 +513,6 @@
         }
     ]);
 
-    //A service for tab mode.
-    module.factory('SparQs.services.TabMode', [
-        '$http', 'djangoUrl',
-        function GroupFactory($http, djangoUrl) {
-
-            var apiUrl = djangoUrl.reverse('group');
-
-
-            var TabMode = function () {
-                this.mode = "search";
-            };
-
-
-            return new TabMode();
-        }
-    ]);
 
     //A service for loading datatables.
     module.factory('SparQs.services.DataTables', [

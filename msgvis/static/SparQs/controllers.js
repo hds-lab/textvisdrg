@@ -132,27 +132,21 @@
     ];
     module.controller('SparQs.controllers.ExampleMessageController', ExampleMessageController);
 
-    var SearchController = function ($scope, KeywordMessages, Group, TabMode, Dataset, usSpinnerService) {
+    var SearchAndGroupController = function ($scope, KeywordMessages, Group, Dataset, Selection, usSpinnerService) {
 
         $scope.Group = Group;
+        Group.load(Dataset.id);
 
         $scope.group_name = "";
         $scope.messages = KeywordMessages;
         $scope.inclusive_keywords = "";
         $scope.exclusive_keywords = "";
 
-        $scope.is_mode = function(check_mode){
-            return TabMode.mode == check_mode;
-        };
-        $scope.change_mode = function(new_mode){
-            TabMode.mode = new_mode;
-        };
-        $scope.tab_class = function(check_mode){
-            return ($scope.is_mode(check_mode)) ? "active" : "";
-        };
-        $scope.highlight_current_page = function(page){
-            return page == $scope.messages.current_page ? "current-page" : "";
-        };
+        $scope.edit_mode = false;
+        $scope.new_param = {};
+        $scope.new_param.group_name = "";
+        $scope.new_param.inclusive_keywords = "";
+        $scope.new_param.exclusive_keywords = "";
 
 
         $scope.spinnerOptions = {
@@ -162,9 +156,13 @@
             color: "#000000"
         };
 
-        $scope.search = function (page) {
-
-            var request = KeywordMessages.load(Dataset.id, page, $scope.inclusive_keywords, $scope.exclusive_keywords);
+        $scope.search = function ($event) {
+            if ($event){
+                $event.stopPropagation();
+            }
+            var inclusive_keywords = ($scope.edit_mode) ? $scope.new_param.inclusive_keywords : $scope.inclusive_keywords;
+            var exclusive_keywords = ($scope.edit_mode) ? $scope.new_param.exclusive_keywords : $scope.exclusive_keywords;
+            var request = KeywordMessages.load(Dataset.id, 1, inclusive_keywords, exclusive_keywords);
             if (request) {
                 usSpinnerService.spin('search-spinner');
 
@@ -173,6 +171,8 @@
                 });
             }
         };
+
+
         $scope.update_page = function (page) {
 
             var request = KeywordMessages.load(Dataset.id, page);
@@ -190,12 +190,16 @@
             $scope.group_name = "";
             $scope.inclusive_keywords = "";
             $scope.exclusive_keywords = "";
+            $scope.messages.count = -1;
         };
 
-        $scope.save = function () {
-            var name = $scope.group_name;
-            var inclusive_keywords = $scope.inclusive_keywords;
-            var exclusive_keywords = $scope.exclusive_keywords;
+        $scope.save = function ($event) {
+            if ($event){
+                $event.stopPropagation();
+            }
+            var name = ($scope.edit_mode) ? $scope.new_param.group_name : $scope.group_name;
+            var inclusive_keywords = ($scope.edit_mode) ? $scope.new_param.inclusive_keywords : $scope.inclusive_keywords;
+            var exclusive_keywords = ($scope.edit_mode) ? $scope.new_param.exclusive_keywords : $scope.exclusive_keywords;
 
             if (name == "" || name == undefined){
                 name = "";
@@ -209,141 +213,97 @@
 
             var request = Group.save(Dataset.id, name, inclusive_keywords, exclusive_keywords);
             if (request) {
+                if ($scope.edit_mode){
 
-                usSpinnerService.spin('save-spinner');
+                    usSpinnerService.spin('update-spinner');
 
-                request.then(function() {
-                    usSpinnerService.stop('save-spinner');
-                    $scope.reset_search();
+                    request.then(function() {
+                        usSpinnerService.stop('update-spinner');
+                        $scope.finish_edit();
+                        if ( !$scope.is_empty() ) $scope.search();
+                    });
+                }
+                else{
+                    usSpinnerService.spin('save-spinner');
 
-
-                });
+                    request.then(function() {
+                        usSpinnerService.stop('save-spinner');
+                        $scope.reset_search();
+                    });
+                }
+            }
+            else{
+                $scope.edit_mode = false;
             }
         };
 
 
-    };
-    SearchController.$inject = [
-        '$scope',
-        'SparQs.services.KeywordMessages',
-        'SparQs.services.Group',
-        'SparQs.services.TabMode',
-        'SparQs.services.Dataset',
-        'usSpinnerService'
-    ];
-    module.controller('SparQs.controllers.SearchController', SearchController);
-    
-    var GroupController = function ($scope, Selection, Group, TabMode, Dataset, usSpinnerService) {
 
-        $scope.Group = Group;
-        $scope.Group.load(Dataset.id);
-
-        $scope.group = {
-            name: "",
-            inclusive_keywords: "",
-            exclusive_keywords: ""
+        $scope.is_empty = function(){
+            return (!$scope.edit_mode && $scope.messages.count == -1 )
+        };
+        $scope.is_being_editing = function(group){
+            return $scope.edit_mode && Group.current_group_id == group.id;
+        };
+        $scope.show_mask = function(group){
+            return $scope.edit_mode && !$scope.is_being_editing(group);
+        };
+        $scope.editing_class = function(group){
+            return ($scope.is_being_editing(group)) ? "edit-class" : "";
         };
 
-
-        $scope.spinnerOptions = {
-            radius: 20,
-            width: 6,
-            length: 10,
-            color: "#000000"
-        };
-
-        $scope.update_messages = function () {
-            var name = $scope.group.name;
-            var inclusive_keywords = $scope.group.inclusive_keywords;
-            var exclusive_keywords = $scope.group.exclusive_keywords;
-
-            if (name == "" || name == undefined){
-                name = "";
-                name += (inclusive_keywords != "") ? "including " + inclusive_keywords + " " : "";
-                name += (exclusive_keywords != "") ? "excluding " + exclusive_keywords + " " : "";
-                $scope.group.name = name;
-            }
-
-            inclusive_keywords = ((inclusive_keywords != "")) ? inclusive_keywords.split(" ") : [];
-            exclusive_keywords = ((exclusive_keywords != "")) ? exclusive_keywords.split(" ") : [];
-
-
-            var request = Group.update_messages(Dataset.id, name, inclusive_keywords, exclusive_keywords);
-            if (request) {
-
-                usSpinnerService.spin('group-spinner');
-                TabMode.mode = "group_messages";
-
-                request.then(function() {
-                    usSpinnerService.stop('group-spinner');
-
-
-                });
-            }
-        };
-
-        $scope.create_new_group = function(){
-            $scope.group = {
-                name: "",
-                inclusive_keywords: "",
-                exclusive_keywords: ""
-            };
-
-            Group.create_new_group();
-            //TabMode.mode = "search";
-        };
-
-        $scope.switch_group = function(group){
-            $scope.group = Group.switch_group(group);
-            var request = Group.show_messages();
-            if (request) {
-
-                usSpinnerService.spin('group-spinner');
-                TabMode.mode = "group_messages";
-
-                request.then(function() {
-                    usSpinnerService.stop('group-spinner');
-
-
-                });
-            }
-
-        };
-        $scope.select_group = function($event, group){
+        $scope.edit_group = function($event, group){
             $event.stopPropagation();
+            $scope.new_param.group_name = group.name;
+            $scope.new_param.inclusive_keywords = group.inclusive_keywords.join(' ');
+            $scope.new_param.exclusive_keywords = group.exclusive_keywords.join(' ');
+            Group.current_group_id = group.id;
+            $scope.edit_mode = true;
+            $scope.search();
+
+        };
+        $scope.finish_edit = function($event){
+            if ($event){
+                $event.stopPropagation();
+            }
+            Group.current_group_id = -1;
+            $scope.edit_mode = false;
+            $scope.messages.count = -1;
+        };
+
+
+        $scope.delete_group = function($event, group){
+            $event.stopPropagation();
+            var msg = "Are you sure you want to delete group #" + group.id + "?";
+            if ( window.confirm(msg) ){
+                Group.delete_group(group);
+            }
+        };
+
+
+        $scope.toggle_group = function($event, group){
+            $event.stopPropagation();
+            group.selected = !group.selected;
             Group.select_group(group);
             Selection.changed('groups');
 
         };
 
         $scope.group_class = function(group){
-            return (group.id == Group.current_group_id) ? "active" : "";
+            return (group.selected) ? "active" : "";
         };
-
-        $scope.delete_group = function($event, group){
-
-            if (group.id == Group.current_group_id) {
-                $scope.group = {
-                    name: "",
-                    inclusive_keywords: "",
-                    exclusive_keywords: ""
-                };
-            }
-            $event.stopPropagation();
-            Group.delete_group(group);
-        };
-
 
     };
-    GroupController.$inject = [
+    SearchAndGroupController.$inject = [
         '$scope',
-        'SparQs.services.Selection',
+        'SparQs.services.KeywordMessages',
         'SparQs.services.Group',
-        'SparQs.services.TabMode',
         'SparQs.services.Dataset',
+        'SparQs.services.Selection',
         'usSpinnerService'
     ];
-    module.controller('SparQs.controllers.GroupController', GroupController);
+    module.controller('SparQs.controllers.SearchAndGroupController', SearchAndGroupController);
+
 
     var VisualizationController = function ($scope, Selection, DataTables, Dataset, usSpinnerService) {
 
@@ -463,5 +423,6 @@
         }
         }
     }]);
+
 
 })();
