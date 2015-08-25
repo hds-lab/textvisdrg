@@ -113,10 +113,10 @@
                     <div id="group-wrapper">
                         <div class="group-box"
                              ng-repeat="group in Group.group_list | orderBy:'id':true"
-                             ng-click="toggle_group($event, group)"
                              ng-class="group_class(group)">
                             <div class="box" ng-class="editing_class(group)" id="group_{$ group.id $}">
-                                <div class="group-content" ng-hide="is_being_editing(group)">
+                                <div class="group-content" ng-hide="is_being_editing(group)"
+                                    ng-click="toggle_group($event, group)">
                                     <div class="heading">#{$ group.id $} {$ group.name $}</div>
                                     <div class="keyword-list">
                                         Including: {$ group.inclusive_keywords.join(' ') $}
