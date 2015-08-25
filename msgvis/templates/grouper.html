@@ -258,10 +258,10 @@
 
                 <div id="right" class="col-md-3">
                     <div id="messages" class="app-panel box" ng-controller="SparQs.controllers.ExampleMessageController">
-                        <div class="heading">Example Messages from Current View
+                        <div class="heading">Example Messages
                             <span class="glyphicon glyphicon-refresh" ng-click="refresh()"></span>
                         </div>
-                        {$ messages.prev_request $}
+                        <span ng-bind="convert_request_to_readable_str()"></span>
                         <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
                         <div class="message-list heading-body">
                             <div ng-repeat="message in messages.list" class="tweet-wrapper">

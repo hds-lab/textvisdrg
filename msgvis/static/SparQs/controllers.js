@@ -128,10 +128,38 @@
                 });
             }
         };
+        $scope.convert_request_to_readable_str = function() {
+            var request = ExampleMessages.prev_request;
+            var str = "";
+            if (request){
+                request.focus.forEach(function(d){
+                    if (d.dimension != "groups"){
+                        str += d.dimension;
+                        if (d.hasOwnProperty('value'))
+                            str += '=' + d.value;
+                        else if (d.hasOwnProperty('min_time') )
+                            str += '=' + d.min_time;
+                        else if (d.hasOwnProperty('min') )
+                            str += '=' + d.min;
+                        str += " ";
+                    }
+                });
+                if ( request.hasOwnProperty('groups') && request.groups ){
+                    str += "in Group";
+                    request.groups.forEach(function(d){
+                        str += " " + d;
+                    });
+                }
+            }
+            if (str != ""){
+                str = "Current Source: " + str;
+            }
+            return str;
+        };
 
         Selection.changed('filters,focus,groups', $scope, $scope.get_example_messages);
 
-        $scope.get_example_messages();
+        //$scope.get_example_messages();
 
 
     };
