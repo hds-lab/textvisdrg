@@ -49,12 +49,12 @@ class DataTable(object):
         if isinstance(primary_dimension, basestring):
             primary_dimension = registry.get_dimension(primary_dimension)
 
-        # a dirty way
-        if secondary_dimension is not None and secondary_dimension.key == "groups":
-            secondary_dimension = None
-
         if secondary_dimension is not None and isinstance(secondary_dimension, basestring):
             secondary_dimension = registry.get_dimension(secondary_dimension)
+
+        # a dirty way
+        if secondary_dimension is not None and hasattr(secondary_dimension, 'key') and secondary_dimension.key == "groups":
+            secondary_dimension = None
 
         self.primary_dimension = primary_dimension
         self.secondary_dimension = secondary_dimension

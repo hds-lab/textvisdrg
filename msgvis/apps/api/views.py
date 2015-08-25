@@ -309,8 +309,6 @@ class GroupView(APIView):
         if input.is_valid():
             data = input.validated_data
             group = input.save()
-            group.update_messages_in_group()
-
 
             # Just add the messages key to the response
 
@@ -346,7 +344,6 @@ class GroupView(APIView):
             if data.get('exclusive_keywords'):
                 group.add_exclusive_keywords(data.get('exclusive_keywords'))
 
-            group.update_messages_in_group()
             output = serializers.GroupListItemSerializer(group, context={'request': request})
             return Response(output.data, status=status.HTTP_200_OK)
 

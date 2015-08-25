@@ -51,10 +51,6 @@ class Dataset(models.Model):
             messages.extend(group_obj.messages.order_by('?')[:per_group])
         return messages
 
-
-
-
-
     def get_dictionary(self):
         dictionary = self.dictionary.all()
         if len(dictionary) > 0:
