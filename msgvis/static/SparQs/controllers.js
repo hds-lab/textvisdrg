@@ -330,7 +330,7 @@
         };
 
         $scope.group_class = function(group){
-            return (group.selected) ? "active" : "";
+            return ($scope.is_being_editing(group)) ? "edit-class" : ((group.selected) ? "active" : "");
         };
 
     };
