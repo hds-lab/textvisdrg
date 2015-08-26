@@ -298,7 +298,7 @@ body {
     }
     .message-list{
         height: @bottom-row-height - 100px;
-        overflow-y: scroll;
+        overflow-y: auto;
     }
     .pages {
         .page-link {
@@ -355,17 +355,28 @@ body {
 
 #messages {
     height: @bottom-row-height;
+    position: relative;
     .heading {
         font-weight: 600;
         font-size: 1.2em;
     }
     .message-list {
         height: @bottom-row-height - 50px;
-        overflow-y: scroll;
+        overflow-y: auto;
     }
     .tweet-wrapper {
         width: 95% !important;
         font-size: 0.5em;
+    }
+    .search-results-place-holder{
+        color: #999;
+        font-size: 1.8em;
+        position: absolute;
+        width: 80%;
+        text-align: center;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
     }
 
 }

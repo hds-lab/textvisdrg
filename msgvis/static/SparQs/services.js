@@ -233,6 +233,7 @@
 
             var ExampleMessages = function () {
                 this.list = [];
+                this.prev_request = 0;
             };
 
             angular.extend(ExampleMessages.prototype, {

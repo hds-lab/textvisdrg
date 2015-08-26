@@ -157,7 +157,13 @@
             return str;
         };
 
+        $scope.is_empty = function(){
+            return (ExampleMessages.prev_request == 0);
+        };
+
         Selection.changed('filters,focus,groups', $scope, $scope.get_example_messages);
+
+
 
         //$scope.get_example_messages();
 

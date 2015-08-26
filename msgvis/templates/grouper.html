@@ -263,7 +263,10 @@
                 <div id="right" class="col-md-3">
                     <div id="messages" class="app-panel box" ng-controller="SparQs.controllers.ExampleMessageController">
                         <div class="heading">Example Messages
-                            <span class="glyphicon glyphicon-refresh" ng-click="refresh()"></span>
+                            <span class="glyphicon glyphicon-refresh" ng-click="refresh()" ng-hide="is_empty()"></span>
+                        </div>
+                        <div ng-show="is_empty()" class="search-results-place-holder">
+                            Click points in the visualization to get example messages.
                         </div>
                         <span ng-bind="convert_request_to_readable_str()"></span>
                         <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
