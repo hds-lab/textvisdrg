@@ -111,13 +111,15 @@
                 </div>
                 <div id="groups" class="col-md-9">
                     <div id="group-wrapper">
-                        <div class="group-box"
+                        <div class="box group-box"
                              ng-repeat="group in Group.group_list | orderBy:'id':true"
                              ng-class="group_class(group)">
-                            <div class="box" ng-class="editing_class(group)" id="group_{$ group.id $}">
+
+                            <div class="group-wrap" id="group_{$ group.id $}">
                                 <div class="group-content" ng-hide="is_being_editing(group)"
                                     ng-click="toggle_group($event, group)">
                                     <div class="heading">#{$ group.id $} {$ group.name $}</div>
+
                                     <div class="keyword-list">
                                         Including: {$ group.inclusive_keywords.join(' ') $}
                                     </div>
@@ -128,15 +130,9 @@
                                         <div class="count">
                                             message count: {$ group.message_count $}
                                         </div>
-                                        <div class="icon">
-                                            <span class="glyphicon glyphicon-pencil"
-                                                 ng-click="edit_group($event, group)" ></span>
-                                            <span class="glyphicon glyphicon-trash"
-                                                 ng-click="delete_group($event, group)" ></span>
-                                        </div>
                                     </div>
                                 </div>
-                                <div class="mask" ng-show="show_mask(group)"></div>
+
                                 <div class="edit-form" ng-show="is_being_editing(group)">
                                     <form class="form-inline">
                                     {% csrf_token %}
@@ -163,9 +159,17 @@
                                         <button class="btn btn-default" ng-click="save($event)">Save</button>
                                     </div>
                                     <span us-spinner="spinnerOptions" spinner-key="update-spinner"></span>
+                                    </form>
                                 </div>
-                            </form>
+
                             </div>
+                            <div class="icon" ng-hide="is_being_editing(group)">
+                                <span class="glyphicon glyphicon-pencil"
+                                     ng-click="edit_group($event, group)" ></span>
+                                <span class="glyphicon glyphicon-remove"
+                                     ng-click="delete_group($event, group)" ></span>
+                            </div>
+                            <div class="mask" ng-show="show_mask(group)"></div>
                         </div>
                     </div>
                 </div>

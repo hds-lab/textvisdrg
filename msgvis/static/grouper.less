@@ -23,7 +23,6 @@ body {
 .box {
     margin: 2px;
     padding: 5px;
-    height: 100%;
     -webkit-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
     -moz-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
     box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
@@ -85,11 +84,10 @@ body {
     height: @top-row-height;
 }
 #groups {
-    height: @top-row-height + 25;
+    height: @top-row-height + 20;
     overflow-x: auto;
     padding-left: 0;
     #group-wrapper {
-        height: 100%;
         white-space: nowrap;
     }
     position: relative;
@@ -100,39 +98,55 @@ body {
     }
     .heading {
         font-weight: 700;
+        font-size: 1.5em;
+        padding: 2px;
+        //text-overflow: ellipsis;
+        width: 85%;
+        //overflow: hidden;
+
+    }
+    .keyword-list {
+        width: 90%;
+        text-wrap: normal;
         font-size: 1.1em;
         line-height: 2em;
-        padding: 2px;
-        text-overflow: ellipsis;
-        width: 91%;
-        overflow: hidden;
+    }
+    .icon {
+        position: absolute;
+        right: 10px;
+        top: 15px;
+        color: #aaa;
+        font-size: 1.2em;
+        z-index: 1000;
     }
     .group-box {
-        width: 200px;
-        height: 100%;
+        margin-top: 0;
+        width: 350px;
+        height: @top-row-height - 5;
+        background-color: white;
 
-
-
-        display: inline-table;
+        display: inline-block;
         position: relative;
+
+        .group-wrap {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 97%;
+        }
 
         .bottom-bar {
             .count {
                 position: absolute;
-                left: 10px;
-                bottom: 10px;
-                color: #aaa;
-            }
-            .icon {
-                position: absolute;
-                right: 10px;
+                left: 0px;
                 bottom: 10px;
                 color: #aaa;
             }
 
+
         }
         .group-content{
-            height: 100%;
+            height: @top-row-height - 15;
         }
         .mask {
             background-color: black;
@@ -144,20 +158,14 @@ body {
             top: 0;
             right: 0;
         }
-        .edit-class {
-            width: 350px;
-            -webkit-transition: width 1s; /* For Safari 3.1 to 6.0 */
-            transition: width 1s;
-            background-color: white;
-            cursor: default;
 
-        }
         .edit-form {
+            width: 100%;
+             background-color: white;
             //transition: visibility linear 1s;
             .heading {
                 font-weight: 700;
-                font-size: 1.1em;
-                line-height: 2em;
+                font-size: 1.5em;
                 padding: 2px;
                 width: 99%;
                 border: 1px dashed #666;
@@ -191,9 +199,13 @@ body {
         cursor: pointer;
     }
     .group-box.active {
-        .box {
-            background-color: rgb(201, 233, 255);
-        }
+        background-color: rgb(201, 233, 255);
+    }
+    .group-box.edit-class {
+
+        background-color: white !important;
+        cursor: default !important;
+
     }
 
 }
