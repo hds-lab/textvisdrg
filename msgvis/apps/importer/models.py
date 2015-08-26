@@ -26,6 +26,8 @@ def create_an_user_from_json_obj(user_data, dataset_obj):
         sender.follower_count = user_data['followers_count']
     if user_data.get('statuses_count'):
         sender.message_count = user_data['statuses_count']
+    if user_data.get('profile_image_url'):
+        sender.profile_image_url = user_data['profile_image_url']
     sender.save()
 
     return sender

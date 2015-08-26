@@ -196,6 +196,9 @@ class Person(models.Model):
     follower_count = models.PositiveIntegerField(blank=True, default=0)
     """The number of people who have connected to this person"""
 
+    profile_image_url = models.TextField(null=True, blank=True, default="")
+    """The person's profile image url"""
+
     def __unicode__(self):
         return self.username
 
