@@ -54,6 +54,8 @@ class CategoricalDimension(object):
             if kwargs['value'] is None or kwargs['value'] == "":
                 queryset = queryset.filter(Q((self.field_name + "__isnull", True)))
             else:
+                if kwargs['value'] == "false":
+                    kwargs['value'] = False
                 queryset = queryset.filter(Q((self.field_name, kwargs['value'])))
         return queryset
 
@@ -88,6 +90,8 @@ class CategoricalDimension(object):
                 if level is None or level == "":
                     filter_ors.append((self.field_name + "__isnull", True))
                 else:
+                    if level == "false":
+                        level = False
                     filter_ors.append((self.field_name, level))
 
             queryset = queryset.filter(reduce(operator.or_, [Q(x) for x in filter_ors]))
