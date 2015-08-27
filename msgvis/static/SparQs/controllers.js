@@ -351,7 +351,7 @@
     module.controller('SparQs.controllers.SearchAndGroupController', SearchAndGroupController);
 
 
-    var VisualizationController = function ($scope, Selection, DataTables, Dataset, usSpinnerService) {
+    var VisualizationController = function ($scope, Selection, Filtering, DataTables, Dataset, usSpinnerService) {
 
         $scope.datatable = DataTables;
         $scope.selection = Selection;
@@ -375,11 +375,51 @@
 
         $scope.get_data_table();
 
-        Selection.changed('dimensions,filters,groups', $scope, $scope.get_data_table);
+        Selection.changed('filters,groups', $scope, $scope.get_data_table);
 
         $scope.onVisClicked = function(data) {
             Selection.set_focus(data);
         };
+        $scope.show_filter = function(){
+            var dimension = Selection.dimensions();
+            if (dimension.length == 0) return false;
+            else dimension = dimension[0];
+            return dimension.is_categorical();
+        };
+
+
+        $scope.openFilter = function($event) {
+            var offset = {top: 0};
+            var dimension = Selection.dimensions();
+            if (dimension.length == 0) return;
+            else dimension = dimension[0];
+            if ($event) {
+                var $el = $($event.target);
+                if ($el) {
+                    offset = $el.offset();
+
+                    var filterHeight = Filtering.filter_height_for(dimension) + 20; //for buffer
+                    var windowHeight = $(window).height();
+
+                    //no hanging out the bottom
+                    offset.top = Math.min(windowHeight - filterHeight, offset.top);
+
+                    //no sticking out the top either
+                    offset.top = Math.max(0, offset.top);
+                }
+            }
+
+            Filtering.toggle(dimension, offset);
+        };
+
+        $scope.reload = function(){
+            if (Filtering.dimension && Filtering.dimension.filtering ){
+                Filtering.dimension.clear_filtering();
+                //Filtering.toggle();
+            }
+            $scope.get_data_table();
+        };
+        Selection.changed('dimensions', $scope, $scope.reload);
 
         $scope.spinnerOptions = {
             radius: 20,
@@ -394,12 +434,90 @@
     VisualizationController.$inject = [
         '$scope',
         'SparQs.services.Selection',
+        'SparQs.services.Filtering',
         'SparQs.services.DataTables',
         'SparQs.services.Dataset',
         'usSpinnerService'
     ];
     module.controller('SparQs.controllers.VisualizationController', VisualizationController);
 
+
+    //Extends DimensionsController
+    var FilterController = function ($scope, Filtering, Selection, usSpinnerService) {
+
+        $scope.filtering = Filtering;
+
+        $scope.spinnerOptions = {
+            radius: 15,
+            width: 4,
+            length: 8,
+            color: "#000000"
+        };
+
+        $scope.$watch('filtering.dimension.request', function(newVal, oldVal) {
+            if (Filtering.dimension && Filtering.dimension.request) {
+                usSpinnerService.spin('filter-spinner');
+
+                Filtering.dimension.request.then(function() {
+                    usSpinnerService.stop('filter-spinner');
+                })
+            }
+        });
+
+        $scope.closeFilter = function() {
+            Filtering.toggle();
+        };
+
+        $scope.saveFilter = function () {
+            if (Filtering.dimension.is_dirty()) {
+                Selection.changed('filters');
+                Filtering.dimension.current_filter().saved();
+            }
+        };
+
+        $scope.resetFilter = function () {
+            if (!Filtering.dimension.is_not_applying_filters()) {
+                if (Filtering.dimension.is_categorical()){
+                    Filtering.dimension.search_key = "";
+                    Filtering.dimension.search_key_tmp = "";
+                    Filtering.dimension.switch_mode('exclude');
+                }else{
+                    Filtering.dimension.current_filter().reset();
+                }
+                Selection.changed('filters');
+                Filtering.dimension.current_filter().saved();
+            }
+        };
+
+        $scope.onQuantitativeBrushed = function(min, max) {
+            $scope.$digest();
+        };
+
+        $scope.loadMore = function() {
+            Filtering.dimension.load_categorical_distribution();
+        };
+
+        $scope.search = function() {
+            Filtering.dimension.search_key = Filtering.dimension.search_key_tmp;
+            Filtering.dimension.load_categorical_distribution();
+        };
+        $scope.set_back_cur_search = function() {
+            if ( Filtering.dimension.search_key_tmp !== Filtering.dimension.search_key )
+                Filtering.dimension.search_key_tmp = Filtering.dimension.search_key;
+
+        };
+
+
+
+    };
+
+    FilterController.$inject = [
+        '$scope',
+        'SparQs.services.Filtering',
+        'SparQs.services.Selection',
+        'usSpinnerService'
+    ];
+    module.controller('SparQs.controllers.FilterController', FilterController);
 
     module.directive('datetimeFormat', function() {
       return {

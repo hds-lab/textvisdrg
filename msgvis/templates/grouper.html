@@ -231,6 +231,9 @@
 
 
                             </div>
+                            <div class="filter-icon" ng-click="openFilter($event)" ng-show="show_filter()">Filter
+                                <span class="glyphicon glyphicon-filter"></span>
+                            </div>
                         </div>
                     </div>
                         <div class="col-md-3">
@@ -245,8 +248,8 @@
                                             <div ng-repeat="dimension in group.dimensions"
                                                  class="dimension"
                                                  ng-class="get_class(dimension)"
-                                                 ng-click="changeDimension(dimension)"   >
-                                                <span class="dimension-name" ng-bind="dimension.name"></span>
+                                                 ng-click="changeDimension(dimension)" >
+                                                <span class="dimension-name" ng-bind="dimension.name" ></span>
 
                                             </div>
                                         </div>
@@ -291,128 +294,129 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div id="filter-popup"
-         class="ng-cloak" ng-cloak
-         ng-show="filtering.dimension.filtering"
-         ng-controller="SparQs.controllers.FilterController"
-         ng-style="{top:filtering.offset.top}">
-        <div ng-class="'filter-' + filtering.dimension.type">
-            <h3>
-                Filter on {$ filtering.dimension.name $}
-                <button type="button" class="close"
-                    ng-click="closeFilter()">
-                    <span>&times;</span>
-                </button>
-            </h3>
-            <div class="filter-body">
-                <form ng-submit="saveFilter()">
-                    <div class="description">{$ filtering.dimension.description $}</div>
-                    <div ng-switch="filtering.dimension.type">
-                        <div class="form-group" ng-switch-when="QuantitativeDimension">
 
-                            <quant-histogram
-                                dimension="filtering.dimension"
-                                brush-min="filtering.dimension.current_filter().min()"
-                                brush-max="filtering.dimension.current_filter().max()"
-                                on-brushed="onQuantitativeBrushed">
-                            </quant-histogram>
+        <div id="filter-popup"
+             class="ng-cloak" ng-cloak
+             ng-show="filtering.dimension.filtering"
+             ng-controller="SparQs.controllers.FilterController"
+             ng-style="{top:filtering.offset.top}">
+            <div ng-class="'filter-' + filtering.dimension.type">
+                <h3>
+                    Filter on {$ filtering.dimension.name $}
+                    <button type="button" class="close"
+                        ng-click="closeFilter()">
+                        <span>&times;</span>
+                    </button>
+                </h3>
+                <div class="filter-body">
+                    <form ng-submit="saveFilter()">
+                        <div class="description">{$ filtering.dimension.description $}</div>
+                        <div ng-switch="filtering.dimension.type">
+                            <div class="form-group" ng-switch-when="QuantitativeDimension">
 
-                            <input type="text" class="filter-min form-control"
-                                   ng-model="filtering.dimension.current_filter().min"
-                                   ng-model-options="{ getterSetter: true }"
-                                   placeholder="min"/>
-                            <input type="text" class="filter-max form-control"
-                                   ng-model="filtering.dimension.current_filter().max"
-                                   ng-model-options="{ getterSetter: true }"
-                                   placeholder="max"/>
+                                <quant-histogram
+                                    dimension="filtering.dimension"
+                                    brush-min="filtering.dimension.current_filter().min()"
+                                    brush-max="filtering.dimension.current_filter().max()"
+                                    on-brushed="onQuantitativeBrushed">
+                                </quant-histogram>
+
+                                <input type="text" class="filter-min form-control"
+                                       ng-model="filtering.dimension.current_filter().min"
+                                       ng-model-options="{ getterSetter: true }"
+                                       placeholder="min"/>
+                                <input type="text" class="filter-max form-control"
+                                       ng-model="filtering.dimension.current_filter().max"
+                                       ng-model-options="{ getterSetter: true }"
+                                       placeholder="max"/>
+
+
+                            </div>
+
+                            <div class="form-group" ng-switch-when="TimeDimension">
+
+                                <quant-histogram
+                                    dimension="filtering.dimension"
+                                    brush-min="filtering.dimension.current_filter().min_time()"
+                                    brush-max="filtering.dimension.current_filter().max_time()"
+                                    on-brushed="onQuantitativeBrushed">
+                                </quant-histogram>
+
+                                <input type="text" class="filter-min form-control"
+                                       ng-model="filtering.dimension.current_filter().min_time"
+                                       ng-model-options="{ getterSetter: true }"
+                                       placeholder="min" datetime-format />
+                                <input type="text" class="filter-max form-control"
+                                       ng-model="filtering.dimension.current_filter().max_time"
+                                       ng-model-options="{ getterSetter: true }"
+                                       placeholder="max" datetime-format/>
+
+                            </div>
+
+                            <div class="form-group" ng-switch-when="CategoricalDimension">
+
+                                <div class="level-select-button-group">
+                                    <button type=button class="level-select-button all"
+                                            ng-click="filtering.dimension.switch_mode('exclude')"
+                                            ng-disabled="filtering.dimension.is_all_selected()"
+                                            >Select All</button>
+                                    <button type=button class="level-select-button none"
+                                            ng-click="filtering.dimension.switch_mode('filter')"
+                                            ng-disabled="filtering.dimension.is_all_unselected()"
+                                            >Unselected All</button>
+                                </div>
+                                <hr />
+                                <div class="search" ng-show="filtering.dimension.show_search()">
+                                    Search: <input type="text"
+                                                   ng-enter="search()"
+                                                   ng-blur="set_back_cur_search()"
+                                                   ng-model="filtering.dimension.search_key_tmp" />
+                                    <span class="glyphicon glyphicon-search"
+                                          ng-show="filtering.dimension.search_key_tmp"
+                                          ng-click="search()"   ></span>
+                                    <span class="glyphicon glyphicon-remove"
+                                          ng-show="filtering.dimension.search_key_tmp"
+                                          ng-click="filtering.dimension.reset_search()"   ></span>
+                                </div>
+
+
+                                <div class="dimension-levels" when-scrolled="loadMore()">
+                                    <categorical-histogram
+                                        dimension="filtering.dimension" >
+                                    </categorical-histogram>
+                                </div>
+                                <hr />
+                                <!--
+                                <div class="selected-levels">
+                                    <strong>Filter out levels:</strong> <br />
+                                    <span class=dimension-level-filter
+                                          ng-repeat="d in filtering.dimension.distribution"
+                                          ng-show="!d.show">
+                                        ng-click="filtering.dimension.unfilter_level(d)"
+                                        {$ d.level $}
+                                    </span>
+
+                                </div>
+                                -->
+                            </div>
 
 
                         </div>
 
-                        <div class="form-group" ng-switch-when="TimeDimension">
 
-                            <quant-histogram
-                                dimension="filtering.dimension"
-                                brush-min="filtering.dimension.current_filter().min_time()"
-                                brush-max="filtering.dimension.current_filter().max_time()"
-                                on-brushed="onQuantitativeBrushed">
-                            </quant-histogram>
-
-                            <input type="text" class="filter-min form-control"
-                                   ng-model="filtering.dimension.current_filter().min_time"
-                                   ng-model-options="{ getterSetter: true }"
-                                   placeholder="min" datetime-format />
-                            <input type="text" class="filter-max form-control"
-                                   ng-model="filtering.dimension.current_filter().max_time"
-                                   ng-model-options="{ getterSetter: true }"
-                                   placeholder="max" datetime-format/>
-
+                        <div class="form-group form-buttons">
+                            <button type="submit" class="btn btn-sm btn-primary apply-button"
+                                    ng-disabled="!filtering.dimension.is_dirty()"
+                                    ng-click="saveFilter()">Update</button>
+                            <button type="button" class="btn btn-sm btn-default clear-button"
+                                    ng-disabled="filtering.dimension.is_not_applying_filters()"
+                                    ng-click="resetFilter()">Clear</button>
                         </div>
 
-                        <div class="form-group" ng-switch-when="CategoricalDimension">
+                    </form>
 
-                            <div class="level-select-button-group">
-                                <button type=button class="level-select-button all"
-                                        ng-click="filtering.dimension.switch_mode('exclude')"
-                                        ng-disabled="filtering.dimension.is_all_selected()"
-                                        >Select All</button>
-                                <button type=button class="level-select-button none"
-                                        ng-click="filtering.dimension.switch_mode('filter')"
-                                        ng-disabled="filtering.dimension.is_all_unselected()"
-                                        >Unselected All</button>
-                            </div>
-                            <hr />
-                            <div class="search" ng-show="filtering.dimension.show_search()">
-                                Search: <input type="text"
-                                               ng-enter="search()"
-                                               ng-blur="set_back_cur_search()"
-                                               ng-model="filtering.dimension.search_key_tmp" />
-                                <span class="glyphicon glyphicon-search"
-                                      ng-show="filtering.dimension.search_key_tmp"
-                                      ng-click="search()"   ></span>
-                                <span class="glyphicon glyphicon-remove"
-                                      ng-show="filtering.dimension.search_key_tmp"
-                                      ng-click="filtering.dimension.reset_search()"   ></span>
-                            </div>
-
-
-                            <div class="dimension-levels" when-scrolled="loadMore()">
-                                <categorical-histogram
-                                    dimension="filtering.dimension" >
-                                </categorical-histogram>
-                            </div>
-                            <hr />
-                            <!--
-                            <div class="selected-levels">
-                                <strong>Filter out levels:</strong> <br />
-                                <span class=dimension-level-filter
-                                      ng-repeat="d in filtering.dimension.distribution"
-                                      ng-show="!d.show">
-                                    ng-click="filtering.dimension.unfilter_level(d)"
-                                    {$ d.level $}
-                                </span>
-
-                            </div>
-                            -->
-                        </div>
-
-
-                    </div>
-
-
-                    <div class="form-group form-buttons">
-                        <button type="submit" class="btn btn-sm btn-primary apply-button"
-                                ng-disabled="!filtering.dimension.is_dirty()"
-                                ng-click="saveFilter()">Update</button>
-                        <button type="button" class="btn btn-sm btn-default clear-button"
-                                ng-disabled="filtering.dimension.is_not_applying_filters()"
-                                ng-click="resetFilter()">Clear</button>
-                    </div>
-
-                </form>
-                
-                <span us-spinner="spinnerOptions" spinner-key="filter-spinner"></span>
+                    <span us-spinner="spinnerOptions" spinner-key="filter-spinner"></span>
+                </div>
             </div>
         </div>
     </div>

@@ -427,6 +427,12 @@
                         return render_bar(scope, $element, attrs, distribution);
                     }
             }, false);
+            scope.$watch('dimension.is_not_applying_filters()', function(newVals, oldVals){
+                if (newVals == true && oldVals == false){
+                    console.log("reset checkboxes");
+                    return reset_levels(scope, $element, attrs);
+                }
+            }, false);
         }
 
         return {

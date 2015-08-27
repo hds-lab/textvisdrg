@@ -324,6 +324,7 @@ body {
 #viz-wrapper {
     width: 100%;
     height: @bottom-row-height - @stat-box-height;
+
     sparqs-vis {
         .c3-area {
             opacity: 0;
@@ -334,6 +335,15 @@ body {
         }
 
     }
+    .filter-icon{
+        width: 100%;
+        text-align: right;
+    }
+    .filter-icon:hover{
+        color: #990000;
+        cursor: pointer;
+    }
+
 }
 #dimensions {
     margin-left: 10px;
@@ -347,6 +357,7 @@ body {
     .active {
         background-color: #99C6E4;
     }
+
 
 
 }
@@ -410,4 +421,172 @@ body {
   opacity: 0;
   top: -50px;
   height: 0px;
+}
+
+@left-col-width: 255px;
+@filter-popup-width: 300px;
+@filter-body-width: @filter-popup-width - 2;
+@filter-histogram-width: @filter-body-width - 16;
+#filter-popup {
+    position: absolute;
+    top: @top-row-height + @bottom-row-height - @stat-box-height;
+    left: 64%;
+
+    z-index: 1000;
+
+    background: white;
+    border: 1px solid #666;
+    width: @filter-popup-width;
+    overflow: hidden;
+    opacity: 1;
+
+    h3 {
+        font-size: 18px;
+        padding: 6px 8px;
+        margin: 0;
+        background: #E0E0E0;
+        width: @filter-popup-width - 2;
+
+        position: relative;
+
+        .close {
+            position: absolute;
+            top: 3px;
+            right: 7px;
+            font-size: 23px;
+            color: #000;
+            text-shadow: 0 1px 0 #000;
+        }
+    }
+
+    .filter-body {
+        padding: 8px;
+        width: @filter-body-width;
+        position: relative;
+    }
+
+    .transition(linear 0.3s);
+    .transition-property(~'width, opacity, top');
+
+    &.ng-hide {
+        width: 0;
+        opacity: 0;
+    }
+
+    .description {
+        font-size: 12px;
+        color: #333;
+    }
+
+    .form-group {
+        text-align: center;
+        margin: 0;
+
+        &.form-buttons {
+            margin-top: 6px;
+        }
+        hr {
+            margin: 0.5em;
+        }
+    }
+
+    .form-error {
+        font-style: italic;
+    }
+
+    .form-control {
+        display: inline-block;
+        text-align: center;
+        margin: 5px;
+        width: 120px;
+        border-radius: 2px;
+        padding: 3px 6px;
+        font-size: 12px;
+        height: auto;
+        color: #333;
+    }
+
+    .btn {
+        width: 60px;
+        margin: 5px;
+        padding: 4px 10px;
+    }
+    .dimension-levels {
+        height: 200px;
+        overflow-y: auto;
+
+    }
+
+    categorical-histogram {
+        .level-div {
+            text-align: left;
+            height: 1.1em;
+            div {
+                display: inline-block;
+                font-weight: normal;
+                font-size: 0.9em;
+                line-height: 1em;
+                padding: 0;
+                margin: 0 1px;
+            }
+            .level-name {
+                width: @filter-popup-width * 0.60;
+
+            }
+            label {
+                font-weight: normal;
+
+            }
+            .level-value {
+                width: @filter-popup-width * 0.15;
+                text-align: right;
+            }
+            .level-bar {
+                width: @filter-popup-width * 0.1;
+                height: 1em;
+                background-color: steelblue;
+
+            }
+        }
+    }
+    .selected-levels {
+        max-height: 200px;
+        max-width: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 0 5px;
+    }
+    .dimension-level-filter {
+        margin: 0px 3px;
+        padding: 0px 3px;
+        background-color: #555;
+    }
+    .dimension-level-filter:hover {
+        cursor: pointer;
+    }
+    .level-select-button-group {
+        text-align: left;
+    }
+    .level-select-button {
+        border: none;
+        background: none;
+        text-decoration: underline;
+        font-size: 0.9em;
+    }
+    .level-select-button:disabled {
+        color: #333;
+    }
+    .search {
+        font-size: 0.5em;
+        text-align: left;
+        margin-top: 1.5em;
+        input {
+            color: black;
+            line-height: 0.5em;
+        }
+        .glyphicon:hover {
+            cursor: pointer;
+        }
+    }
+
 }

@@ -187,6 +187,13 @@
                         }
                     }
                 },
+                clear_filtering: function () {
+                    if (this.filtering) {
+                        this.filtering = false;
+                        this.filter_type['filter'].reset();
+                        this.filter_type['exclude'].reset();
+                    }
+                },
                 is_not_applying_filters: function(){
                     return ((this.is_categorical() && this.is_all_selected()) ||
                             (!this.is_categorical() && this.current_filter().is_empty()));
