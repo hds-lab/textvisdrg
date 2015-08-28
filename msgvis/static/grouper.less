@@ -75,7 +75,7 @@ body {
     }
 }
 #content {
-    margin: 10px 0px 10px 20px;
+    margin: 10px;
 }
 
 @top-row-height: 165px;
@@ -273,8 +273,10 @@ body {
 }
 
 
+
 #search {
     height: @bottom-row-height;
+    padding-left: 15px;
     position: relative;
     #search_keyword{
         width: 85%;
@@ -282,18 +284,19 @@ body {
 
     .search-results-place-holder{
         color: #999;
-        font-size: 1.8em;
-        position: absolute;
-        width: 90%;
-        text-align: center;
-        top: 40%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        font-size: 1.2em;
+        width: 98%;
+        .heading {
+            font-weight: 600;
+            font-size: 13pt;
+            color: #333;
+        }
+
     }
 
     .heading {
         font-weight: 600;
-        font-size: 1.2em;
+        font-size: 13pt;
     }
     .message-list{
         height: @bottom-row-height - 100px;
@@ -314,16 +317,65 @@ body {
             font-weight: 700;
         }
     }
+    .keyword-dist {
+        height: @bottom-row-height;
+        margin-top: 20px;
+    }
+    .keywords-list {
+
+        height: @bottom-row-height - 200;
+        overflow-y: auto;
+    }
+    keywords-histogram {
+        font-size: 1em;
+        .level-div {
+            text-align: left;
+            height: 1.1em;
+            div {
+                display: inline-block;
+                font-weight: normal;
+                font-size: 0.9em;
+                line-height: 1em;
+                padding: 0;
+                margin: 0 1px;
+            }
+            .level-name {
+                width: 60%;
+
+            }
+            label {
+                font-weight: normal;
+
+            }
+            .level-value {
+                width: 15%;
+                text-align: right;
+            }
+            .level-bar {
+                width: 15%;
+                height: 1em;
+                background-color: steelblue;
+
+            }
+        }
+    }
 }
 
 #middle{
     padding-left: 0;
     padding-right: 0;
 }
-
+#middle-wrapper{
+    height: @bottom-row-height;
+}
 #viz-wrapper {
-    width: 100%;
     height: @bottom-row-height - @stat-box-height;
+    padding-left: 10px;
+    .heading {
+        font-weight: 600;
+        font-size: 1.5em;
+    }
+
     sparqs-vis {
         .c3-area {
             opacity: 0;
@@ -334,11 +386,23 @@ body {
         }
 
     }
+    .filter-icon{
+        width: 100%;
+        text-align: right;
+    }
+    .filter-icon:hover{
+        color: #990000;
+        cursor: pointer;
+    }
+
 }
 #dimensions {
     margin-left: 10px;
+    margin-top: 25px;
     .dimension {
         font-weight: 600;
+        font-size: 1.1em;
+        line-height: 1.6em;
     }
     .dimension:hover {
         cursor: pointer;
@@ -349,15 +413,20 @@ body {
     }
 
 
+
 }
 
 
 #messages {
-    height: @bottom-row-height;
+    height: @bottom-row-height - 20;
     position: relative;
+    border-left: 1px #E6E6E6 solid;
+    margin: 5px 0;
+    padding: 0px;
+    padding-left: 10px !important;
     .heading {
         font-weight: 600;
-        font-size: 1.2em;
+        font-size: 1.5em;
     }
     .message-list {
         height: @bottom-row-height - 50px;
@@ -369,7 +438,7 @@ body {
     }
     .search-results-place-holder{
         color: #999;
-        font-size: 1.8em;
+        font-size: 1.5em;
         position: absolute;
         width: 80%;
         text-align: center;
@@ -410,4 +479,172 @@ body {
   opacity: 0;
   top: -50px;
   height: 0px;
+}
+
+@left-col-width: 255px;
+@filter-popup-width: 300px;
+@filter-body-width: @filter-popup-width - 2;
+@filter-histogram-width: @filter-body-width - 16;
+#filter-popup {
+    position: absolute;
+    top: @top-row-height + @bottom-row-height - @stat-box-height + 30;
+    left: 68%;
+
+    z-index: 1000;
+
+    background: white;
+    border: 1px solid #666;
+    width: @filter-popup-width;
+    overflow: hidden;
+    opacity: 1;
+
+    h3 {
+        font-size: 18px;
+        padding: 6px 8px;
+        margin: 0;
+        background: #E0E0E0;
+        width: @filter-popup-width - 2;
+
+        position: relative;
+
+        .close {
+            position: absolute;
+            top: 3px;
+            right: 7px;
+            font-size: 23px;
+            color: #000;
+            text-shadow: 0 1px 0 #000;
+        }
+    }
+
+    .filter-body {
+        padding: 8px;
+        width: @filter-body-width;
+        position: relative;
+    }
+
+    .transition(linear 0.3s);
+    .transition-property(~'width, opacity, top');
+
+    &.ng-hide {
+        width: 0;
+        opacity: 0;
+    }
+
+    .description {
+        font-size: 12px;
+        color: #333;
+    }
+
+    .form-group {
+        text-align: center;
+        margin: 0;
+
+        &.form-buttons {
+            margin-top: 6px;
+        }
+        hr {
+            margin: 0.5em;
+        }
+    }
+
+    .form-error {
+        font-style: italic;
+    }
+
+    .form-control {
+        display: inline-block;
+        text-align: center;
+        margin: 5px;
+        width: 120px;
+        border-radius: 2px;
+        padding: 3px 6px;
+        font-size: 12px;
+        height: auto;
+        color: #333;
+    }
+
+    .btn {
+        width: 60px;
+        margin: 5px;
+        padding: 4px 10px;
+    }
+    .dimension-levels {
+        height: 200px;
+        overflow-y: auto;
+
+    }
+
+    categorical-histogram {
+        .level-div {
+            text-align: left;
+            height: 1.1em;
+            div {
+                display: inline-block;
+                font-weight: normal;
+                font-size: 0.9em;
+                line-height: 1em;
+                padding: 0;
+                margin: 0 1px;
+            }
+            .level-name {
+                width: @filter-popup-width * 0.60;
+
+            }
+            label {
+                font-weight: normal;
+
+            }
+            .level-value {
+                width: @filter-popup-width * 0.15;
+                text-align: right;
+            }
+            .level-bar {
+                width: @filter-popup-width * 0.1;
+                height: 1em;
+                background-color: steelblue;
+
+            }
+        }
+    }
+    .selected-levels {
+        max-height: 200px;
+        max-width: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 0 5px;
+    }
+    .dimension-level-filter {
+        margin: 0px 3px;
+        padding: 0px 3px;
+        background-color: #555;
+    }
+    .dimension-level-filter:hover {
+        cursor: pointer;
+    }
+    .level-select-button-group {
+        text-align: left;
+    }
+    .level-select-button {
+        border: none;
+        background: none;
+        text-decoration: underline;
+        font-size: 0.9em;
+    }
+    .level-select-button:disabled {
+        color: #333;
+    }
+    .search {
+        font-size: 0.5em;
+        text-align: left;
+        margin-top: 1.5em;
+        input {
+            color: black;
+            line-height: 0.5em;
+        }
+        .glyphicon:hover {
+            cursor: pointer;
+        }
+    }
+
 }

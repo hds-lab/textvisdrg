@@ -292,6 +292,7 @@
                 self.current_page = 1;
                 self.pages = 0;
                 self.count = -1;
+
             };
 
             angular.extend(KeywordMessages.prototype, {
@@ -357,6 +358,132 @@
             });
 
             return new KeywordMessages();
+        }
+    ]);
+
+    //A service for loading example messages.
+    module.factory('SparQs.services.Keywords', [
+        '$http', 'djangoUrl', 'SparQs.services.Dataset',
+        function keywordsFactory($http, djangoUrl, Dataset) {
+
+
+            var Keywords = function () {
+                var self = this;
+                self.key = "words";
+                self.search_results = {"": self};
+                self.table = undefined;
+                self.domain = undefined;
+                self.distribution = undefined;
+                self.search_key = "";
+                self.search_key_tmp = "";
+                self.loading = false;
+            };
+
+
+            angular.extend(Keywords.prototype, {
+                load_keywords_distributions: function(dataset){
+                    var self = this;
+                    if (!self.loading) {
+                        self.loading = true;
+                        var target = self;
+                        if ( typeof(self.search_key) !== "undefined" && self.search_key !== "" &&
+                             typeof(self.search_results[self.search_key]) === "undefined" ){
+                            target = {};
+                            target.table = [];
+                            target.domain = [];
+                            target.domain_labels = {};
+                            target.distribution = [];
+                            target.page = 0;
+                            self.search_results[self.search_key] = target;
+
+                        }
+                        else if( !self.table ){
+                            self.table = [];
+                            self.domain = [];
+                            self.domain_labels = {};
+                            self.distribution = [];
+                            self.page = 0;
+
+                        }
+
+                        var request = {
+                            dataset: Dataset.id,
+                            dimensions: [self.key],
+                            exclude: [{dimension: self.key, levels: [""]}],
+                            page: target.page + 1,
+                            search_key: (self.search_key !== "") ? self.search_key : undefined
+                        };
+
+                        var apiUrl = djangoUrl.reverse('data-table');
+
+
+                        self.request = $http.post(apiUrl, request)
+                            .success(function (data) {
+                                var result = data.result;
+                                self.loading = false;
+                                self.request = undefined;
+                                if ( result !== null && typeof(result) !== "undefined" ){
+                                    result.table = result.table;
+                                    result.domain = result.domains[self.key];
+                                    result.domain_labels = result.domain_labels[self.key] || {};
+                                    result.distribution = self.get_keywords_distribution_in_order(result.table, result.domain, result.domain_labels);
+
+                                    self.add_keywords_distribution(target, result);
+
+                                }
+                            });
+
+                        return self.request;
+                    }
+                },
+                get_keywords_distribution_in_order: function (table, domain, labels) {
+                    if (!table || !domain) {
+                        return undefined;
+                    }
+                    var self = this;
+                    var distribution_map = {};
+                    table.forEach(function (d) {
+                        var level = d[self.key];
+                        distribution_map[level] = d.value;
+                    });
+
+                    return domain.map(function(level, i) {
+                        var value = distribution_map[level] || 0;
+
+                        if (level === null || level === "")
+                            level = "No " + self.name;
+
+                        var label;
+                        if (labels && labels.length > i) {
+                            label = labels[i];
+                        }
+
+                        return {
+                            level: level,
+                            label: label,
+                            value: value
+                        };
+                    });
+                },
+                add_keywords_distribution: function(target, result){
+                    $.merge(target.table, result.table);
+                    $.merge(target.domain, result.domain);
+                    $.extend(target.domain_labels, result.domain_labels);
+                    $.merge(target.distribution, result.distribution);
+                    target.page += 1;
+                },
+                get_current_keywords_distribution: function(){
+                    var self = this;
+                    return self.search_results[self.search_key].distribution;
+                },
+                reset_keywords_search: function () {
+                    var self = this;
+                    self.search_key = "";
+                    self.search_key_tmp = "";
+                }
+            });
+
+            return new Keywords();
         }
     ]);
 
