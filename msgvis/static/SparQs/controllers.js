@@ -287,7 +287,7 @@
 
 
         $scope.is_empty = function(){
-            return (!$scope.edit_mode || $scope.messages.count == -1 )
+            return ($scope.messages.count == -1 )
         };
         $scope.is_being_editing = function(group){
             return $scope.edit_mode && Group.current_group_id == group.id;
