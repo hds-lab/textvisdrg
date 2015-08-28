@@ -427,6 +427,12 @@
                         return render_bar(scope, $element, attrs, distribution);
                     }
             }, false);
+            scope.$watch('dimension.is_not_applying_filters()', function(newVals, oldVals){
+                if (newVals == true && oldVals == false){
+                    console.log("reset checkboxes");
+                    return reset_levels(scope, $element, attrs);
+                }
+            }, false);
         }
 
         return {
@@ -440,6 +446,96 @@
 
         }
     });
+    
+    module.directive('keywordsHistogram', function () {
+
+        var get_scale = function(dimension, width){
+            var values = dimension.table.map(function(d){ return d.value; });
+            var scale = d3.scale.linear();
+            scale.domain([0, d3.max(values)]);
+            scale.range([0, width]);
+            return scale;
+        };
+
+        var render_bar = function(scope, $element, attrs, distribution){
+            if ( typeof(scope.keywords) !== "undefined" ){
+                var elementSize = {
+                    width: $element.parent().width(),
+                    height: $element.parent().height()
+                };
+                var scale = get_scale(scope.keywords, elementSize.width * 0.1);
+                var $d3_element = d3.select($element[0]);
+                var d3_select = $d3_element.selectAll('.level-div')
+                    .data(distribution)
+                    .classed('active', true);
+
+                d3_select.enter()
+                    .append('div')
+                    .classed('level-div', true)
+                    .each(function(d){
+                        var self = d3.select(this);
+                        self.classed('active', true);
+
+                        var label = self.append('div')
+                            .classed('level-name', true);
+
+                        label.append('span').classed('level-name-text', true);
+
+                        self.append('div').classed('level-value', true);
+                        self.append('div').classed('level-bar', true);
+                    });
+
+                d3_select.exit()
+                    .each(function(d){
+                        var self = d3.select(this);
+                        self.classed('active', false);
+                        self.style('display', 'none');
+                    });
+
+                $d3_element.selectAll('.level-div.active')
+                    .each(function(d){
+                        var self = d3.select(this);
+                        var $self = $(this);
+                        self.style('display', 'block');
+
+                        self.select('.level-name-text').text(d.label || d.level);
+                        self.select('.level-value').text(d.value);
+                        self.select('.level-bar')
+                            .style("width", (scale(d.value)) + "px")
+                            .style("height", "0.7em");
+                    });
+
+
+            }
+        };
+
+        function link(scope, $element, attrs){
+            
+            scope.$watch('keywords.get_current_keywords_distribution().length', function (newVals, oldVals) {
+                    if (newVals) {
+                        // Note:
+                        // For unknown reasons, the show will be reset to the original state (in filter mode is false, exclude mode is true.)
+                        // So it need to be set to its real state based on filter/exclude.
+                        var distribution = scope.keywords.get_current_keywords_distribution();
+
+                        return render_bar(scope, $element, attrs, distribution);
+                    }
+            }, false);
+            
+        }
+
+        return {
+            restrict: 'E',
+            replace: false,
+
+            scope: {
+                keywords: '=keywords'
+            },
+            link: link
+
+        }
+    });
+    
 
     module.directive('sparqsVis', function () {
 
