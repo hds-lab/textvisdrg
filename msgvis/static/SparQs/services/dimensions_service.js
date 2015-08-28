@@ -438,7 +438,7 @@
                         {
                             "group_name": "Contents",
                             "dimensions": [
-                                this.get_by_key('topics'),
+                                //this.get_by_key('topics'),
                                 this.get_by_key('words'),
                                 this.get_by_key('hashtags'),
                                 //this.get_by_key('contains_hashtag'),
