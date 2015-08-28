@@ -75,7 +75,7 @@ body {
     }
 }
 #content {
-    margin: 10px 0px 10px 20px;
+    margin: 10px;
 }
 
 @top-row-height: 165px;
@@ -273,8 +273,10 @@ body {
 }
 
 
+
 #search {
     height: @bottom-row-height;
+    padding-left: 15px;
     position: relative;
     #search_keyword{
         width: 85%;
@@ -282,18 +284,14 @@ body {
 
     .search-results-place-holder{
         color: #999;
-        font-size: 1.8em;
-        position: absolute;
-        width: 90%;
-        text-align: center;
-        top: 40%;
-        left: 50%;
-        transform: translate(-50%, -50%);
+        font-size: 1.2em;
+        width: 98%;
+
     }
 
     .heading {
         font-weight: 600;
-        font-size: 1.2em;
+        font-size: 1.5em;
     }
     .message-list{
         height: @bottom-row-height - 100px;
@@ -314,16 +312,64 @@ body {
             font-weight: 700;
         }
     }
+    .keyword-dist {
+        height: @bottom-row-height;
+        margin-top: 10px;
+    }
+    .keywords-list {
+
+        height: @bottom-row-height - 200;
+        overflow-y: auto;
+    }
+    keywords-histogram {
+        font-size: 1em;
+        .level-div {
+            text-align: left;
+            height: 1.1em;
+            div {
+                display: inline-block;
+                font-weight: normal;
+                font-size: 0.9em;
+                line-height: 1em;
+                padding: 0;
+                margin: 0 1px;
+            }
+            .level-name {
+                width: 60%;
+
+            }
+            label {
+                font-weight: normal;
+
+            }
+            .level-value {
+                width: 15%;
+                text-align: right;
+            }
+            .level-bar {
+                width: 15%;
+                height: 1em;
+                background-color: steelblue;
+
+            }
+        }
+    }
 }
 
 #middle{
     padding-left: 0;
     padding-right: 0;
 }
-
+#middle-wrapper{
+    height: @bottom-row-height;
+}
 #viz-wrapper {
-    width: 100%;
     height: @bottom-row-height - @stat-box-height;
+    padding-left: 10px;
+    .heading {
+        font-weight: 600;
+        font-size: 1.5em;
+    }
 
     sparqs-vis {
         .c3-area {
@@ -347,8 +393,11 @@ body {
 }
 #dimensions {
     margin-left: 10px;
+    margin-top: 25px;
     .dimension {
         font-weight: 600;
+        font-size: 1.1em;
+        line-height: 1.6em;
     }
     .dimension:hover {
         cursor: pointer;
@@ -364,11 +413,15 @@ body {
 
 
 #messages {
-    height: @bottom-row-height;
+    height: @bottom-row-height - 20;
     position: relative;
+    border-left: 1px #E6E6E6 solid;
+    margin: 5px 0;
+    padding: 0px;
+    padding-left: 10px !important;
     .heading {
         font-weight: 600;
-        font-size: 1.2em;
+        font-size: 1.5em;
     }
     .message-list {
         height: @bottom-row-height - 50px;
@@ -380,7 +433,7 @@ body {
     }
     .search-results-place-holder{
         color: #999;
-        font-size: 1.8em;
+        font-size: 1.5em;
         position: absolute;
         width: 80%;
         text-align: center;
@@ -429,8 +482,8 @@ body {
 @filter-histogram-width: @filter-body-width - 16;
 #filter-popup {
     position: absolute;
-    top: @top-row-height + @bottom-row-height - @stat-box-height;
-    left: 64%;
+    top: @top-row-height + @bottom-row-height - @stat-box-height + 30;
+    left: 68%;
 
     z-index: 1000;
 

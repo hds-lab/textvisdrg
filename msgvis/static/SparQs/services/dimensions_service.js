@@ -465,8 +465,8 @@
                             "group_name": "Interaction",
                             "dimensions": [
                                 this.get_by_key('type'),
-                                this.get_by_key('replies'),
-                                this.get_by_key('shares'),
+                                //this.get_by_key('replies'),
+                                //this.get_by_key('shares'),
                                 this.get_by_key('mentions')
                                 //this.get_by_key('contains_mention')
                             ]

@@ -178,8 +178,9 @@
     ];
     module.controller('SparQs.controllers.ExampleMessageController', ExampleMessageController);
 
-    var SearchAndGroupController = function ($scope, KeywordMessages, Group, Dataset, Selection, usSpinnerService) {
+    var SearchAndGroupController = function ($scope, Keywords, KeywordMessages, Group, Dataset, Selection, usSpinnerService) {
 
+        $scope.keywords = Keywords;
         $scope.Group = Group;
         Group.load(Dataset.id);
 
@@ -286,7 +287,7 @@
 
 
         $scope.is_empty = function(){
-            return (!$scope.edit_mode && $scope.messages.count == -1 )
+            return (!$scope.edit_mode || $scope.messages.count == -1 )
         };
         $scope.is_being_editing = function(group){
             return $scope.edit_mode && Group.current_group_id == group.id;
@@ -339,9 +340,38 @@
             return ($scope.is_being_editing(group)) ? "edit-class" : ((group.selected) ? "active" : "");
         };
 
+        // Load keywords distribution
+        Keywords.load_keywords_distributions();
+
+        $scope.$watch('keywords.request', function(newVal, oldVal) {
+            if (Keywords && Keywords.request) {
+                usSpinnerService.spin('keywords-spinner');
+
+                Keywords.request.then(function() {
+                    usSpinnerService.stop('keywords-spinner');
+                })
+            }
+        });
+
+        $scope.loadMoreKeywords = function() {
+            Keywords.load_keywords_distributions();
+        };
+
+        $scope.keywords_search = function() {
+            Keywords.search_key = Keywords.search_key_tmp;
+            Keywords.load_keywords_distributions();
+            $('#keywords-list').scrollTop(0);
+        };
+        $scope.set_back_cur_keywords_search = function() {
+            if ( Keywords.search_key_tmp !== Keywords.search_key )
+                Keywords.search_key_tmp = Keywords.search_key;
+
+        };
+
     };
     SearchAndGroupController.$inject = [
         '$scope',
+        'SparQs.services.Keywords',
         'SparQs.services.KeywordMessages',
         'SparQs.services.Group',
         'SparQs.services.Dataset',
