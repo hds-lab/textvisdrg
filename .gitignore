@@ -69,3 +69,5 @@ target/
 
 *.model
 *.model.state
+
+/msgvis/static/media

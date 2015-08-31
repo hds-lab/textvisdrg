@@ -108,9 +108,10 @@ class FilterSerializer(serializers.Serializer):
 
 
 class PersonSerializer(serializers.ModelSerializer):
+    profile_image_local_name = serializers.CharField()
     class Meta:
         model = corpus_models.Person
-        fields = ('id', 'dataset', 'original_id', 'username', 'full_name',)
+        fields = ('id', 'dataset', 'original_id', 'username', 'full_name', 'profile_image_local_name', )
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -142,10 +143,11 @@ class MessageSerializer(serializers.ModelSerializer):
 
     sender = PersonSerializer()
     embedded_html = serializers.CharField()
+    media_url = serializers.CharField()
 
     class Meta:
         model = corpus_models.Message
-        fields = ('id', 'dataset', 'text', 'sender', 'time', 'original_id', 'embedded_html')
+        fields = ('id', 'dataset', 'text', 'sender', 'time', 'original_id', 'embedded_html', 'media_url', )
 
 
 class ArticleSerializer(serializers.ModelSerializer):

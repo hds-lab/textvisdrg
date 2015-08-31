@@ -6,6 +6,11 @@ from caching.base import CachingManager, CachingMixin
 from msgvis.apps.base import models as base_models
 from msgvis.apps.corpus import utils
 
+import re
+
+import os
+from msgvis.settings.common import DEBUG
+
 
 class Dataset(models.Model):
     """A top-level dataset object containing messages."""
@@ -202,6 +207,22 @@ class Person(models.Model):
     def __unicode__(self):
         return self.username
 
+    @property
+    def profile_image_local_name(self):
+        if DEBUG or os.environ["DJANGO_SETTINGS_MODULE"] == "msgvis.settings.test":
+            return "profile_1000204970.jpeg"
+
+        url = self.profile_image_url
+        if url != "":
+            pattern = re.compile('/\w+\.([_\w]+)$')
+            results = pattern.search(url)
+            if results:
+                suffix = results.groups()[0]
+                url = "profile_" + str(self.original_id) + "." + suffix
+
+        return url
+        
+
 
 class Message(models.Model):
     """
@@ -281,10 +302,27 @@ class Message(models.Model):
 
     @property
     def embedded_html(self):
-        return utils.get_embedded_html(self.original_id)
+        #return utils.get_embedded_html(self.original_id)
+        return utils.render_html_tag(self.text)
+
+    @property
+    def media_url(self):
+        url = ""
+        if self.contains_media:
+            url = self.media.all()[0].media_url
+            pattern = re.compile('/(\w+\.[_-\w]+)$')
+            results = pattern.search(url)
+            if results:
+                url = results.groups()[0]
+        return url
+
 
     def __repr__(self):
         return str(self.time) + " || " + self.text
 
     def __unicode__(self):
         return self.__repr__()
+
+
+
+
