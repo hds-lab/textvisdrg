@@ -310,7 +310,7 @@ class Message(models.Model):
         url = ""
         if self.contains_media:
             url = self.media.all()[0].media_url
-            pattern = re.compile('/(\w+\.[_-\w]+)$')
+            pattern = re.compile('/(\w+\.[_\-\w]+)$')
             results = pattern.search(url)
             if results:
                 url = results.groups()[0]
