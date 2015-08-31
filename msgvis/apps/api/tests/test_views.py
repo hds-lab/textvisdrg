@@ -6,6 +6,7 @@ from django.utils import timezone as tz
 from django.db.models import query
 
 from msgvis.apps.corpus import models as corpus_models
+from msgvis.apps.corpus import utils as corpus_utils
 from msgvis.apps.questions import models as questions_models
 from msgvis.apps.dimensions import models as dimensions_models
 import mock
@@ -103,7 +104,7 @@ class ExampleMessagesViewTest(APITestCase):
                 sender=sender,
             ),
             self.dataset.message_set.create(
-                text="another message",
+                text="another message #hashtag #mention http://url.com",
                 time=tz.now(),
                 sender=sender,
             )
@@ -149,9 +150,11 @@ class ExampleMessagesViewTest(APITestCase):
                         'original_id': m.sender.original_id,
                         'username': m.sender.username,
                         'full_name': m.sender.full_name,
+                        'profile_image_local_name': m.sender.profile_image_local_name
                     },
                     'original_id': None,
-                    'embedded_html': u'<blockquote class="twitter-tweet" data-cards="hidden" > <p lang="en" dir="ltr">Sunsets don&#39;t get much better than this one over <a href="https://twitter.com/GrandTetonNPS">@GrandTetonNPS</a>. <a href="https://twitter.com/hashtag/nature?src=hash">#nature</a> <a href="https://twitter.com/hashtag/sunset?src=hash">#sunset</a> <a href="http://t.co/YuKy2rcjyU">pic.twitter.com/YuKy2rcjyU</a></p>&mdash; US Dept of Interior (@Interior) <a href="https://twitter.com/Interior/status/463440424141459456">May 5, 2014</a></blockquote>',
+                    'embedded_html': corpus_utils.render_html_tag(m.text),
+                    'media_url': m.media_url
                 } for m in self.sample_messages
             ]
         }

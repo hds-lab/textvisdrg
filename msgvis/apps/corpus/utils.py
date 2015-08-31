@@ -3,6 +3,7 @@ import json
 from msgvis.settings.common import TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET, DEBUG
 import re
 import os
+import os.path
 
 
 def get_embedded_html(tweet_original_id):
@@ -36,4 +37,21 @@ def get_embedded_html(tweet_original_id):
 
     #return "<p></p>"
 
+def render_hashtag_html(matchobj):
+    return "<span class='hashtag'>" + matchobj.group(0) + "</span>"
 
+def render_mention_html(matchobj):
+    return "<span class='mention'>" + matchobj.group(0) + "</span>"
+
+def render_link_html(matchobj):
+    return "<span class='link'>" + matchobj.group(0) + "</span>"
+
+def render_html_tag(text):
+    pattern = r'(?<=\s)#\w+|^#\w+'
+    text = re.sub(pattern, render_hashtag_html, text)
+    pattern = r'(?<=\s)@\w+|^@\w+'
+    text = re.sub(pattern, render_mention_html, text)
+    http_pattern = r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
+    pattern = r'(?<=\s)' + http_pattern + '|^' + http_pattern
+    text = re.sub(pattern, render_link_html, text)
+    return text

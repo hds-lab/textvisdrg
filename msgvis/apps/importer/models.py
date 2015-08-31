@@ -39,6 +39,10 @@ def create_an_instance_from_json(json_str, dataset_obj):
     the dataset.
     """
     tweet_data = json.loads(json_str)
+    if tweet_data.get('lang'):
+        lang = tweet_data.get('lang')
+        if lang != "en":
+            return False
     return get_or_create_a_tweet_from_json_obj(tweet_data, dataset_obj)
 
 

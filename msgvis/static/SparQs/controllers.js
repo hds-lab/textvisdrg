@@ -69,7 +69,6 @@
             $scope.dropped = undefined; // remove the dropped dimension
         };
         $scope.changeDimension = function(dimension){
-                console.log(dimension);
                 Selection.change_dimension(dimension);
                 Selection.changed('dimensions');
         };
@@ -159,6 +158,9 @@
 
         $scope.is_empty = function(){
             return (ExampleMessages.prev_request == 0);
+        };
+        $scope.not_empty_url = function(url){
+            return !(url.trim() == "")
         };
 
         Selection.changed('filters,focus,groups', $scope, $scope.get_example_messages);
@@ -284,7 +286,9 @@
             }
         };
 
-
+        $scope.not_empty_url = function(url){
+            return !(url.trim() == "")
+        };
 
         $scope.is_empty = function(){
             return ($scope.messages.count == -1 )
