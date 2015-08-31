@@ -79,9 +79,7 @@
                     <div class="box">
                         <form class="form-inline">
                             {% csrf_token %}
-                             <input class="form-control heading" id="group-name-field" type="text"
-                                    placeholder="Group Name" ng-model="group_name"
-                                    />
+                            <div class="heading">Create a Group</div>
                             <div class="keyword-line">
                             <label for="inclusive_keyword">Including</label>
                             <input class="form-control" id="inclusive-keyword-field" type="text"
@@ -179,7 +177,15 @@
 
                 <div id="left" class="col-md-3">
                     <div id="search" class="box">
-                        <div ng-show="is_empty()" class="search-results-place-holder">
+                        <div id="search-tab">
+                            <span ng-class="tab_class('keyword_list')"
+                                  ng-click="change_mode('keyword_list')">Keywords</span>
+                            <span ng-class="tab_class('group_messages')"
+                                  ng-click="change_mode('group_messages')">Group Messages</span>
+
+                        </div>
+
+                        <div ng-show="is_mode('keyword_list')">
                             <div class="heading">Keyword List</div>
                             Use these keywords to create groups.
                             <div class="keyword-dist">
@@ -206,7 +212,7 @@
                                 <span us-spinner="spinnerOptions" spinner-key="keywords-spinner"></span>
                             </div>
                         </div>
-                        <div ng-hide="is_empty()">
+                        <div ng-show="is_mode('group_messages')">
                             <div class="heading" ng-show="!edit_mode">Search Results <span ng-hide="is_empty()">({$ messages.count $})</span></div>
                             <div class="heading" ng-show="edit_mode">Messages in the group <span ng-hide="is_empty()">({$ messages.count $})</span></div>
                             <div class="pages">
@@ -243,8 +249,8 @@
 
                                 </div>
                             </div>
+                            <span us-spinner="spinnerOptions" spinner-key="search-spinner"></span>
                         </div>
-                        <span us-spinner="spinnerOptions" spinner-key="search-spinner"></span>
 
                     </div>
 

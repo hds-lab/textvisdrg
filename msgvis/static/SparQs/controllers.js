@@ -214,6 +214,7 @@
             var request = KeywordMessages.load(Dataset.id, 1, inclusive_keywords, exclusive_keywords);
             if (request) {
                 usSpinnerService.spin('search-spinner');
+                $scope.change_mode("group_messages");
 
                 request.then(function() {
                     usSpinnerService.stop('search-spinner');
@@ -227,6 +228,7 @@
             var request = KeywordMessages.load(Dataset.id, page);
             if (request) {
                 usSpinnerService.spin('search-spinner');
+                $scope.change_mode("group_messages");
 
                 request.then(function() {
                     usSpinnerService.stop('search-spinner');
@@ -370,6 +372,17 @@
             if ( Keywords.search_key_tmp !== Keywords.search_key )
                 Keywords.search_key_tmp = Keywords.search_key;
 
+        };
+
+        var current_mode = "keyword_list";
+        $scope.is_mode = function(mode){
+            return (current_mode == mode);
+        };
+        $scope.tab_class = function(mode){
+            return ($scope.is_mode(mode)) ? 'active' : "";
+        };
+        $scope.change_mode = function(mode){
+            current_mode = mode;
         };
 
     };
