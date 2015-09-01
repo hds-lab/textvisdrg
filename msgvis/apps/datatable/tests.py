@@ -225,12 +225,12 @@ class TestRelatedCategoricalDataTable(DistributionTestCaseMixins, TestCase):
                                                                      ('name', 'username'))
 
         d1 = registry.get_dimension('language')
-        d2 = registry.get_dimension('sender_name')
+        d2 = registry.get_dimension('sender')
 
         datatable = models.DataTable(d1, d2)
         result = datatable.render(dataset.message_set.all())
 
-        self.assertMultiDistributionsEqual(result, value_distribution, ('language', 'sender_name'), measure_key='value')
+        self.assertMultiDistributionsEqual(result, value_distribution, ('language', 'sender'), measure_key='value')
 
 
 class CategoricalDimensionsRegistryTest(DistributionTestCaseMixins, TestCase):
@@ -509,7 +509,7 @@ class AuthorFieldDistributionsTest(DistributionTestCaseMixins, TestCase):
         author_name_distribution = self.recover_related_field_distribution(author_distribution, corpus_models.Person,
                                                                            'username')
 
-        self.doDistributionTest('sender_name', dataset, author_name_distribution)
+        self.doDistributionTest('sender', dataset, author_name_distribution)
 
     def test_author_count_distribution(self):
         """Can count messages for different author message_counts"""
