@@ -457,10 +457,25 @@
                         {
                             "group_name": "Meta",
                             "dimensions": [
-                                this.get_by_key('language'),
+                                //this.get_by_key('language'),
                                 this.get_by_key('sentiment')
                             ]
                         },
+
+
+                        {
+                            "group_name": "Author",
+                            "dimensions": [
+                                this.get_by_key('sender'),
+                         /*       this.get_by_key('sender_message_count'),
+                                this.get_by_key('sender_reply_count'),
+                                this.get_by_key('sender_mention_count'),
+                                this.get_by_key('sender_share_count'),
+                                this.get_by_key('sender_friend_count'),
+                                this.get_by_key('sender_follower_count')*/
+                            ]
+                        },
+
                         {
                             "group_name": "Interaction",
                             "dimensions": [
@@ -470,20 +485,7 @@
                                 this.get_by_key('mentions')
                                 //this.get_by_key('contains_mention')
                             ]
-                        },
-
-                       /* {
-                            "group_name": "Author",
-                            "dimensions": [
-                                this.get_by_key('sender_name'),
-                                this.get_by_key('sender_message_count'),
-                                this.get_by_key('sender_reply_count'),
-                                this.get_by_key('sender_mention_count'),
-                                this.get_by_key('sender_share_count'),
-                                this.get_by_key('sender_friend_count'),
-                                this.get_by_key('sender_follower_count')
-                            ]
-                        }*/
+                        }
                     ];
 
                     groups.forEach(function(group) {
@@ -594,7 +596,7 @@
                     "description": "Whether or not a message @mentions someone."
                 },
                 {
-                    "key": "sender_name",
+                    "key": "sender",
                     "name": "Author Name",
                     "type": "CategoricalDimension",
                     "description": "Name of the person who sent a message."

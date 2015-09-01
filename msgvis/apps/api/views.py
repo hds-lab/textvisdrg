@@ -197,7 +197,8 @@ class ExampleMessagesView(APIView):
 
             dataset = data['dataset']
 
-            filters = data['filters']
+            filters = data.get('filters', [])
+            excludes = data.get('excludes', [])
             focus = data.get('focus', [])
             groups = data.get('groups')
 
@@ -256,9 +257,11 @@ class KeywordMessagesView(APIView):
             inclusive_keywords = data.get('inclusive_keywords') or []
             exclusive_keywords = data.get('exclusive_keywords') or []
 
+            words = dataset.get_dictionary().words
+
             # convert to Word object
-            inclusive_keywords = filter(lambda x: x is not None, map(lambda x: enhance_models.Word.objects.get(text=x), inclusive_keywords))
-            exclusive_keywords = filter(lambda x: x is not None, map(lambda x: enhance_models.Word.objects.get(text=x), exclusive_keywords))
+            inclusive_keywords = filter(lambda x: x is not None, map(lambda x: words.get(text=x), inclusive_keywords))
+            exclusive_keywords = filter(lambda x: x is not None, map(lambda x: words.get(text=x), exclusive_keywords))
 
 
             messages = dataset.get_advanced_search_results(inclusive_keywords, exclusive_keywords)
