@@ -191,7 +191,7 @@ register(models.CategoricalDimension, dict(
 
 # BEGIN SENDER DIMENSIONS
 register(models.RelatedCategoricalDimension, dict(
-    key='sender_name',
+    key='sender',
     name='Author Name',
     description='The name of the message author',
     field_name='sender__username',

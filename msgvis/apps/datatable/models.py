@@ -8,6 +8,9 @@ from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.groups import models as groups_models
 from msgvis.apps.dimensions import registry
 
+import re
+from django.db import connection
+
 MAX_CATEGORICAL_LEVELS = 10
 
 def find_messages(queryset):
@@ -25,6 +28,80 @@ def levels_or(field_name, domain):
             filter_ors.append((field_name, level))
 
     return reduce(operator.or_, [Q(x) for x in filter_ors])
+
+def quote_query(matchobj):
+    return "'" + matchobj.group(0) + "'"
+
+def quote(text):
+    pattern = r'(?<== )\d+\-\d+\-\d+ \d+:\d+:\d+|(?<== )[\da-zA-Z_#\-.]+(?=[ )])'
+    text = re.sub(pattern, quote_query, text)
+    return text
+
+def get_field_name(text):
+    pattern = re.compile('(?<=__)\w+')
+    results = pattern.search(text)
+    if results:
+        return results.group()
+    return None
+
+def fetchall(sql):
+    "Returns all rows from a cursor as a dict"
+    cursor = connection.cursor()
+    cursor.execute(sql)
+    desc = cursor.description
+    return [
+        row[0]
+        for row in cursor.fetchall()
+    ]
+
+def fetchall_table(sql):
+    "Returns all rows from a cursor as a dict"
+    cursor = connection.cursor()
+    cursor.execute(sql)
+    desc = cursor.description
+    return [
+        dict(zip([col[0] for col in desc], row))
+        for row in cursor.fetchall()
+    ]
+
+def group_messages_by_dimension_with_raw_query(query, dimension, callback):
+    queryset = corpus_models.Message.objects.raw(query)
+    message_id = corpus_models.Message._meta.model_name + "_id" #message_id
+    fieldname = get_field_name(dimension.field_name)
+    key = dimension.key
+    related_mgr = getattr(corpus_models.Message, dimension.key)
+    if hasattr(related_mgr, "RelatedObjectDoesNotExist"):
+        related_table = related_mgr.field.rel.to._meta.db_table
+        related_id = related_mgr.field.rel.to._meta.model._meta.model_name + "_id"
+        if related_id == "person_id":
+            related_id = "sender_id"
+        elif related_id == "messagetype_id":
+            related_id = "type_id"
+        final_query = "SELECT B.%s AS `%s`, count(*) AS `value` FROM (%s) AS A, `%s` AS B WHERE A.%s=B.id GROUP BY B.%s ORDER BY `value` DESC" %(fieldname, key, query, related_table, related_id, fieldname)
+
+    else:
+        if hasattr(related_mgr, "field"):
+            through_table = related_mgr.through._meta.db_table  # e.g., corpus_message_hashtags
+            related_table = related_mgr.field.rel.to._meta.db_table # e.g., corpus_hashtag
+            related_id = related_mgr.field.rel.to._meta.model._meta.model_name + "_id"  # e.g., hashtag_id
+        elif hasattr(related_mgr, "related"):
+            through_table = related_mgr.related.field.rel.through._meta.db_table # e.g., enhance_messageword
+            related_table = related_mgr.related.model._meta.db_table # e.g., enhance_word
+            related_id = related_mgr.related.model._meta.model_name + "_id"  # e.g., word_id
+
+        final_query = "SELECT B.%s AS `%s`, count(*) AS `value` FROM (%s) AS A, `%s` AS B, `%s` AS C WHERE A.id=C.%s AND B.id=C.%s GROUP BY B.%s ORDER BY `value` DESC" %(fieldname, key, query, related_table, through_table, message_id, related_id, fieldname)
+    return callback(final_query)
+
+
+def group_messages_by_words_with_raw_query(query, callback):
+    queryset = corpus_models.Message.objects.raw(query)
+    #pattern = r'(?<=SELECT ).+(?= FROM])'
+    #query = re.sub(pattern, "T5.`text` AS words, count(*) AS `value`", query)
+    #pattern = r'(?<=SELECT ).+(?= FROM])'
+    query = query.replace("`corpus_message`.`id`, `corpus_message`.`dataset_id`, `corpus_message`.`original_id`, `corpus_message`.`type_id`, `corpus_message`.`sender_id`, `corpus_message`.`time`, `corpus_message`.`language_id`, `corpus_message`.`sentiment`, `corpus_message`.`timezone_id`, `corpus_message`.`replied_to_count`, `corpus_message`.`shared_count`, `corpus_message`.`contains_hashtag`, `corpus_message`.`contains_url`, `corpus_message`.`contains_media`, `corpus_message`.`contains_mention`, `corpus_message`.`text`", "T5.`text` AS words, count(*) AS value")
+    query += "GROUP BY `words` ORDER BY `value` DESC"
+
+    return callback(query)
 
 class DataTable(object):
     """
@@ -243,6 +320,23 @@ class DataTable(object):
 
         return domain, labels
 
+    def groups_domain(self, dimension, queryset_all, group_querysets, desired_bins=None):
+        """Return the sorted levels in the union of groups in this dimension"""
+        if dimension.is_related_categorical():
+            query = ""
+            for idx, queryset in enumerate(group_querysets):
+                if idx > 0:
+                    query += " UNION "
+                query += "(%s)" %(quote(str(queryset.query)))
+            domain = group_messages_by_dimension_with_raw_query(query, dimension, fetchall)
+
+        else:
+            queryset = queryset_all
+            domain = dimension.get_domain(queryset, bins=desired_bins)
+        labels = dimension.get_domain_labels(domain)
+
+        return domain, labels
+
     def filter_search_key(self, domain, labels, search_key):
         match_domain = []
         match_labels = []
@@ -271,135 +365,113 @@ class DataTable(object):
 
         if (groups is None):
             queryset = dataset.message_set.all()
-        else:
-            queryset = corpus_models.Message.objects.none()
-            group_querysets = []
-            group_labels = []
-            #message_list = set()
-            for group in groups:
-                group_obj = groups_models.Group.objects.get(id=group)
-                group_queryset = group_obj.messages_online()
-                group_querysets.append(group_queryset)
-                group_labels.append(group_obj.name)
-                queryset |= group_obj.messages_inclusive_only()
-                #TODO: fix union problem
-                #print group
-                #for message in group_queryset.all():
-                #    message_list.add(message.id)
 
-            #queryset = dataset.message_set.filter(id__in=list(message_list))
-            #import pdb
-            #pdb.set_trace()
+            # Filter out null time
+            queryset = queryset.exclude(time__isnull=True)
+            if dataset.start_time and dataset.end_time:
+                range = dataset.end_time - dataset.start_time
+                buffer = timedelta(seconds=range.total_seconds() * 0.1)
+                queryset = queryset.filter(time__gte=dataset.start_time - buffer,
+                                           time__lte=dataset.end_time + buffer)
 
+            unfiltered_queryset = queryset
 
+            # Filter the data (look for filters on the primary/secondary dimensions at the same time
+            primary_filter = None
+            secondary_filter = None
+            if filters is not None:
+                for filter in filters:
+                    dimension = filter['dimension']
+                    queryset = dimension.filter(queryset, **filter)
 
-        # Filter out null time
-        queryset = queryset.exclude(time__isnull=True)
-        if dataset.start_time and dataset.end_time:
-            range = dataset.end_time - dataset.start_time
-            buffer = timedelta(seconds=range.total_seconds() * 0.1)
-            queryset = queryset.filter(time__gte=dataset.start_time - buffer,
-                                       time__lte=dataset.end_time + buffer)
+                    if dimension == self.primary_dimension:
+                        primary_filter = filter
+                    if dimension == self.secondary_dimension:
+                        secondary_filter = filter
 
-        unfiltered_queryset = queryset
+            primary_exclude = None
+            secondary_exclude = None
+            if exclude is not None:
+                for exclude_filter in exclude:
+                    dimension = exclude_filter['dimension']
+                    queryset = dimension.exclude(queryset, **exclude_filter)
 
-        # Filter the data (look for filters on the primary/secondary dimensions at the same time
-        primary_filter = None
-        secondary_filter = None
-        if filters is not None:
-            for filter in filters:
-                dimension = filter['dimension']
-                queryset = dimension.filter(queryset, **filter)
+                    if dimension == self.primary_dimension:
+                        primary_exclude = exclude_filter
+                    if dimension == self.secondary_dimension:
+                        secondary_exclude = exclude_filter
 
-                if dimension == self.primary_dimension:
-                    primary_filter = filter
-                if dimension == self.secondary_dimension:
-                    secondary_filter = filter
+            domains = {}
+            domain_labels = {}
+            max_page = None
+            queryset_for_others = None
 
-        primary_exclude = None
-        secondary_exclude = None
-        if exclude is not None:
-            for exclude_filter in exclude:
-                dimension = exclude_filter['dimension']
-                queryset = dimension.exclude(queryset, **exclude_filter)
+            # flag is true if the dimension is categorical and has more than MAX_CATEGORICAL_LEVELS levels
+            primary_flag = False
+            secondary_flag = False
 
-                if dimension == self.primary_dimension:
-                    primary_exclude = exclude_filter
-                if dimension == self.secondary_dimension:
-                    secondary_exclude = exclude_filter
-
-        domains = {}
-        domain_labels = {}
-        max_page = None
-        queryset_for_others = None
-
-        # flag is true if the dimension is categorical and has more than MAX_CATEGORICAL_LEVELS levels
-        primary_flag = False
-        secondary_flag = False
-
-        # Include the domains for primary and (secondary) dimensions
-        domain, labels = self.domain(self.primary_dimension,
-                                     unfiltered_queryset,
-                                     primary_filter, primary_exclude)
-
-        # paging the first dimension, this is for the filter distribution
-        if primary_filter is None and self.secondary_dimension is None and page is not None:
-
-            if search_key is not None:
-                domain, labels = self.filter_search_key(domain, labels, search_key)
-            start = (page - 1) * page_size
-            end = min(start + page_size, len(domain))
-            max_page = (len(domain) / page_size) + 1
-
-            # no level left
-            if len(domain) == 0 or start > len(domain):
-                return None
-
-            domain = domain[start:end]
-            if labels is not None:
-                labels = labels[start:end]
-
-            queryset = queryset.filter(levels_or(self.primary_dimension.field_name, domain))
-        else:
-            if (self.mode == 'enable_others' or self.mode == 'omit_others') and \
-                self.primary_dimension.is_categorical() and len(domain) > MAX_CATEGORICAL_LEVELS:
-                primary_flag = True
-                domain = domain[:MAX_CATEGORICAL_LEVELS]
-
-                queryset_for_others = queryset
-                queryset = queryset.filter(levels_or(self.primary_dimension.field_name, domain))
-
-                if labels is not None:
-                    labels = labels[:MAX_CATEGORICAL_LEVELS]
-
-        domains[self.primary_dimension.key] = domain
-        if labels is not None:
-            domain_labels[self.primary_dimension.key] = labels
-
-        if self.secondary_dimension:
-            domain, labels = self.domain(self.secondary_dimension,
+            # Include the domains for primary and (secondary) dimensions
+            domain, labels = self.domain(self.primary_dimension,
                                          unfiltered_queryset,
-                                         secondary_filter, secondary_exclude)
+                                         primary_filter, primary_exclude)
 
-            if (self.mode == 'enable_others' or self.mode == 'omit_others') and \
-                self.secondary_dimension.is_categorical() and \
-                    len(domain) > MAX_CATEGORICAL_LEVELS:
-                secondary_flag = True
-                domain = domain[:MAX_CATEGORICAL_LEVELS]
+            # paging the first dimension, this is for the filter distribution
+            if primary_filter is None and self.secondary_dimension is None and page is not None:
 
-                if queryset_for_others is None:
-                    queryset_for_others = queryset
-                queryset = queryset.filter(levels_or(self.secondary_dimension.field_name, domain))
+                if search_key is not None:
+                    domain, labels = self.filter_search_key(domain, labels, search_key)
+                start = (page - 1) * page_size
+                end = min(start + page_size, len(domain))
+                max_page = (len(domain) / page_size) + 1
 
+                # no level left
+                if len(domain) == 0 or start > len(domain):
+                    return None
+
+                domain = domain[start:end]
                 if labels is not None:
-                    labels = labels[:MAX_CATEGORICAL_LEVELS]
+                    labels = labels[start:end]
 
+                queryset = queryset.filter(levels_or(self.primary_dimension.field_name, domain))
+            else:
+                if (self.mode == 'enable_others' or self.mode == 'omit_others') and \
+                    self.primary_dimension.is_categorical() and len(domain) > MAX_CATEGORICAL_LEVELS:
+                    primary_flag = True
+                    domain = domain[:MAX_CATEGORICAL_LEVELS]
 
-            domains[self.secondary_dimension.key] = domain
+                    queryset_for_others = queryset
+                    queryset = queryset.filter(levels_or(self.primary_dimension.field_name, domain))
+
+                    if labels is not None:
+                        labels = labels[:MAX_CATEGORICAL_LEVELS]
+
+            domains[self.primary_dimension.key] = domain
             if labels is not None:
-                domain_labels[self.secondary_dimension.key] = labels
+                domain_labels[self.primary_dimension.key] = labels
 
-        if groups is None:
+            if self.secondary_dimension:
+                domain, labels = self.domain(self.secondary_dimension,
+                                             unfiltered_queryset,
+                                             secondary_filter, secondary_exclude)
+
+                if (self.mode == 'enable_others' or self.mode == 'omit_others') and \
+                    self.secondary_dimension.is_categorical() and \
+                        len(domain) > MAX_CATEGORICAL_LEVELS:
+                    secondary_flag = True
+                    domain = domain[:MAX_CATEGORICAL_LEVELS]
+
+                    if queryset_for_others is None:
+                        queryset_for_others = queryset
+                    queryset = queryset.filter(levels_or(self.secondary_dimension.field_name, domain))
+
+                    if labels is not None:
+                        labels = labels[:MAX_CATEGORICAL_LEVELS]
+
+
+                domains[self.secondary_dimension.key] = domain
+                if labels is not None:
+                    domain_labels[self.secondary_dimension.key] = labels
+
             # Render a table
             table = self.render(queryset)
 
@@ -418,11 +490,164 @@ class DataTable(object):
                 results['max_page'] = max_page
 
         else:
+            domains = {}
+            domain_labels = {}
+            max_page = None
+            queryset_for_others = None
+
+            # flag is true if the dimension is categorical and has more than MAX_CATEGORICAL_LEVELS levels
+            primary_flag = False
+            secondary_flag = False
+            primary_filter = None
+            secondary_filter = None
+            primary_exclude = None
+            secondary_exclude = None
+
+            queryset = dataset.message_set.all()
+            queryset = queryset.exclude(time__isnull=True)
+            if dataset.start_time and dataset.end_time:
+                range = dataset.end_time - dataset.start_time
+                buffer = timedelta(seconds=range.total_seconds() * 0.1)
+                queryset = queryset.filter(time__gte=dataset.start_time - buffer,
+                                           time__lte=dataset.end_time + buffer)
+            if filters is not None:
+                for filter in filters:
+                    dimension = filter['dimension']
+                    queryset = dimension.filter(queryset, **filter)
+
+                    if dimension == self.primary_dimension:
+                        primary_filter = filter
+                    if dimension == self.secondary_dimension:
+                        secondary_filter = filter
+
+            if exclude is not None:
+                for exclude_filter in exclude:
+                    dimension = exclude_filter['dimension']
+                    queryset = dimension.exclude(queryset, **exclude_filter)
+
+                    if dimension == self.primary_dimension:
+                        primary_exclude = exclude_filter
+                    if dimension == self.secondary_dimension:
+                        secondary_exclude = exclude_filter
+
+            queryset_all = queryset
+
+            #queryset = corpus_models.Message.objects.none()
+            group_querysets = []
+            group_labels = []
+            #message_list = set()
+
+
+            for group in groups:
+                group_obj = groups_models.Group.objects.get(id=group)
+                group_labels.append(group_obj.name)
+                queryset = group_obj.messages_online()
+
+
+                # Filter out null time
+                queryset = queryset.exclude(time__isnull=True)
+                if dataset.start_time and dataset.end_time:
+                    range = dataset.end_time - dataset.start_time
+                    buffer = timedelta(seconds=range.total_seconds() * 0.1)
+                    queryset = queryset.filter(time__gte=dataset.start_time - buffer,
+                                               time__lte=dataset.end_time + buffer)
+
+                unfiltered_queryset = queryset
+
+                # Filter the data (look for filters on the primary/secondary dimensions at the same time
+
+                if filters is not None:
+                    for filter in filters:
+                        dimension = filter['dimension']
+                        queryset = dimension.filter(queryset, **filter)
+
+
+                if exclude is not None:
+                    for exclude_filter in exclude:
+                        dimension = exclude_filter['dimension']
+                        queryset = dimension.exclude(queryset, **exclude_filter)
+
+
+                group_querysets.append(queryset)
+
+#########################################################################################################################
+
+            # deal with union distribution
+            # This is due to union of queries in django does not work...
+            # super ugly. Refactoring is required.
+
+
+            # Include the domains for primary and (secondary) dimensions
+            domain, labels = self.groups_domain(self.primary_dimension,
+                                         queryset_all, group_querysets)
+
+            # paging the first dimension, this is for the filter distribution
+            if primary_filter is None and self.secondary_dimension is None and page is not None:
+
+                if search_key is not None:
+                    domain, labels = self.filter_search_key(domain, labels, search_key)
+                start = (page - 1) * page_size
+                end = min(start + page_size, len(domain))
+                max_page = (len(domain) / page_size) + 1
+
+                # no level left
+                if len(domain) == 0 or start > len(domain):
+                    return None
+
+                domain = domain[start:end]
+                if labels is not None:
+                    labels = labels[start:end]
+
+            else:
+                if (self.mode == 'enable_others' or self.mode == 'omit_others') and \
+                    self.primary_dimension.is_categorical() and len(domain) > MAX_CATEGORICAL_LEVELS:
+                    primary_flag = True
+                    domain = domain[:MAX_CATEGORICAL_LEVELS]
+
+                    if labels is not None:
+                        labels = labels[:MAX_CATEGORICAL_LEVELS]
+
+            domains[self.primary_dimension.key] = domain
+            if labels is not None:
+                domain_labels[self.primary_dimension.key] = labels
+
+            if self.secondary_dimension:
+                domain, labels = self.groups_domain(self.secondary_dimension,
+                                             queryset_all, group_querysets)
+
+                if (self.mode == 'enable_others' or self.mode == 'omit_others') and \
+                    self.secondary_dimension.is_categorical() and \
+                        len(domain) > MAX_CATEGORICAL_LEVELS:
+                    secondary_flag = True
+                    domain = domain[:MAX_CATEGORICAL_LEVELS]
+
+                    if labels is not None:
+                        labels = labels[:MAX_CATEGORICAL_LEVELS]
+
+
+                domains[self.secondary_dimension.key] = domain
+                if labels is not None:
+                    domain_labels[self.secondary_dimension.key] = labels
+#########################################################################################################################
 
             group_tables = []
-            for group_queryset in group_querysets:
+            for queryset in group_querysets:
+                queryset_for_others = queryset
+                if (self.mode == 'enable_others' or self.mode == 'omit_others') and \
+                    self.primary_dimension.is_categorical():
+                    queryset = queryset.filter(levels_or(self.primary_dimension.field_name, domains[self.primary_dimension.key]))
+                if self.secondary_dimension:
+                    if (self.mode == 'enable_others' or self.mode == 'omit_others') and \
+                    self.secondary_dimension.is_categorical():
+                        if queryset_for_others is None:
+                            queryset_for_others = queryset
+                        queryset = queryset.filter(levels_or(self.secondary_dimension.field_name, domains[self.secondary_dimension.key]))
+
                 # Render a table
-                table = self.render(group_queryset & queryset)
+                if self.primary_dimension.key == "words":
+                    table = group_messages_by_words_with_raw_query(quote(str(queryset.query)), fetchall_table)
+                else:
+                    table = self.render(queryset)
 
                 if self.mode == "enable_others" and queryset_for_others is not None:
                     # adding others to the results
@@ -431,9 +656,6 @@ class DataTable(object):
                     table.extend(table_for_others)
 
                 group_tables.append(table)
-
-
-
 
             if self.secondary_dimension is None:
                 final_table = []

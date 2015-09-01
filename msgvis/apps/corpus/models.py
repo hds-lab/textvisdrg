@@ -33,7 +33,7 @@ class Dataset(models.Model):
     def __unicode__(self):
         return self.name
 
-    def get_example_messages(self, filters):
+    def get_example_messages(self, filters=[], excludes=[]):
         """Get example messages given some filters (dictionaries containing dimensions and filter params)"""
 
         messages = self.message_set.all()
@@ -46,7 +46,15 @@ class Dataset(models.Model):
 
             messages = dimension.filter(messages, **params)
 
-        return messages.order_by('?')[:10]
+        for exclude in excludes:
+            dimension = exclude["dimension"]
+
+            # Remove the dimension key
+            params = {key: value for key, value in excludes.iteritems() if key != "dimension"}
+
+            messages = dimension.exclude(messages, **params)
+
+        return messages
 
     def get_example_messages_by_groups(self, groups):
         per_group = int(10 / len(groups))

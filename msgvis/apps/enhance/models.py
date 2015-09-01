@@ -118,7 +118,7 @@ class Dictionary(models.Model):
 
         # Remove extremely rare words
         logger.info("Dictionary contains %d words. Filtering..." % len(dictionary.token2id))
-        dictionary.filter_extremes(no_below=minimum_frequency, no_above=0.5, keep_n=None)
+        dictionary.filter_extremes(no_below=minimum_frequency, no_above=1, keep_n=None)
         dictionary.compactify()
         logger.info("Dictionary contains %d words." % len(dictionary.token2id))
 

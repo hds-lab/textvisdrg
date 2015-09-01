@@ -72,6 +72,10 @@ class CategoricalDimension(object):
         """Return True for real categorical dimensions"""
         return True
 
+    def is_related_categorical(self):
+        """Return True for real categorical dimensions"""
+        return False
+
     def get_key_model(self):
         dimension_key_model, created = DimensionKey.objects.get_or_create(key=self.key)
         return dimension_key_model
@@ -231,6 +235,10 @@ class RelatedCategoricalDimension(CategoricalDimension):
 
     Currently doesn't really do much beyond CategoricalDimension.
     """
+
+    def is_related_categorical(self):
+        """Return True for related categorical dimensions"""
+        return True
 
 
 class QuantitativeDimension(CategoricalDimension):
@@ -612,6 +620,9 @@ class TextDimension(CategoricalDimension):
     """
     A dimension based on the words in a text field.
     """
+    def is_related_categorical(self):
+        """Return True for related categorical dimensions"""
+        return True
 
 
 class DimensionKey(models.Model):
