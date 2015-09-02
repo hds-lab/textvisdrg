@@ -416,6 +416,11 @@ class TweetWord(models.Model):
 
 class PrecalcCategoricalDistribution(models.Model):
     dataset = models.ForeignKey(Dataset, related_name="distributions", null=True, blank=True, default=None)
-    dimension_key = models.CharField(max_length=64, blank=True, default="")
-    level = base_models.Utf8CharField(max_length=256, blank=True, default="")
+    dimension_key = models.CharField(db_index=True, max_length=64, blank=True, default="")
+    level = base_models.Utf8CharField(db_index=True, max_length=128, blank=True, default="")
     count = models.IntegerField()
+
+    class Meta:
+        index_together = [
+            ["dimension_key", "level"],
+        ]
