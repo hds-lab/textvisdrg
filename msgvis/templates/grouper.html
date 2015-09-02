@@ -300,8 +300,17 @@
                             </div>
                         </div>
                         <div id="messages" class="col-md-4 app-panel" ng-controller="SparQs.controllers.ExampleMessageController">
-                            <div class="heading">Example Messages
-                                <span class="glyphicon glyphicon-refresh" ng-click="refresh()" ng-hide="is_empty()"></span>
+                            <div class="heading">Example Messages</div>
+                            <div class="pages" ng-hide="is_empty()">
+                                <span ng-show="messages.count>0">Pages:</span>
+                                <a ng-show="messages.prev_page" ng-click="update_page(messages.prev_page)"
+                                      class="page-link glyphicon glyphicon-chevron-left"> </a>
+                                <a ng-show="messages.count>0"
+                                   ng-repeat="i in messages.pages" ng-click="update_page(i)"
+                                   ng-class="highlight_current_page(i)" class="page-link"  > {$ i $} </a>
+                                <a ng-show="messages.next_page" ng-click="update_page(messages.next_page)"
+                                      class="page-link glyphicon glyphicon-chevron-right"> </a>
+                                <span ng-show="messages.count==0">No message in current selection.</span>
                             </div>
                             <div ng-show="is_empty()" class="search-results-place-holder">
                                 Click points in the visualization to get example messages.

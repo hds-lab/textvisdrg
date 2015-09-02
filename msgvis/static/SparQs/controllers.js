@@ -106,7 +106,15 @@
             var exclude = Selection.exclude();
             var focus = Selection.focus();
             var groups = Selection.groups();
-            var request = ExampleMessages.load(Dataset.id, filters, focus, exclude, groups);
+            for ( var i = 0 ; i < focus.length ; i++ ){
+                if ( focus[i].dimension == "groups" ){
+                    groups = [+focus[i].value];
+                    focus.splice(i,  1);
+                    break;
+                }
+            }
+
+            var request = ExampleMessages.load(Dataset.id, 1, filters, focus, exclude, groups);
             if (request) {
                 usSpinnerService.spin('examples-spinner');
 
@@ -161,6 +169,21 @@
         };
         $scope.not_empty_url = function(url){
             return !(url.trim() == "")
+        };
+        $scope.update_page = function (page) {
+
+            var request = ExampleMessages.load(Dataset.id, page);
+            if (request) {
+                usSpinnerService.spin('examples-spinner');
+
+                request.then(function() {
+
+                    usSpinnerService.stop('examples-spinner');
+                });
+            }
+        };
+        $scope.highlight_current_page = function (page){
+            return (page == ExampleMessages.current_page) ? "current-page" : "";
         };
 
         Selection.changed('filters,focus,groups', $scope, $scope.get_example_messages);
@@ -234,6 +257,10 @@
                     usSpinnerService.stop('search-spinner');
                 });
             }
+        };
+
+        $scope.highlight_current_page = function (page){
+            return (page == KeywordMessages.current_page) ? "current-page" : "";
         };
 
         $scope.reset_search = function(){
@@ -408,7 +435,7 @@
             var filters = Selection.filters();
             var exclude = Selection.exclude();
             var groups = Selection.groups();
-
+            Selection.reset_focus();
             var request = DataTables.load(Dataset.id, dimensions, filters, exclude, groups);
 
             if (request) {
@@ -416,6 +443,7 @@
 
                 request.then(function () {
                     usSpinnerService.stop('vis-spinner');
+
                 });
             }
         };

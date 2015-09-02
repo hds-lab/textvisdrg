@@ -56,13 +56,44 @@ class Dataset(models.Model):
 
         return messages
 
-    def get_example_messages_by_groups(self, groups):
+    def get_example_messages_by_groups(self, groups, filters=[], excludes=[]):
+        include_groups = map(lambda x: int(x['value']), filter(lambda x: x['dimension'].key=='groups', filters))
+        if len(include_groups)> 0:
+            groups = include_groups
+        exclude_groups = map(lambda x: int(x['value']), filter(lambda x: x['dimension'].key=='groups', excludes))
+        groups = filter(lambda x: x not in exclude_groups, groups)
+
         per_group = int(10 / len(groups))
-        messages = []
+        combined_messages = []
+        group_querysets = []
         for group in groups:
             group_obj = self.groups.get(id=group)
-            messages.extend(group_obj.messages.order_by('?')[:per_group])
-        return messages
+            messages = group_obj.messages
+            for filterA in filters:
+                dimension = filterA["dimension"]
+
+                # Remove the dimension key
+                params = {key: value for key, value in filterA.iteritems() if key != "dimension"}
+                messages = dimension.filter(messages, **params)
+
+            for exclude in excludes:
+                dimension = exclude["dimension"]
+
+                # Remove the dimension key
+                params = {key: value for key, value in excludes.iteritems() if key != "dimension"}
+
+                messages = dimension.exclude(messages, **params)
+
+            group_querysets.append(messages)
+            #combined_messages.extend(messages[:per_group])
+        query = ""
+        for idx, queryset in enumerate(group_querysets):
+            if idx > 0:
+                query += " UNION "
+            query += "(%s)" %(utils.quote(str(queryset.query)))
+        query = utils.convert_boolean(query)
+        queryset = Message.objects.raw(query)
+        return queryset
 
     def get_dictionary(self):
         dictionary = self.dictionary.all()

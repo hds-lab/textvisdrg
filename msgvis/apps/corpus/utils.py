@@ -55,3 +55,21 @@ def render_html_tag(text):
     pattern = r'(?<=\s)' + http_pattern + '|^' + http_pattern
     text = re.sub(pattern, render_link_html, text)
     return text
+
+def quote_query(matchobj):
+    return "'" + matchobj.group(0) + "'"
+
+def quote(text):
+    pattern = r'(?<== )\d+\-\d+\-\d+ \d+:\d+:\d+|(?<== )[\da-zA-Z_#\-.]+(?=[ )])'
+    text = re.sub(pattern, quote_query, text)
+    return text
+
+def convert_boolean(query):
+    query = query.replace('\'True\'', "1")
+    query = query.replace('\'False\'', "0")
+    return query
+
+def quote(text):
+    pattern = r'(?<== )\d+\-\d+\-\d+ \d+:\d+:\d+|(?<== )[\da-zA-Z_#\-.]+(?=[ )])'
+    text = re.sub(pattern, quote_query, text)
+    return text

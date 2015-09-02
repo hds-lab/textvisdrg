@@ -203,15 +203,15 @@ class ExampleMessagesView(APIView):
             groups = data.get('groups')
 
             if groups is None:
-                example_messages = dataset.get_example_messages(filters + focus)
+                example_messages = dataset.get_example_messages(filters + focus, excludes)
             else:
-                example_messages = dataset.get_example_messages_by_groups(groups)
+                example_messages = dataset.get_example_messages_by_groups(groups, filters + focus, excludes)
 
             # Just add the messages key to the response
             response_data = data
             response_data["messages"] = example_messages
 
-            output = serializers.ExampleMessageSerializer(response_data)
+            output = serializers.ExampleMessageSerializer(response_data, context={'request': request})
             return Response(output.data, status=status.HTTP_200_OK)
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)

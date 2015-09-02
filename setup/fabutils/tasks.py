@@ -35,7 +35,7 @@ def build_static():
     """Builds static files for production"""
 
     print green("Gathering and preprocessing static files...")
-    fabutils.manage_py('collectstatic --noinput')
+    fabutils.manage_py('collectstatic --noinput -i media')
     fabutils.manage_py('compress')
 
 

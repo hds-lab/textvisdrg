@@ -7,6 +7,7 @@ from msgvis.apps.base.models import MappedValuesQuerySet
 from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.groups import models as groups_models
 from msgvis.apps.dimensions import registry
+from msgvis.apps.corpus import utils
 
 import re
 from django.db import connection
@@ -29,14 +30,6 @@ def levels_or(field_name, domain):
 
     return reduce(operator.or_, [Q(x) for x in filter_ors])
 
-def quote_query(matchobj):
-    return "'" + matchobj.group(0) + "'"
-
-def quote(text):
-    pattern = r'(?<== )\d+\-\d+\-\d+ \d+:\d+:\d+|(?<== )[\da-zA-Z_#\-.]+(?=[ )])'
-    text = re.sub(pattern, quote_query, text)
-    return text
-
 def get_field_name(text):
     pattern = re.compile('(?<=__)\w+')
     results = pattern.search(text)
@@ -45,7 +38,7 @@ def get_field_name(text):
     return None
 
 def fetchall(sql):
-    "Returns all rows from a cursor as a dict"
+    sql = utils.convert_boolean(sql)
     cursor = connection.cursor()
     cursor.execute(sql)
     desc = cursor.description
@@ -55,7 +48,7 @@ def fetchall(sql):
     ]
 
 def fetchall_table(sql):
-    "Returns all rows from a cursor as a dict"
+    sql = utils.convert_boolean(sql)
     cursor = connection.cursor()
     cursor.execute(sql)
     desc = cursor.description
@@ -327,7 +320,7 @@ class DataTable(object):
             for idx, queryset in enumerate(group_querysets):
                 if idx > 0:
                     query += " UNION "
-                query += "(%s)" %(quote(str(queryset.query)))
+                query += "(%s)" %(utils.quote(str(queryset.query)))
             domain = group_messages_by_dimension_with_raw_query(query, dimension, fetchall)
 
         else:
@@ -645,7 +638,7 @@ class DataTable(object):
 
                 # Render a table
                 if self.primary_dimension.key == "words":
-                    table = group_messages_by_words_with_raw_query(quote(str(queryset.query)), fetchall_table)
+                    table = group_messages_by_words_with_raw_query(utils.quote(str(queryset.query)), fetchall_table)
                 else:
                     table = self.render(queryset)
 
