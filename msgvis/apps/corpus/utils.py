@@ -4,7 +4,8 @@ from msgvis.settings.common import TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SE
 import re
 import os
 import os.path
-
+from django.db.models import Q
+import operator
 
 def get_embedded_html(tweet_original_id):
 
@@ -73,3 +74,13 @@ def quote(text):
     pattern = r'(?<== )\d+\-\d+\-\d+ \d+:\d+:\d+|(?<== )[\da-zA-Z_#\-.]+(?=[ )])'
     text = re.sub(pattern, quote_query, text)
     return text
+
+def levels_or(field_name, domain):
+    filter_ors = []
+    for level in domain:
+        if level is None or level == "":
+            filter_ors.append((field_name + "__isnull", True))
+        else:
+            filter_ors.append((field_name, level))
+
+    return reduce(operator.or_, [Q(x) for x in filter_ors])
