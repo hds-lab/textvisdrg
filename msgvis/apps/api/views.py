@@ -130,7 +130,8 @@ class DataTableView(APIView):
             if data.get('page'):
                 page = max(1, int(data.get('page')))
 
-            if len(filters) == 0 and len(exclude) == 0 and len(dimensions) == 1 and dimensions[0].is_categorical():
+            if type(filters) == 'list' and len(filters) == 0 and \
+               type(exclude) == 'list' and len(exclude) == 0 and len(dimensions) == 1 and dimensions[0].is_categorical():
                 result = dataset.get_precalc_distribution(dimension=dimensions[0], search_key=search_key, page=page, page_size=page_size, mode=mode)
 
             else:

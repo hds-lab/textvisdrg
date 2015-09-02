@@ -118,7 +118,7 @@ class Dataset(models.Model):
             #exclusive_keywords = map(lambda x: ("words__text__icontains", x), exclusive_keywords)
             #for word in exclusive_keywords:
             #    queryset = queryset.exclude(words__text=word.text)
-            exclusive_keywords = map(lambda x: ("words__text", x.text), exclusive_keywords)
+            exclusive_keywords = map(lambda x: x.text, exclusive_keywords)
             queryset = queryset.exclude(utils.levels_or("words__text", exclusive_keywords))
             #print queryset.count()
         return queryset
