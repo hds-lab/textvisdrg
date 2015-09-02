@@ -1,7 +1,9 @@
 import logging
 
-from models import Dictionary, MessageWord, Word, MessageTopic, TweetWord
+from models import Dictionary, MessageWord, Word, MessageTopic, TweetWord, PrecalcCategoricalDistribution
 from msgvis.apps.corpus.models import Dataset, Message
+from msgvis.apps.dimensions import registry
+from msgvis.apps.datatable import models as datatable_models
 import codecs, re
 
 
@@ -292,3 +294,23 @@ def import_from_tweet_parser_results(dataset_id, filename):
         if len(word_list) > 0:
             current_msg.tweet_words.add(*word_list)
             word_list = []
+
+def precalc_categorical_dimension(dataset_id=1, dimension_key=None):
+    datatable = datatable_models.DataTable(primary_dimension=dimension_key)
+    dataset = Dataset.objects.get(id=dataset_id)
+
+    # remove existing calculation
+    PrecalcCategoricalDistribution.objects.filter(dimension_key=dimension_key).delete()
+
+    result = datatable.generate(dataset)
+    bulk = []
+    for bucket in result["table"]:
+        level = bucket[dimension_key]
+        if level is None:
+            level = ""
+        count = bucket["value"]
+        obj = PrecalcCategoricalDistribution(dataset=dataset, dimension_key=dimension_key, level=level, count=count)
+        bulk.append(obj)
+
+    PrecalcCategoricalDistribution.objects.bulk_create(objs=bulk, batch_size=10000)
+

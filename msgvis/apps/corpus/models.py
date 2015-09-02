@@ -123,6 +123,52 @@ class Dataset(models.Model):
             #print queryset.count()
         return queryset
 
+    def get_precalc_distribution(self, dimension, search_key=None, page=None, page_size=100, mode=None):
+        dimension_key = dimension.key
+        distribution = self.distributions.filter(dimension_key=dimension_key)
+        if search_key is not None:
+            distribution = distribution.filter(level__icontains=search_key)
+        distribution = distribution.order_by('-count')
+        total_num_levels = distribution.count()
+        if page is not None:
+            start = (page - 1) * page_size
+            end = min(start + page_size, total_num_levels)
+            max_page = (total_num_levels / page_size) + 1
+
+            # no level left
+            if total_num_levels == 0 or start > total_num_levels:
+                return None
+
+            distribution = distribution[start:end]
+
+        else:
+            if mode == "omit_others" or mode == "enable_others":
+                MAX_CATEGORICAL_LEVELS = 10
+                distribution = distribution[:MAX_CATEGORICAL_LEVELS]
+            else:
+                distribution = distribution.all()
+
+        domains = {}
+        domain_labels = {}
+
+        domain = map(lambda x: x.level, distribution)
+        labels = dimension.get_domain_labels(domain)
+
+        domains[dimension_key] = domain
+        domain_labels[dimension_key] = labels
+
+        table = map(lambda x: {dimension_key: x.level, "value": x.count}, distribution)
+
+        results = {
+            "table": table,
+            "domains": domains,
+            "domain_labels": domain_labels
+        }
+
+        return results
+
+
+
 
 class MessageType(CachingMixin, models.Model):
     """The type of a message, e.g. retweet, reply, original, system..."""

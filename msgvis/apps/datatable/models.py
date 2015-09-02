@@ -333,7 +333,7 @@ class DataTable(object):
 
         return match_domain, match_labels
 
-    def generate(self, dataset, filters=None, exclude=None, page_size=30, page=None, search_key=None, groups=None):
+    def generate(self, dataset, filters=None, exclude=None, page_size=100, page=None, search_key=None, groups=None):
         """
         Generate a complete data group table response.
 

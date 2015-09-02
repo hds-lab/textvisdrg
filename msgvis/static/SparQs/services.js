@@ -455,7 +455,6 @@
                         var request = {
                             dataset: Dataset.id,
                             dimensions: [self.key],
-                            exclude: [{dimension: self.key, levels: [""]}],
                             page: target.page + 1,
                             search_key: (self.search_key !== "") ? self.search_key : undefined
                         };
