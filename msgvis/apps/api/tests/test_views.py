@@ -138,25 +138,30 @@ class ExampleMessagesViewTest(APITestCase):
             "dataset": data['dataset'],
             "filters": data['filters'],
             "focus": data['focus'],
-            "messages": [
-                {
-                    'id': m.id,
-                    'dataset': m.dataset_id,
-                    'text': m.text,
-                    'time': api_time_format(m.time),
-                    'sender': {
-                        'id': m.sender.id,
-                        'dataset': m.sender.dataset_id,
-                        'original_id': m.sender.original_id,
-                        'username': m.sender.username,
-                        'full_name': m.sender.full_name,
-                        'profile_image_local_name': m.sender.profile_image_local_name
-                    },
-                    'original_id': None,
-                    'embedded_html': corpus_utils.render_html_tag(m.text),
-                    'media_url': m.media_url
-                } for m in self.sample_messages
-            ]
+            "messages": {
+                "count": 2,
+                "next": None,
+                "previous": None,
+                "results":[
+                    {
+                        'id': m.id,
+                        'dataset': m.dataset_id,
+                        'text': m.text,
+                        'time': api_time_format(m.time),
+                        'sender': {
+                            'id': m.sender.id,
+                            'dataset': m.sender.dataset_id,
+                            'original_id': m.sender.original_id,
+                            'username': m.sender.username,
+                            'full_name': m.sender.full_name,
+                            'profile_image_local_name': m.sender.profile_image_local_name
+                        },
+                        'original_id': None,
+                        'embedded_html': corpus_utils.render_html_tag(m.text),
+                        'media_url': m.media_url
+                    } for m in self.sample_messages
+                ]
+            }
         }
 
         response = self.client.post(url, data, format='json')
