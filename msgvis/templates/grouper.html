@@ -232,12 +232,12 @@
                                     <div ng-bind-html="message.embedded_html"></div>-->
                                     <div class="media">
                                         <img class="profile_img" ng-if="not_empty_url(message.media_url)"
-                                             src="{% static 'media/photos/' %}{$ message.media_url $}" />
+                                             ng-src="{% static 'media/photos/' %}{$ message.media_url $}" />
                                     </div>
 
                                     <div class="sender">
                                         <img class="profile_img" ng-if="not_empty_url(message.sender.profile_image_local_name)"
-                                             src="{% static 'media/profile_images/' %}{$ message.sender.profile_image_local_name $}" />
+                                             ng-src="{% static 'media/profile_images/' %}{$ message.sender.profile_image_local_name $}" />
                                         <div class="name">{$ message.sender.full_name.trim() $}</div>
                                         <div class="username">@{$ message.sender.username.trim() $}</div>
                                     </div>
@@ -323,12 +323,12 @@
                                     <div ng-bind-html="message.embedded_html"></div>-->
                                     <div class="media">
                                         <img class="profile_img" ng-if="not_empty_url(message.media_url)"
-                                             src="{% static 'media/photos/' %}{$ message.media_url $}" />
+                                             ng-src="{% static 'media/photos/' %}{$ message.media_url $}" />
                                     </div>
 
                                     <div class="sender">
                                         <img class="profile_img" ng-if="not_empty_url(message.sender.profile_image_local_name)"
-                                             src="{% static 'media/profile_images/' %}{$ message.sender.profile_image_local_name $}" />
+                                             ng-src="{% static 'media/profile_images/' %}{$ message.sender.profile_image_local_name $}" />
                                         <div class="name">{$ message.sender.full_name.trim() $}</div>
                                         <div class="username">@{$ message.sender.username.trim() $}</div>
                                     </div>
