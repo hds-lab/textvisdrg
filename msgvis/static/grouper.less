@@ -322,21 +322,6 @@ body {
         height: @bottom-row-height - 100px;
         overflow-y: auto;
     }
-    .pages {
-        .page-link {
-            //color: @link-color;
-            font-size: 1.1em;
-        }
-        .page-link:hover {
-            //color: @link-hover-color;
-            //text-decoration: @link-hover-decoration;
-            cursor: pointer;
-        }
-        .current-page {
-            //color: @breadcrumb-active-color;
-            font-weight: 700;
-        }
-    }
     .examples-description {
         font-weight: bold;
         margin: 0 0 5px;
@@ -467,22 +452,25 @@ body {
         left: 50%;
         transform: translate(-50%, -50%);
     }
-    .pages {
-        .page-link {
-            //color: @link-color;
-            font-size: 1.1em;
-        }
-        .page-link:hover {
-            //color: @link-hover-color;
-            //text-decoration: @link-hover-decoration;
-            cursor: pointer;
-        }
-        .current-page {
-            //color: @breadcrumb-active-color;
-            font-weight: 700;
-        }
-    }
 
+}
+
+.pages {
+    margin: 5px 0;
+    
+    .page-link {
+        //color: @link-color;
+        font-size: 1.1em;
+    }
+    .page-link:hover {
+        //color: @link-hover-color;
+        //text-decoration: @link-hover-decoration;
+        cursor: pointer;
+    }
+    .current-page {
+        //color: @breadcrumb-active-color;
+        font-weight: 700;
+    }
 }
 
 .tweet-wrapper {
