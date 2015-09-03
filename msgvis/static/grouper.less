@@ -80,7 +80,7 @@ body {
 #left {
     padding-left: 0;
 }
-@top-row-height: 165px;
+@top-row-height: 154px;
 
 #search {
     height: @top-row-height;
@@ -124,7 +124,8 @@ body {
     .group-box {
         margin-top: 0;
         width: 350px;
-        height: @top-row-height - 3;
+        153px
+        height: @top-row-height - 1;
         background-color: white;
 
         display: inline-block;
@@ -148,7 +149,7 @@ body {
 
         }
         .group-content{
-            height: @top-row-height - 15;
+            height: @top-row-height - 10;
         }
         .mask {
             background-color: black;
@@ -166,14 +167,10 @@ body {
              background-color: white;
             //transition: visibility linear 1s;
             .heading {
-                font-weight: 700;
-                font-size: 1.5em;
-                padding: 2px;
                 width: 99%;
-                border: 1px dashed #666;
             }
             .keyword-line {
-                padding: 5px 0;
+                padding: 5px 0 0 0;
                 label {
                     width: 20%;
                     font-weight: 400;
@@ -187,8 +184,9 @@ body {
 
             .btns {
                 text-align: right;
-                padding-righ: 1%;
-
+                padding-right: 1%;
+                padding-top: 5px;
+                
                 .btn {
                     font-size: 0.7em;
                 }
