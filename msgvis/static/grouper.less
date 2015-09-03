@@ -321,47 +321,6 @@ body {
     .message-list{
         height: @bottom-row-height - 100px;
         overflow-y: auto;
-        .tweet-wrapper {
-            font: normal normal 12px/1.4 Helvetica, Roboto, 'Segoe UI', Calibri, sans-serif;
-            padding: 15px 10px;
-            border-bottom: 1px solid #ccc;
-            color: #1C2022;
-            .media {
-                img {
-                    width: 85%;
-                }
-                margin: 5px 0;
-            }
-            .sender {
-                position: relative;
-                padding-bottom: 5px;
-                .profile_img {
-                    position: absolute;
-                    left: 0px;
-                    top: 0px;
-                    height: 32px;
-                }
-                .name,{
-                    padding-left: 45px;
-                    font-weight: 700;
-                }
-                .username {
-                    padding-left: 45px;
-                    color: #697882;
-                }
-
-            }
-            .text {
-                .hashtag,.mention,.link {
-                    color: #3B94D9;
-                }
-            }
-            .meta {
-                padding-top: 5px;
-                color: #697882;
-            }
-
-        }
     }
     .pages {
         .page-link {
@@ -497,47 +456,7 @@ body {
         height: @bottom-row-height - 100px;
         overflow-y: auto;
     }
-    .tweet-wrapper {
-        font: normal normal 12px/1.4 Helvetica, Roboto, 'Segoe UI', Calibri, sans-serif;
-        padding: 15px 10px;
-        border-bottom: 1px solid #ccc;
-        color: #1C2022;
-        .media {
-            img {
-                width: 85%;
-            }
-            margin: 5px 0;
-        }
-        .sender {
-            position: relative;
-            padding-bottom: 5px;
-            .profile_img {
-                position: absolute;
-                left: 0px;
-                top: 0px;
-                height: 32px;
-            }
-            .name,{
-                padding-left: 45px;
-                font-weight: 700;
-            }
-            .username {
-                padding-left: 45px;
-                color: #697882;
-            }
-
-        }
-        .text {
-            .hashtag,.mention,.link {
-                color: #3B94D9;
-            }
-        }
-        .meta {
-            padding-top: 5px;
-            color: #697882;
-        }
-
-    }
+    
     .search-results-place-holder{
         color: #999;
         font-size: 1.5em;
@@ -564,6 +483,47 @@ body {
         }
     }
 
+}
+
+.tweet-wrapper {
+    font: normal normal 12px/1.4 Helvetica, Roboto, 'Segoe UI', Calibri, sans-serif;
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+    color: #1C2022;
+    .media {
+        img {
+            width: 85%;
+        }
+        margin: 0;
+    }
+    .sender {
+        position: relative;
+        padding-bottom: 5px;
+        .profile_img {
+            position: absolute;
+            left: 0px;
+            top: 0px;
+            height: 32px;
+        }
+        .name,{
+            padding-left: 45px;
+            font-weight: 700;
+        }
+        .username {
+            padding-left: 45px;
+            color: #697882;
+        }
+
+    }
+    .text {
+        .hashtag,.mention,.link {
+            color: #3B94D9;
+        }
+    }
+    .meta {
+        padding-top: 5px;
+        color: #697882;
+    }
 }
 
 .glyphicon:hover {
