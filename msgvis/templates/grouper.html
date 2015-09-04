@@ -301,6 +301,7 @@
                         </div>
                         <div id="messages" class="col-md-4 app-panel" ng-controller="SparQs.controllers.ExampleMessageController">
                             <div class="heading">Example Messages</div>
+                            <div class="examples-description" ng-bind="convert_request_to_readable_str()"></div>
                             <div class="pages" ng-hide="is_empty()">
                                 <span ng-show="messages.count>0">Pages:</span>
                                 <a ng-show="messages.prev_page" ng-click="update_page(messages.prev_page)"
@@ -315,7 +316,6 @@
                             <div ng-show="is_empty()" class="search-results-place-holder">
                                 Click points in the visualization to get example messages.
                             </div>
-                            <span ng-bind="convert_request_to_readable_str()"></span>
                             <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
                             <div class="message-list heading-body">
                                 <div ng-repeat="message in messages.list" class="tweet-wrapper">
