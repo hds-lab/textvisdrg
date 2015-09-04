@@ -427,6 +427,19 @@
                         return render_bar(scope, $element, attrs, distribution);
                     }
             }, false);
+            scope.$watch('dimension', function (newVals, oldVals) {
+                    if (newVals && newVals.is_categorical()) {
+                        // Note:
+                        // For unknown reasons, the show will be reset to the original state (in filter mode is false, exclude mode is true.)
+                        // So it need to be set to its real state based on filter/exclude.
+                        var distribution = scope.dimension.get_current_distribution();
+                        distribution.forEach(function(d){
+                            d.show = scope.dimension.current_show_state(d.level);
+                        });
+
+                        return render_bar(scope, $element, attrs, distribution);
+                    }
+            }, false);
             scope.$watch('dimension.is_not_applying_filters()', function(newVals, oldVals){
                 if (newVals == true && oldVals == false){
                     console.log("reset checkboxes");
