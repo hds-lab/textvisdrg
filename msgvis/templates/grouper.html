@@ -115,8 +115,13 @@
 
                             <div class="group-wrap" id="group_{$ group.id $}">
                                 <div class="group-content" ng-hide="is_being_editing(group)"
-                                    ng-click="toggle_group($event, group)">
-                                    <div class="heading">{$ group.name $}</div>
+                                     ng-click="edit_group($event, group)" >
+                                    <div class="heading">
+                                        <span class="group-color-box" ng-show="group.selected"
+                                             ng-click="toggle_group($event, group)" ng-style="group_color(group)">
+                                        </span>
+                                        {$ group.name $}
+                                    </div>
 
                                     <div class="keyword-list">
                                         Including: {$ group.inclusive_keywords.join(' ') $}
@@ -127,6 +132,14 @@
                                     <div class="bottom-bar">
                                         <div class="count">
                                             message count: {$ group.message_count $}
+                                        </div>
+                                        <div class="show-vis-btn" ng-hide="group.selected"
+                                             ng-click="toggle_group($event, group)">
+                                            show in vis
+                                        </div>
+                                        <div class="show-vis-btn" ng-show="group.selected"
+                                             ng-click="toggle_group($event, group)">
+                                            hide from vis
                                         </div>
                                     </div>
                                 </div>
@@ -167,7 +180,7 @@
                                 <span class="glyphicon glyphicon-remove"
                                      ng-click="delete_group($event, group)" ></span>
                             </div>
-                            <div class="mask" ng-show="show_mask(group)"></div>
+                            <!--<div class="mask" ng-show="show_mask(group)"></div>-->
                         </div>
                     </div>
                 </div>
@@ -214,7 +227,7 @@
                         </div>
                         <div ng-show="is_mode('group_messages')">
                             <div class="heading" ng-show="!edit_mode">Search Results <span ng-hide="is_empty()">({$ messages.count $})</span></div>
-                            <div class="heading" ng-show="edit_mode">Messages in the group <span ng-hide="is_empty()">({$ messages.count $})</span></div>
+                            <div class="heading" ng-show="edit_mode">Messages in Group [{$ Group.current_group_name() $}]<span ng-hide="is_empty()">({$ messages.count $})</span></div>
                             <div class="pages">
                                 <span ng-show="messages.count>0">Pages:</span>
                                 <a ng-show="messages.prev_page" ng-click="update_page(messages.prev_page)"
@@ -263,7 +276,10 @@
                                     <div class="heading">Visualization</div>
                                     <div id="viz-content" class="heading-body">
                                         <sparqs-vis vis-data-table="datatable"
-                                                        on-clicked="onVisClicked">
+                                                        on-clicked="onVisClicked"
+                                                        group-colors="groupColors"
+
+                                                >
                                             <span us-spinner="spinnerOptions" spinner-key="vis-spinner"></span>
                                         </sparqs-vis>
 

@@ -81,7 +81,7 @@ def group_messages_by_words_with_raw_query(query, callback):
     pattern = re.compile(r'T\d+.`text`')
     results = pattern.search(query)
     if results:
-        table = results.group()  
+        table = results.group()
         query = query.replace("`corpus_message`.`id`, `corpus_message`.`dataset_id`, `corpus_message`.`original_id`, `corpus_message`.`type_id`, `corpus_message`.`sender_id`, `corpus_message`.`time`, `corpus_message`.`language_id`, `corpus_message`.`sentiment`, `corpus_message`.`timezone_id`, `corpus_message`.`replied_to_count`, `corpus_message`.`shared_count`, `corpus_message`.`contains_hashtag`, `corpus_message`.`contains_url`, `corpus_message`.`contains_media`, `corpus_message`.`contains_mention`, `corpus_message`.`text`",
                               "%s AS words, count(*) AS value" %(table))
         query += "GROUP BY `words` ORDER BY `value` DESC"

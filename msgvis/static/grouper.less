@@ -129,6 +129,16 @@ body {
         display: inline-block;
         position: relative;
 
+        .group-color-box {
+            width: 1em;
+            height: 1em;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .group-color-box:hover {
+            cursor: pointer;
+        }
+
         .group-wrap {
             position: absolute;
             top: 5px;
@@ -142,6 +152,18 @@ body {
                 left: 0px;
                 bottom: 10px;
                 color: #aaa;
+            }
+            .show-vis-btn {
+                position: absolute;
+                right: 0px;
+                bottom: 10px;
+                background-color: #F1F1F1;
+                -webkit-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+                -moz-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+                box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+                padding: 5px 10px;
+
+
             }
 
 
@@ -197,7 +219,7 @@ body {
         cursor: pointer;
     }
     .group-box.active {
-        background-color: rgb(201, 233, 255);
+        //background-color: rgb(201, 233, 255);
     }
     .group-box.edit-class {
 

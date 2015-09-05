@@ -552,11 +552,12 @@
 
     module.directive('sparqsVis', function () {
 
-        var SparQsVis = function ($element, attrs, onClicked) {
+        var SparQsVis = function ($element, attrs, onClicked, groupColor) {
 
             var DEFAULT_VALUE_KEY = 'value';
 
             var self = this;
+            self.group_color = groupColor;
             function dataClicked(data, element) {
 
                 // save the info of each dimension of the clicked point value in a list
@@ -870,7 +871,7 @@
                 return rows;
             }
 
-            function getC3Config(primary, secondary, domains) {
+            function getC3Config(primary, secondary, domains, domain_labels) {
                 //Default setup: one-axis bar chart vs. counts
 
                 var defaultDotRadius = 3;
@@ -921,7 +922,14 @@
                         }(primary)
                     },
                     color: {
-                        pattern: d3.scale.category20().range()
+                        pattern: function(){
+                            if (domain_labels.hasOwnProperty("groups")){
+                                return domain_labels.groups.map(function(d){ return self.group_color(d) });
+                            }
+                            else {
+                                return ["#999"]
+                            }
+                        }()
                     },
                     grid: {
                         x: {
@@ -1021,7 +1029,7 @@
                 if (primary) {
                     this.primary_domain = dataTable.domains;
                     var table = buildFullTable(primary, secondary, dataTable.table, dataTable.domains, dataTable.domain_labels);
-                    var config = getC3Config(primary, secondary, dataTable.domains);
+                    var config = getC3Config(primary, secondary, dataTable.domains, dataTable.domain_labels);
                     config.data.rows = table;
                     config.bindto = $element.find('.sparqs-vis-render-target')[0];
                     this.chart = c3.generate(config);
@@ -1041,7 +1049,7 @@
                     }
                 };
 
-                var vis = scope._sparqsVis = new SparQsVis($element, attrs, onClicked);
+                var vis = scope._sparqsVis = new SparQsVis($element, attrs, onClicked, scope.groupColors);
 
                 // Watch for changes to the datatable
                 scope.$watch('dataTable.table', function (newVals, oldVals) {
@@ -1059,7 +1067,8 @@
 
             scope: {
                 dataTable: '=visDataTable',
-                onClicked: '=onClicked'
+                onClicked: '=onClicked',
+                groupColors: '=groupColors'
             },
             link: link,
             transclude: true,

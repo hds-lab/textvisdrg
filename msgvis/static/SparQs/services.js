@@ -554,7 +554,9 @@
                 this.group_list = [];
                 this.group_dict = {};
                 this.selected_groups = [];
+                this.colors = d3.scale.category10();
             };
+
 
             angular.extend(Group.prototype, {
                 load: function (dataset) {
@@ -660,6 +662,7 @@
                     if (group.selected == true){
                         if (self.selected_groups.indexOf(group) == -1)
                         self.selected_groups.push(group);
+                        group.color = self.colors(group.name);
                     }
                     else{
                         var idx = self.selected_groups.indexOf(group);
@@ -689,6 +692,11 @@
                             if (group.id == self.current_group_id)
                                 self.current_group_id = -1;
                         });
+                },
+                current_group_name: function(){
+                    var self = this;
+                    if (self.current_group_id != -1)
+                        return self.group_dict[self.current_group_id].name.trim();
                 }
             });
 
