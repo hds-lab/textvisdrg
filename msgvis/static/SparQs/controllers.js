@@ -228,12 +228,12 @@
             color: "#000000"
         };
 
-        $scope.search = function ($event, using_group_keywords) {
+        $scope.search = function ($event) {
             if ($event){
                 $event.stopPropagation();
             }
-            var inclusive_keywords = (using_group_keywords) ? $scope.new_param.inclusive_keywords : $scope.inclusive_keywords;
-            var exclusive_keywords = (using_group_keywords) ? $scope.new_param.exclusive_keywords : $scope.exclusive_keywords;
+            var inclusive_keywords = ($scope.edit_mode) ? $scope.new_param.inclusive_keywords : $scope.inclusive_keywords;
+            var exclusive_keywords = ($scope.edit_mode) ? $scope.new_param.exclusive_keywords : $scope.exclusive_keywords;
             var request = KeywordMessages.load(Dataset.id, 1, inclusive_keywords, exclusive_keywords);
             if (request) {
                 usSpinnerService.spin('search-spinner');
@@ -272,10 +272,7 @@
             $scope.change_mode("keyword_list");
         };
 
-        $scope.save = function ($event) {
-            if ($event){
-                $event.stopPropagation();
-            }
+        $scope.save = function ($event, group) {
             var name = ($scope.edit_mode) ? $scope.new_param.group_name : $scope.group_name;
             var inclusive_keywords = ($scope.edit_mode) ? $scope.new_param.inclusive_keywords : $scope.inclusive_keywords;
             var exclusive_keywords = ($scope.edit_mode) ? $scope.new_param.exclusive_keywords : $scope.exclusive_keywords;
@@ -299,7 +296,9 @@
                     request.then(function() {
                         usSpinnerService.stop('update-spinner');
                         $scope.finish_edit();
-                        if ( !$scope.is_empty() ) $scope.search();
+                        if (group.selected) {
+                            Selection.changed('groups');
+                        }
                     });
                 }
                 else{
@@ -334,22 +333,18 @@
             return ($scope.is_being_editing(group)) ? "edit-class" : "";
         };
 
-        $scope.show_messages = function($event, group){
+        $scope.edit_group = function($event, group){
             $event.stopPropagation();
+            $scope.edit_mode = true;
             $scope.new_param.group_name = group.name;
             $scope.new_param.inclusive_keywords = group.inclusive_keywords.join(' ');
             $scope.new_param.exclusive_keywords = group.exclusive_keywords.join(' ');
             Group.current_group_id = group.id;
             $scope.search($event, true);
-
-        };
-        $scope.edit_group = function($event, group){
-            $scope.edit_mode = true;
-            $scope.show_messages($event, group);
         };
         $scope.group_color = function(group){
             return {'background-color': group.color };
-        }
+        };
 
 
         $scope.finish_edit = function($event){
