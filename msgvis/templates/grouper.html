@@ -124,10 +124,10 @@
                                     </div>
 
                                     <div class="keyword-list">
-                                        Including: {$ group.inclusive_keywords.join(' ') $}
+                                        Include: {$ group.inclusive_keywords.join(' ') $}
                                     </div>
                                     <div class="keyword-list">
-                                        Excluding: {$ group.exclusive_keywords.join(' ') $}
+                                        Exclude: {$ group.exclusive_keywords.join(' ') $}
                                     </div>
                                     <div class="bottom-bar">
                                         <div class="count">
@@ -151,14 +151,14 @@
                                             placeholder="Group Name" ng-model="new_param.group_name"
                                             />
                                     <div class="keyword-line">
-                                    <label for="inclusive_keyword">Including</label>
+                                    <label for="inclusive_keyword">Include</label>
                                     <input class="form-control" id="inclusive-keyword-field" type="text"
                                            ng-model="new_param.inclusive_keywords"
                                            placeholder="filtering keywords (separate by space)"
                                             />
                                     </div>
                                     <div class="keyword-line">
-                                    <label for="exclusive_keyword">Excluding</label>
+                                    <label for="exclusive_keyword">Exclude</label>
                                     <input class="form-control" id="exclusive-keyword-field" type="text"
                                            ng-model="new_param.exclusive_keywords"
                                            placeholder="excluding keywords (separate by space)"
