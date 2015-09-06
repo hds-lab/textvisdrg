@@ -81,18 +81,22 @@
                             {% csrf_token %}
                             <div class="heading">Create a group by keywords:</div>
                             <div class="keyword-line">
-                            <label for="inclusive_keyword">Including</label>
-                            <input class="form-control" id="inclusive-keyword-field" type="text"
-                                   ng-model="inclusive_keywords"
-                                   placeholder="filtering keywords (separate by space)"
-                                    />
+                                <label for="inclusive_keyword">Include</label>
+                                <span>
+                                    <input class="form-control" id="inclusive-keyword-field" type="text"
+                                           ng-model="inclusive_keywords"
+                                           placeholder="filtering keywords (separate by space)"
+                                            />
+                                </span>
                             </div>
                             <div class="keyword-line">
-                            <label for="exclusive_keyword">Excluding</label>
-                            <input class="form-control" id="exclusive-keyword-field" type="text"
-                                   ng-model="exclusive_keywords"
-                                   placeholder="excluding keywords (separate by space)"
-                                    />
+                                <label for="exclusive_keyword">Exclude</label>
+                                <span>
+                                    <input class="form-control" id="exclusive-keyword-field" type="text"
+                                           ng-model="exclusive_keywords"
+                                           placeholder="excluding keywords (separate by space)"
+                                            />
+                                </span>
                             </div>
                             <div class="btns">
                                 <button class="btn btn-primary" ng-click="search()">Search</button>
@@ -151,18 +155,22 @@
                                             placeholder="Group Name" ng-model="new_param.group_name"
                                             />
                                     <div class="keyword-line">
-                                    <label for="inclusive_keyword">Include</label>
-                                    <input class="form-control" id="inclusive-keyword-field" type="text"
-                                           ng-model="new_param.inclusive_keywords"
-                                           placeholder="filtering keywords (separate by space)"
-                                            />
+                                        <label for="inclusive_keyword">Include</label>
+                                        <span>
+                                            <input class="form-control" id="inclusive-keyword-field" type="text"
+                                                   ng-model="new_param.inclusive_keywords"
+                                                   placeholder="filtering keywords (separate by space)"
+                                                    />
+                                        </span>
                                     </div>
                                     <div class="keyword-line">
-                                    <label for="exclusive_keyword">Exclude</label>
-                                    <input class="form-control" id="exclusive-keyword-field" type="text"
-                                           ng-model="new_param.exclusive_keywords"
-                                           placeholder="excluding keywords (separate by space)"
-                                            />
+                                        <label for="exclusive_keyword">Exclude</label>
+                                        <span>
+                                            <input class="form-control" id="exclusive-keyword-field" type="text"
+                                                   ng-model="new_param.exclusive_keywords"
+                                                   placeholder="excluding keywords (separate by space)"
+                                                    />
+                                        </span>
                                     </div>
                                     <div class="btns">
                                         <button class="btn btn-primary" ng-click="search($event)">Search</button>
