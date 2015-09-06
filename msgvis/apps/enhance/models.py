@@ -405,7 +405,9 @@ def set_message_sentiment(message, save=True):
 
 class TweetWord(models.Model):
     dataset = models.ForeignKey(Dataset, related_name="tweet_words", null=True, blank=True, default=None)
-    text = base_models.Utf8CharField(max_length=100)
+    original_text = base_models.Utf8CharField(max_length=100, db_index=True, blank=True, default="")
+    pos = models.CharField(max_length=4, null=True, blank=True, default="")
+    text = base_models.Utf8CharField(max_length=100, db_index=True, blank=True, default="")
     messages = models.ManyToManyField(Message, related_name='tweet_words')
 
     def __repr__(self):
@@ -413,6 +415,7 @@ class TweetWord(models.Model):
 
     def __unicode__(self):
         return self.__repr__()
+
 
 class PrecalcCategoricalDistribution(models.Model):
     dataset = models.ForeignKey(Dataset, related_name="distributions", null=True, blank=True, default=None)
