@@ -100,11 +100,8 @@ body {
     .heading {
         font-weight: 700;
         font-size: 1.5em;
-        padding: 2px;
-        //text-overflow: ellipsis;
+        line-height: 34px;
         width: 85%;
-        //overflow: hidden;
-
     }
     .keyword-list {
         white-space: nowrap;
@@ -189,24 +186,11 @@ body {
              background-color: white;
             //transition: visibility linear 1s;
             .heading {
-                width: 99%;
-            }
-            .keyword-line {
-                padding: 5px 0 0 0;
-                label {
-                    width: 20%;
-                    font-weight: 400;
-                    color: #666;
-                }
-                input {
-                    width: 78%;
-                }
-
+                width: 100%;
             }
 
             .btns {
                 text-align: right;
-                padding-right: 1%;
                 padding-top: 5px;
                 
                 .btn {
@@ -263,26 +247,13 @@ body {
       .heading {
           font-weight: 700;
           font-size: 1.5em;
-          padding: 2px;
-          width: 99%;
-          //border: 1px dashed #666;
-      }
-      .keyword-line {
-          padding: 5px 0;
-          label {
-              width: 20%;
-              font-weight: 400;
-              color: #666;
-          }
-          input {
-              width: 78%;
-          }
-
+          width: 100%;
+          line-height: 34px;
       }
 
       .btns {
           text-align: right;
-          padding-righ: 1%;
+          padding-top: 5px;
 
           .btn {
               font-size: 0.7em;
@@ -292,6 +263,27 @@ body {
           cursor: pointer;
       }
 
+}
+
+.keyword-line {
+    padding: 5px 0 0 0;
+    label {
+            width: 55px;
+            font-weight: 400;
+            color: #666;
+            font-size: 1.15em;
+            margin: 0 0 0 3px;
+            float: left;
+            line-height: 33.6px;
+    }
+    span {
+        display: block;
+        margin-left: 66px;
+        position: relative;
+    }
+    input {
+        width: 100%;
+    }
 }
 
 
