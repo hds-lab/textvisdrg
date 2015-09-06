@@ -100,17 +100,16 @@ body {
     .heading {
         font-weight: 700;
         font-size: 1.5em;
-        padding: 2px;
-        //text-overflow: ellipsis;
+        line-height: 34px;
         width: 85%;
-        //overflow: hidden;
-
     }
     .keyword-list {
-        width: 90%;
-        text-wrap: normal;
-        font-size: 1.1em;
-        line-height: 2em;
+        white-space: nowrap;
+        font-size: 1.15em;
+        margin: 12px 0px;
+        max-height: 28px;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .icon {
         position: absolute;
@@ -142,8 +141,8 @@ body {
         .group-wrap {
             position: absolute;
             top: 5px;
-            left: 5px;
-            width: 97%;
+            left: 7px;
+            right: 5px;
         }
 
         .bottom-bar {
@@ -155,21 +154,21 @@ body {
             }
             .show-vis-btn {
                 position: absolute;
-                right: 0px;
+                right: 3px;
                 bottom: 10px;
                 background-color: #F1F1F1;
                 -webkit-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
                 -moz-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
                 box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
                 padding: 5px 10px;
-
-
+                cursor: pointer;
             }
 
 
         }
         .group-content{
             height: @top-row-height - 10;
+            cursor: text;
         }
         .mask {
             background-color: black;
@@ -187,24 +186,11 @@ body {
              background-color: white;
             //transition: visibility linear 1s;
             .heading {
-                width: 99%;
-            }
-            .keyword-line {
-                padding: 5px 0 0 0;
-                label {
-                    width: 20%;
-                    font-weight: 400;
-                    color: #666;
-                }
-                input {
-                    width: 78%;
-                }
-
+                width: 100%;
             }
 
             .btns {
                 text-align: right;
-                padding-right: 1%;
                 padding-top: 5px;
                 
                 .btn {
@@ -222,10 +208,8 @@ body {
         background-color: rgb(201, 233, 255);
     }
     .group-box.edit-class {
-
         background-color: white !important;
         cursor: default !important;
-
     }
 
 }
@@ -263,26 +247,13 @@ body {
       .heading {
           font-weight: 700;
           font-size: 1.5em;
-          padding: 2px;
-          width: 99%;
-          //border: 1px dashed #666;
-      }
-      .keyword-line {
-          padding: 5px 0;
-          label {
-              width: 20%;
-              font-weight: 400;
-              color: #666;
-          }
-          input {
-              width: 78%;
-          }
-
+          width: 100%;
+          line-height: 34px;
       }
 
       .btns {
           text-align: right;
-          padding-righ: 1%;
+          padding-top: 5px;
 
           .btn {
               font-size: 0.7em;
@@ -292,6 +263,27 @@ body {
           cursor: pointer;
       }
 
+}
+
+.keyword-line {
+    padding: 5px 0 0 0;
+    label {
+            width: 55px;
+            font-weight: 400;
+            color: #666;
+            font-size: 1.15em;
+            margin: 0 0 0 3px;
+            float: left;
+            line-height: 33.6px;
+    }
+    span {
+        display: block;
+        margin-left: 66px;
+        position: relative;
+    }
+    input {
+        width: 100%;
+    }
 }
 
 
