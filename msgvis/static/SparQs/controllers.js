@@ -272,6 +272,7 @@
             $scope.change_mode("keyword_list");
 
             $scope.selected_keyword_items = [];
+            $scope.tweet_type = {tweets: true, retweets: false, replies: false};
             $scope.$broadcast('angucomplete-alt:clearInput');
 
         };
@@ -311,7 +312,7 @@
 
                     request.then(function() {
                         usSpinnerService.stop('save-spinner');
-                        $scope.reset_search();
+
                     });
                 }
             }
@@ -427,6 +428,7 @@
 
         $scope.keyword_list_url = Keywords.list_url;
         $scope.selected_keyword_items = [];
+        $scope.tweet_type = {tweets: true, retweets: false, replies: false};
         $scope.select_keywords = function(selected_item){
             var self = this;
             if ( selected_item && $scope.selected_keyword_items.indexOf(selected_item.title) == -1) {
@@ -457,6 +459,12 @@
                 });
             }
         };
+        $scope.delete_previous_item = function(){
+            if ( $scope.selected_keyword_items.length > 0 ){
+                return $scope.selected_keyword_items.pop();
+            }
+            return "";
+        }
 
 
 

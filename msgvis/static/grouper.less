@@ -264,6 +264,18 @@ body {
     .glyphicon:hover {
       cursor: pointer;
     }
+    .tweet-type-options{
+        position: absolute;
+        left: 5px;
+        bottom: 5px;
+        label {
+            font-weight: normal;
+        }
+        input[type=checkbox] {
+            vertical-align: top;
+        }
+
+    }
 
 }
 
@@ -317,6 +329,10 @@ body {
     }
     .input-box {
         border: none;
+        &:focus {
+            border: none;
+            outline: none;
+        }
     }
     .glyphicon-search {
         position: absolute;
@@ -324,6 +340,7 @@ body {
         right: 5px;
     }
 }
+
 
 
 
@@ -364,7 +381,13 @@ body {
             font-size: 13pt;
             color: #333;
         }
-
+    }
+    .btn-save {
+        position: absolute;
+        right: 5px;
+        top: 5px;
+        color: steelblue;
+        font-size: 1em;
     }
 
     .heading {

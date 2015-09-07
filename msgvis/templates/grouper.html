@@ -101,9 +101,12 @@
                                       minlength="1"
                                       clear-selected="true"
                                       input-class="input-box"
-                                      enter-key-down="press_enter_key" />
+                                      enter-key-down="press_enter_key"
+                                      backspace-key-down="delete_previous_item" />
+
 
                             </div>
+
 
                             <!--<div class="keyword-line">
                                 <label for="inclusive_keyword">Include</label>
@@ -127,7 +130,21 @@
 
 
                         </form>
+                        <div class="tweet-type-options">
+                            <strong>Search in:</strong>
+                            <label>
+                                <input type="checkbox" ng-model="tweet_type.tweets" value='tweets' checked="checked"> original tweets
+                            </label>
+                            <label>
+                                <input type="checkbox" ng-model="tweet_type.retweets" value='retweets' > retweets
+                            </label>
+                            <label>
+                                <input type="checkbox" ng-model="tweet_type.replies" value='replies' > replies
+                            </label>
+                        </div>
                         <div class="btns">
+
+
                             <!--<button class="btn btn-primary" ng-click="save()">Save as a group</button>-->
                             <button class="btn btn-primary" ng-click="search($event)">Search</button>
                             <button class="btn btn-default" ng-click="reset_search()">Reset</button>
@@ -255,6 +272,10 @@
                         <div ng-show="is_mode('group_messages')">
                             <div class="heading" ng-show="!edit_mode">Search Results <span ng-hide="is_empty()">({$ messages.count $})</span></div>
                             <div class="heading" ng-show="edit_mode">Messages in Group [{$ Group.current_group_name() $}]<span ng-hide="is_empty()">({$ messages.count $})</span></div>
+                            <button class="btn btn-default btn-save" ng-click="save()">
+                                <span class="glyphicon glyphicon-heart"></span>
+                                Save as a group
+                            </button>
                             <div class="pages">
                                 <span ng-show="messages.count>0">Pages:</span>
                                 <a ng-show="messages.prev_page" ng-click="update_page(messages.prev_page)"
