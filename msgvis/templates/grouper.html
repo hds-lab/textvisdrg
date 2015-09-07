@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="{% static 'style.less' %}" type="text/less">
 <link rel="stylesheet" href="{% static 'bower/c3/c3.css' %}">
 <link rel="stylesheet" href="{% static 'grouper.less' %}" type="text/less">
+<link rel="stylesheet" href="{% static 'bower/angucomplete-alt/angucomplete-alt.css' %}">
 {% endblock %}
 
 {% block js %}
@@ -23,6 +24,7 @@
 <script src="{% static 'bower/angular-resource/angular-resource.js' %}"></script>
 <script src="{% static 'bower/angular-animate/angular-animate.js' %}"></script>
 <script src="{% static 'bower/angular-sanitize/angular-sanitize.js' %}"></script>
+<script src="{% static 'bower/angucomplete-alt/angucomplete-alt.js' %}"></script>
 
 <script src="{% static 'bower/jquery-ui/ui/core.js' %}"></script>
 <script src="{% static 'bower/jquery-ui/ui/widget.js' %}"></script>
@@ -76,11 +78,34 @@
         <div id="content" class="row ng-cloak" ng-cloak  ng-controller="SparQs.controllers.SearchAndGroupController">
             <div id="top" class="row">
                 <div id="group-edit" class="col-md-3">
-                    <div class="box">
-                        <form class="form-inline">
+                    <div class="box edit-box">
+                        <form class="form">
                             {% csrf_token %}
-                            <div class="heading">Create a group by keywords:</div>
-                            <div class="keyword-line">
+                            <div class="heading">Search Messages by Keywords</div>
+                            Use NOT as prefix for excluding a keyword (e.g., NOT job).
+                            <div class="search-keywords form-control">
+                                 <div class="selected-keyword-items">
+                                     <div class="selected-keyword-item" ng-repeat="item in selected_keyword_items">
+                                         <span class="text"> {$ item $}</span>
+                                         <span class="glyphicon glyphicon-remove" ng-click="remove_selected(item)"></span>
+                                     </div>
+                                 </div>
+                                 <angucomplete-alt
+                                      id="keyword_autocomplete"
+                                      placeholder="Enter keywords"
+                                      pause="300"
+                                      selected-object="select_keywords"
+                                      remote-url="{$ keyword_list_url $}"
+                                      remote-url-data-field="keywords"
+                                      title-field="text"
+                                      minlength="1"
+                                      clear-selected="true"
+                                      input-class="input-box"
+                                      enter-key-down="press_enter_key" />
+
+                            </div>
+
+                            <!--<div class="keyword-line">
                                 <label for="inclusive_keyword">Include</label>
                                 <span>
                                     <input class="form-control" id="inclusive-keyword-field" type="text"
@@ -97,15 +122,16 @@
                                            placeholder="excluding keywords (separate by space)"
                                             />
                                 </span>
-                            </div>
-                            <div class="btns">
-                                <button class="btn btn-primary" ng-click="search()">Search</button>
-                                <button class="btn btn-default" ng-click="reset_search()">Reset</button>
-                                <button class="btn btn-success" ng-click="save()">Save</button>
-                            </div>
+                            </div>-->
+
 
 
                         </form>
+                        <div class="btns">
+                            <!--<button class="btn btn-primary" ng-click="save()">Save as a group</button>-->
+                            <button class="btn btn-primary" ng-click="search($event)">Search</button>
+                            <button class="btn btn-default" ng-click="reset_search()">Reset</button>
+                        </div>
                         <div class="mask" ng-show="edit_mode"></div>
 
                     </div>
@@ -154,6 +180,12 @@
                                      <input class="form-control heading" id="group-name-field" type="text"
                                             placeholder="Group Name" ng-model="new_param.group_name"
                                             />
+                                     <div class="search-keywords">
+                                         <input class="keyword-input" type="text" >
+                                     </div>
+                                        <span class="glyphicon glyphicon-search" ng-click="search($event)"></span>
+
+                                    <!--
                                     <div class="keyword-line">
                                         <label for="inclusive_keyword">Include</label>
                                         <span>
@@ -163,6 +195,7 @@
                                                     />
                                         </span>
                                     </div>
+
                                     <div class="keyword-line">
                                         <label for="exclusive_keyword">Exclude</label>
                                         <span>
@@ -171,9 +204,8 @@
                                                    placeholder="excluding keywords (separate by space)"
                                                     />
                                         </span>
-                                    </div>
+                                    </div>-->
                                     <div class="btns">
-                                        <button class="btn btn-primary" ng-click="search($event)">Search</button>
                                         <button class="btn btn-default" ng-click="finish_edit($event)">Cancel</button>
                                         <button class="btn btn-success" ng-click="save($event, group)">Save</button>
                                     </div>
@@ -201,8 +233,9 @@
                         <div id="search-tab">
                             <span ng-class="tab_class('keyword_list')"
                                   ng-click="change_mode('keyword_list')">Keywords</span>
-                            <span ng-class="tab_class('group_messages')"
-                                  ng-click="change_mode('group_messages')">Group Messages</span>
+                            <span ng-hide="is_empty()"
+                                  ng-class="tab_class('group_messages')"
+                                  ng-click="change_mode('group_messages')">Search Results</span>
 
                         </div>
 
@@ -210,20 +243,6 @@
                             <div class="heading">Keyword List</div>
                             Use these keywords to create groups.
                             <div class="keyword-dist">
-                                <div class="keywords_search">
-                                    <input type="text"
-                                           placeholder="Search in keywords"
-                                           ng-enter="keywords_search()"
-                                           ng-blur="set_back_cur_keywords_search()"
-                                           ng-model="keywords.search_key_tmp" />
-                                    <span class="glyphicon glyphicon-search"
-                                          ng-show="keywords.search_key_tmp"
-                                          ng-click="keywords_search()"   ></span>
-                                    <span class="glyphicon glyphicon-remove"
-                                          ng-show="keywords.search_key_tmp"
-                                          ng-click="keywords.reset_keywords_search()"   ></span>
-                                </div>
-
 
                                 <div id="keywords-list" class="keywords-list" when-scrolled="loadMoreKeywords()">
                                     <keywords-histogram

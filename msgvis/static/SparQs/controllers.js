@@ -4,7 +4,8 @@
 
     var module = angular.module('SparQs.controllers', [
         'SparQs.services',
-        'angularSpinner'
+        'angularSpinner',
+        'angucomplete-alt'
     ]);
 
     module.config(['$interpolateProvider', function ($interpolateProvider) {
@@ -205,7 +206,6 @@
 
     var SearchAndGroupController = function ($scope, Keywords, KeywordMessages, Group, Dataset, Selection, usSpinnerService) {
 
-        $scope.keywords = Keywords;
         $scope.Group = Group;
         Group.load(Dataset.id);
 
@@ -283,8 +283,9 @@
                 name += (exclusive_keywords != "") ? "excluding " + exclusive_keywords + " " : "";
             }
 
-            inclusive_keywords = ((inclusive_keywords != "")) ? inclusive_keywords.split(" ") : [];
-            exclusive_keywords = ((exclusive_keywords != "")) ? exclusive_keywords.split(" ") : [];
+            inclusive_keywords = ((inclusive_keywords && inclusive_keywords.length > 0)) ? inclusive_keywords : [];
+            exclusive_keywords = ((exclusive_keywords && exclusive_keywords.length > 0)) ? exclusive_keywords : [];
+
 
 
             var request = Group.save(Dataset.id, name, inclusive_keywords, exclusive_keywords);
@@ -379,6 +380,8 @@
             return ($scope.is_being_editing(group)) ? "edit-class" : ((group.selected) ? "active" : "");
         };
 
+
+        $scope.keywords = Keywords;
         // Load keywords distribution
         Keywords.load_keywords_distributions();
 
@@ -417,6 +420,41 @@
         $scope.change_mode = function(mode){
             current_mode = mode;
         };
+
+        $scope.keyword_list_url = Keywords.list_url;
+        $scope.selected_keyword_items = [];
+        $scope.select_keywords = function(selected_item){
+            var self = this;
+            if ( selected_item && $scope.selected_keyword_items.indexOf(selected_item.title) == -1) {
+                $scope.selected_keyword_items.push(selected_item.title);
+            }
+        };
+        $scope.remove_selected = function(item){
+            var idx = $scope.selected_keyword_items.indexOf(item);
+            if ( idx != -1 ){
+                $scope.selected_keyword_items.splice(idx, 1);
+            }
+        };
+        $scope.press_enter_key = function(searchStr){
+            if ( searchStr && searchStr.trim() != "" ){
+                $scope.select_keywords({title: searchStr.trim()});
+                $scope.$broadcast('angucomplete-alt:clearInput');
+            }
+            else {
+                $scope.inclusive_keywords = [];
+                $scope.exclusive_keywords = [];
+                $scope.selected_keyword_items.forEach(function(d){
+                    if ( d.substr(0, 4).toUpperCase() == "NOT " ){
+                        $scope.exclusive_keywords.push(d.substr(4).trim());
+                    }else{
+                        $scope.inclusive_keywords.push(d.trim());
+                    }
+                    $scope.search();
+                });
+            }
+        };
+
+
 
     };
     SearchAndGroupController.$inject = [

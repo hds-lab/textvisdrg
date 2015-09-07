@@ -273,6 +273,12 @@ class WordSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return instance.text
 
+class KeywordListSerializer(serializers.Serializer):
+    dataset = serializers.IntegerField(required=True)
+    q = serializers.CharField(allow_null=True, allow_blank=True, required=False)
+    keywords = WordSerializer(many=True, required=False)
+
+
 class GroupListSerializer(serializers.ModelSerializer):
     inclusive_keywords = WordSerializer(many=True, required=False)
     exclusive_keywords = WordSerializer(many=True, required=False)

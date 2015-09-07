@@ -351,8 +351,8 @@
 
                     var request = {
                         dataset: dataset,
-                        inclusive_keywords: ((inclusive_keywords != "")) ? inclusive_keywords.trim().split(" ") : [],
-                        exclusive_keywords: ((exclusive_keywords != "")) ? exclusive_keywords.trim().split(" ") : []
+                        inclusive_keywords: ((inclusive_keywords && inclusive_keywords.length > 0)) ? inclusive_keywords : [],
+                        exclusive_keywords: ((exclusive_keywords && exclusive_keywords.length > 0)) ? exclusive_keywords : []
                     };
                     var messages_per_page = 10;
                     var apiUrl_with_param = apiUrl + "?messages_per_page=" + messages_per_page;
@@ -415,6 +415,7 @@
 
             var Keywords = function () {
                 var self = this;
+                self.list_url = djangoUrl.reverse('keyword') + "?dataset=" + Dataset.id + "&q="
                 self.key = "words";
                 self.search_results = {"": self};
                 self.table = undefined;

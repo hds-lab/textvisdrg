@@ -366,6 +366,52 @@ class GroupView(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+class KeywordView(APIView):
+    """
+    Get top 10 keyword results.
+
+    **Request:** ``GET /api/keyword?dataset=1&q= [...]``
+
+    ::
+
+        {
+            "dataset": 1,
+            "q": "mudslide oso",
+            "keywords": ["mudslide oso", "mudslide oso soup", "mudslide oso ladies"]
+        }
+    """
+
+
+    def get(self, request, format=None):
+        if request.query_params.get('dataset'):
+            dataset_id = request.query_params.get('dataset')
+            response_data = {
+                "dataset": dataset_id
+            }
+
+            if request.query_params.get('q') is None:
+                keywords = enhance_models.Word.objects.filter(dictionary_id=dataset_id).order_by('document_frequency')[:20]
+                response_data["keywords"] = keywords
+                output = serializers.KeywordListSerializer(response_data)
+            else:
+                q = request.query_params.get('q')
+                response_data["q"] = q
+
+                strings = q.split(' ')
+                prefix = " ".join(strings[:-1])
+                keyword = strings[-1]
+                keywords = enhance_models.Word.objects.filter(text__istartswith=keyword).order_by('text')
+
+                response_data["keywords"] = keywords[:20]
+                output = serializers.KeywordListSerializer(response_data)
+                for idx, keyword in enumerate(output.data['keywords']):
+                    output.data['keywords'][idx] = {"text": prefix + " " + output.data['keywords'][idx]}
+
+            #output = serializers.GroupListItemSerializer(group, context={'request': request})
+            return Response(output.data, status=status.HTTP_200_OK)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
 class ResearchQuestionsView(APIView):
     """
     Get a list of research questions related to a selection of dimensions and filters.
