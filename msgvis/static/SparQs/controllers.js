@@ -211,8 +211,8 @@
 
         $scope.group_name = "";
         $scope.messages = KeywordMessages;
-        $scope.inclusive_keywords = "";
-        $scope.exclusive_keywords = "";
+        $scope.inclusive_keywords = [];
+        $scope.exclusive_keywords = [];
 
         $scope.edit_mode = false;
         $scope.new_param = {};
@@ -266,10 +266,14 @@
         $scope.reset_search = function(){
             $scope.messages = KeywordMessages;
             $scope.group_name = "";
-            $scope.inclusive_keywords = "";
-            $scope.exclusive_keywords = "";
+            $scope.inclusive_keywords = [];
+            $scope.exclusive_keywords = [];
             $scope.messages.count = -1;
             $scope.change_mode("keyword_list");
+
+            $scope.selected_keyword_items = [];
+            $scope.$broadcast('angucomplete-alt:clearInput');
+
         };
 
         $scope.save = function ($event, group) {
