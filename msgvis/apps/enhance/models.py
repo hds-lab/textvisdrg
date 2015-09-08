@@ -5,6 +5,7 @@ import textblob
 from fields import PositiveBigIntegerField
 from msgvis.apps.corpus.models import Message, Dataset
 from msgvis.apps.base import models as base_models
+from msgvis.apps.corpus import utils
 
 # Create your models here.
 
@@ -415,6 +416,17 @@ class TweetWord(models.Model):
 
     def __unicode__(self):
         return self.__repr__()
+
+    @property
+    def related_words(self):
+        return TweetWord.objects.filter(dataset=self.dataset, text=self.text).all()
+
+    @property
+    def all_messages(self):
+        queryset = self.dataset.message_set.all()
+        queryset = queryset.filter(utils.levels_or("tweet_words__id", map(lambda x: x.id, self.related_words)))
+        return queryset
+
 
 
 class PrecalcCategoricalDistribution(models.Model):

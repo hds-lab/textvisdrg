@@ -99,17 +99,16 @@ body {
     }
     .heading {
         font-weight: 700;
-        font-size: 1.5em;
-        line-height: 34px;
+        font-size: 1.2em;
+        line-height: 20px;
         width: 85%;
     }
     .keyword-list {
-        white-space: nowrap;
-        font-size: 1.15em;
+
+
         margin: 12px 0px;
         max-height: 28px;
-        overflow: hidden;
-        text-overflow: ellipsis;
+
     }
     .icon {
         position: absolute;
@@ -121,16 +120,17 @@ body {
     }
     .group-box {
         margin-top: 0;
-        width: 350px;
+        width: 400px;
         height: @top-row-height - 1;
         background-color: white;
 
         display: inline-block;
         position: relative;
+        white-space: normal;
 
         .group-color-box {
-            width: 1em;
-            height: 1em;
+            width: 1.2em;
+            height: 1.2em;
             display: inline-block;
             vertical-align: middle;
         }
@@ -143,6 +143,7 @@ body {
             top: 5px;
             left: 7px;
             right: 5px;
+            height: 95%;
         }
 
         .bottom-bar {
@@ -168,7 +169,7 @@ body {
         }
         .group-content{
             height: @top-row-height - 10;
-            cursor: text;
+            cursor: pointer;
         }
         .mask {
             background-color: black;
@@ -181,22 +182,28 @@ body {
             right: 0;
         }
 
+
         .edit-form {
             width: 100%;
-             background-color: white;
+            height: 100%;
+            background-color: white;
+            position: relative;
             //transition: visibility linear 1s;
             .heading {
                 width: 100%;
+                margin-bottom: 10px;
             }
 
-            .btns {
-                text-align: right;
-                padding-top: 5px;
-                
-                .btn {
-                    font-size: 0.7em;
-                }
-            }
+
+
+        }
+        .close-btn {
+            text-align: right;
+            padding-top: 5px;
+            position: absolute;
+            right: 5px;
+            bottom: 5px;
+            font-size: 16px;
         }
 
 
@@ -204,9 +211,7 @@ body {
     .group-box:hover {
         cursor: pointer;
     }
-    .group-box.active .show-vis-btn {
-        background-color: rgb(201, 233, 255);
-    }
+
     .group-box.edit-class {
         background-color: white !important;
         cursor: default !important;
@@ -244,38 +249,16 @@ body {
     }
 
     .heading {
-      font-weight: 700;
-      font-size: 1.5em;
-      width: 100%;
-      line-height: 34px;
+        font-weight: 700;
+        font-size: 1.2em;
+        line-height: 20px;
+        width: 100%;
     }
 
-    .btns {
-        text-align: right;
-        padding-top: 5px;
-        position: absolute;
-        right: 25px;
-        bottom: 5px;
-        .btn {
-            font-size: 12px;
-        }
-
-    }
     .glyphicon:hover {
       cursor: pointer;
     }
-    .tweet-type-options{
-        position: absolute;
-        left: 5px;
-        bottom: 5px;
-        label {
-            font-weight: normal;
-        }
-        input[type=checkbox] {
-            vertical-align: top;
-        }
 
-    }
 
 }
 
@@ -306,6 +289,7 @@ body {
 
     .selected-keyword-items{
         display: inline-block;
+        font-size: 11px;
 
         .selected-keyword-item {
             display: inline-block;
@@ -326,21 +310,48 @@ body {
     }
     angucomplete-alt {
         display: inline-block;
+        font-size: 11px;
+        white-space: normal;
+        .angucomplete-dropdown {
+            margin-top: 0;
+        }
+        .angucomplete-searching {
+            font-size: 11px;
+        }
     }
     .input-box {
         border: none;
+        font-size: 11px;
         &:focus {
             border: none;
             outline: none;
         }
     }
-    .glyphicon-search {
+
+    .btns {
+        text-align: right;
+        padding-top: 5px;
         position: absolute;
-        top: 8px;
         right: 5px;
+        top: 0px;
+
+        .btn {
+            font-size: 11px;
+        }
     }
 }
+.tweet-type-options{
+    position: absolute;
+    left: 5px;
+    bottom: 5px;
+    label {
+        font-weight: normal;
+    }
+    input[type=checkbox] {
+        vertical-align: top;
+    }
 
+}
 
 
 
@@ -376,6 +387,12 @@ body {
         color: #999;
         font-size: 1.2em;
         width: 98%;
+        color: #999;
+        position: absolute;
+        text-align: center;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         .heading {
             font-weight: 600;
             font-size: 13pt;
@@ -393,6 +410,7 @@ body {
     .heading {
         font-weight: 600;
         font-size: 13pt;
+        width: 65%;
     }
     .message-list{
         height: @bottom-row-height - 100px;
@@ -560,6 +578,7 @@ body {
             width: 85%;
         }
         margin: 0;
+        margin-bottom: 5px;
     }
     .sender {
         position: relative;

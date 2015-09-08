@@ -78,9 +78,20 @@ def quote(text):
 def levels_or(field_name, domain):
     filter_ors = []
     for level in domain:
-        if level is None or level == "":
+        if level is None or str(level).strip() == "":
             filter_ors.append((field_name + "__isnull", True))
         else:
             filter_ors.append((field_name, level))
 
     return reduce(operator.or_, [Q(x) for x in filter_ors])
+
+def get_word_objs(queryset, text_field_name, related_field_name, words):
+    word_objs = []
+    for word in words:
+        obj = queryset.filter(Q((text_field_name, word)))
+        if obj.count() > 0:
+            word_obj = obj[0]
+            or_objs = levels_or(related_field_name, map(lambda x: x.id, word_obj.related_words))
+            word_objs.append(or_objs)
+
+    return word_objs
