@@ -318,12 +318,9 @@ class Person(models.Model):
 
     @property
     def profile_image_local_name(self):
-        if DEBUG or os.environ["DJANGO_SETTINGS_MODULE"] == "msgvis.settings.test":
-            return "profile_1000204970.jpeg"
-
         url = self.profile_image_url
         if url != "":
-            pattern = re.compile('/\w+\.([_\w]+)$')
+            pattern = re.compile('/[_\-\w\d]+\.([\w]+)$')
             results = pattern.search(url)
             if results:
                 suffix = results.groups()[0]
