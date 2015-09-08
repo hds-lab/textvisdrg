@@ -209,7 +209,8 @@
                                             </label>
                                         </div>
                                         <div class="close-btn" ng-show="is_being_editing(group)">
-                                            <span class="glyphicon glyphicon-ok" ng-click="finish_edit($event)" ></span>
+                                            <span class="glyphicon glyphicon-ok" ng-click="save($event)" ></span>
+                                            <span class="glyphicon glyphicon-remove" ng-click="save($event)" ng-click="finish_edit($event)" ></span>
                                         </div>
 
                                     </form>
@@ -262,9 +263,9 @@
                                 Start from the search box above.
                             </div>
                             <div class="heading" ng-show="edit_mode">Messages in Group [{$ Group.current_group_name() $}]<span ng-hide="is_empty()">({$ Messages.count $})</span></div>
-                            <button class="btn btn-default btn-save" ng-hide="is_empty()" ng-click="save()">
+                            <button class="btn btn-default btn-save" ng-hide="is_empty() || edit_mode" ng-click="save()">
                                 <span class="glyphicon glyphicon-heart"></span>
-                                {$ (edit_mode) ? "Save changes" : "Save as a group" $}
+                                {$ "Save as a group" $}
                             </button>
                             <div class="pages">
                                 <span ng-show="Messages.count>0">Pages:</span>
