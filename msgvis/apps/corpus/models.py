@@ -102,25 +102,49 @@ class Dataset(models.Model):
             return dictionary
         return None
 
-    def get_advanced_search_results(self, inclusive_keywords, exclusive_keywords):
+    def get_advanced_search_results(self, keywords_text, include_types):
 
-        queryset = self.message_set.all()
-        if len(inclusive_keywords) > 0:
-            #inclusive_keywords = map(lambda x: ("words__text__icontains", x), inclusive_keywords)
-            #inclusive_keywords = map(lambda x: ("words__text", x), inclusive_keywords)
-            #queryset = queryset.filter(reduce(operator.and_, [Q(x) for x in inclusive_keywords]))
-            queryset = Message.objects.all()
-            for inclusive_keyword in inclusive_keywords:
-                queryset &= inclusive_keyword.messages.all()
-            #print queryset.count()
+        clauses = keywords_text.split(',')
+        inclusive_keywords = []
+        exclusive_keywords = []
+        queryset = self.tweet_words.all()
+        message_queryset = self.message_set.all()
+        if (len(include_types) > 0):
+            message_queryset = message_queryset.filter(utils.levels_or('type__name', map(lambda x: x.name, include_types)))
+        final_queryset = self.message_set.none()
+        for clause in clauses:
+            if clause.startswith("NOT "):
+                words = clause[4:].split(' ')
+                word_list = utils.get_word_objs(queryset=queryset, text_field_name='original_text', related_field_name="tweet_words__id", words=words)
+                if len(word_list) > 0:
+                    # TODO: makes this real AND
+                    #and_word_list = reduce(operator.or_, word_list)
+                    exclusive_keywords.extend(word_list)
+
+            else:
+                words = clause.split(' ')
+                word_list = utils.get_word_objs(queryset=queryset, text_field_name='original_text', related_field_name="tweet_words__id", words=words)
+                if len(word_list) > 0:
+                    #and_word_list = reduce(operator.and_, word_list)
+                    #inclusive_keywords.append(and_word_list)
+                    clause_queryset = message_queryset
+                    for or_word_list in word_list:
+                        clause_queryset = clause_queryset.filter(or_word_list)
+
+                    final_queryset |= clause_queryset
+
+
+        queryset = final_queryset
+
+
+        #if len(inclusive_keywords) > 0:
+        #    inclusive_keywords = reduce(operator.or_, inclusive_keywords)
+        #    queryset = queryset.filter(inclusive_keywords)
 
         if len(exclusive_keywords) > 0:
-            #exclusive_keywords = map(lambda x: ("words__text__icontains", x), exclusive_keywords)
-            #for word in exclusive_keywords:
-            #    queryset = queryset.exclude(words__text=word.text)
-            exclusive_keywords = map(lambda x: x.text, exclusive_keywords)
-            queryset = queryset.exclude(utils.levels_or("words__text", exclusive_keywords))
-            #print queryset.count()
+            for word in exclusive_keywords:
+                queryset = queryset.exclude(word)
+
         return queryset
 
     def get_precalc_distribution(self, dimension, search_key=None, page=None, page_size=100, mode=None):
@@ -395,7 +419,7 @@ class Message(models.Model):
         url = ""
         if self.contains_media:
             url = self.media.all()[0].media_url
-            pattern = re.compile('/(\w+\.[_\-\w]+)$')
+            pattern = re.compile('/([_\-\w\d]+\.[\w]+)$')
             results = pattern.search(url)
             if results:
                 url = results.groups()[0]

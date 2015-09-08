@@ -91,7 +91,7 @@ class CategoricalDimension(object):
         if kwargs.get('levels'):
             filter_ors = []
             for level in kwargs.get('levels'):
-                if level is None or level == "":
+                if level is None or str(level).strip() == "":
                     filter_ors.append((self.field_name + "__isnull", True))
                 else:
                     if level == "false":
@@ -111,11 +111,8 @@ class CategoricalDimension(object):
         queryset = self._exact_exclude(queryset, **kwargs)
 
         for level in kwargs.get('levels'):
-            if level is None or level == "":
+            if level is None or str(level).strip() == "":
                 queryset = queryset.exclude(Q((self.field_name + "__isnull", True)))
-
-                # TODO: Should not need this, but the language data contains empty str
-                queryset = queryset.exclude(Q((self.field_name, "")))
             else:
                 queryset = queryset.exclude(Q((self.field_name, level)))
 

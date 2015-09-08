@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="{% static 'style.less' %}" type="text/less">
 <link rel="stylesheet" href="{% static 'bower/c3/c3.css' %}">
 <link rel="stylesheet" href="{% static 'grouper.less' %}" type="text/less">
+<link rel="stylesheet" href="{% static 'bower/angucomplete-alt/angucomplete-alt.css' %}">
 {% endblock %}
 
 {% block js %}
@@ -23,6 +24,7 @@
 <script src="{% static 'bower/angular-resource/angular-resource.js' %}"></script>
 <script src="{% static 'bower/angular-animate/angular-animate.js' %}"></script>
 <script src="{% static 'bower/angular-sanitize/angular-sanitize.js' %}"></script>
+<script src="{% static 'bower/angucomplete-alt/angucomplete-alt.js' %}"></script>
 
 <script src="{% static 'bower/jquery-ui/ui/core.js' %}"></script>
 <script src="{% static 'bower/jquery-ui/ui/widget.js' %}"></script>
@@ -76,36 +78,52 @@
         <div id="content" class="row ng-cloak" ng-cloak  ng-controller="SparQs.controllers.SearchAndGroupController">
             <div id="top" class="row">
                 <div id="group-edit" class="col-md-3">
-                    <div class="box">
-                        <form class="form-inline">
+                    <div class="box edit-box">
+                        <form class="form">
                             {% csrf_token %}
-                            <div class="heading">Create a group by keywords:</div>
-                            <div class="keyword-line">
-                                <label for="inclusive_keyword">Include</label>
-                                <span>
-                                    <input class="form-control" id="inclusive-keyword-field" type="text"
-                                           ng-model="inclusive_keywords"
-                                           placeholder="filtering keywords (separate by space)"
-                                            />
-                                </span>
-                            </div>
-                            <div class="keyword-line">
-                                <label for="exclusive_keyword">Exclude</label>
-                                <span>
-                                    <input class="form-control" id="exclusive-keyword-field" type="text"
-                                           ng-model="exclusive_keywords"
-                                           placeholder="excluding keywords (separate by space)"
-                                            />
-                                </span>
-                            </div>
-                            <div class="btns">
-                                <button class="btn btn-primary" ng-click="search()">Search</button>
-                                <button class="btn btn-default" ng-click="reset_search()">Reset</button>
-                                <button class="btn btn-success" ng-click="save()">Save</button>
-                            </div>
+                            <div class="heading">Search Messages by Keywords</div>
+                            Use NOT as prefix for excluding a keyword (e.g., NOT job).
+                            <div class="search-keywords form-control">
+                                <div class="btns">
+                                    <span class="glyphicon glyphicon-search" ng-click="search($event)"></span>
+                                    <span class="glyphicon glyphicon-remove" ng-show="search_params.selected_keyword_items.length" ng-click="reset_search()"></span>
+                                </div>
+                                 <div class="selected-keyword-items">
+                                     <div class="selected-keyword-item" ng-repeat="item in search_params.selected_keyword_items">
+                                         <span class="text"> {$ item $}</span>
+                                         <span class="glyphicon glyphicon-remove" ng-click="remove_selected(item)"></span>
+                                     </div>
+                                 </div>
+                                 <angucomplete-alt
+                                      id="keyword_autocomplete"
+                                      placeholder="Enter keywords"
+                                      pause="500"
+                                      selected-object="select_keywords"
+                                      remote-url="{$ keyword_list_url $}"
+                                      remote-url-data-field="keywords"
+                                      title-field="text"
+                                      minlength="1"
+                                      clear-selected="true"
+                                      input-class="input-box"
+                                      enter-key-down="press_enter_key"
+                                      backspace-key-down="delete_previous_item" />
 
 
+                            </div>
                         </form>
+                        <div class="tweet-type-options">
+                            <strong>Search in:</strong>
+                            <label>
+                                <input type="checkbox" ng-model="search_params.tweet_types.tweet" value='tweets' checked="checked"> original tweets
+                            </label>
+                            <label>
+                                <input type="checkbox" ng-model="search_params.tweet_types.retweet" value='retweets' > retweets
+                            </label>
+                            <label>
+                                <input type="checkbox" ng-model="search_params.tweet_types.reply" value='replies' > replies
+                            </label>
+                        </div>
+
                         <div class="mask" ng-show="edit_mode"></div>
 
                     </div>
@@ -119,66 +137,84 @@
 
                             <div class="group-wrap" id="group_{$ group.id $}">
                                 <div class="group-content" ng-hide="is_being_editing(group)"
-                                     ng-click="edit_group($event, group)" >
+                                     ng-click="toggle_group($event, group)" >
                                     <div class="heading">
-                                        <span class="group-color-box" ng-show="group.selected"
+                                        <span class="group-color-box"
                                              ng-click="toggle_group($event, group)" ng-style="group_color(group)">
                                         </span>
                                         {$ group.name $}
                                     </div>
 
                                     <div class="keyword-list">
-                                        Include: {$ group.inclusive_keywords.join(' ') $}
+                                        <strong>Keywords: </strong>{$ group.keywords $}
                                     </div>
-                                    <div class="keyword-list">
-                                        Exclude: {$ group.exclusive_keywords.join(' ') $}
+                                    <div class="type-list">
+                                        <strong>Includes: </strong> {$ (group.include_types.length == 0 || group.include_types.length == 3) ? "all types" : group.include_types.join(', ') $}
                                     </div>
                                     <div class="bottom-bar">
                                         <div class="count">
                                             {$ group.message_count $} messages
                                         </div>
-                                        <div class="show-vis-btn" ng-hide="group.selected"
-                                             ng-click="toggle_group($event, group)">
-                                            show in vis
-                                        </div>
-                                        <div class="show-vis-btn" ng-show="group.selected"
-                                             ng-click="toggle_group($event, group)">
-                                            hide from vis
+                                        <div class="show-vis-btn"
+                                             ng-click="show_messages($event, group)">
+                                            show messages
                                         </div>
                                     </div>
                                 </div>
 
                                 <div class="edit-form" ng-show="is_being_editing(group)">
-                                    <form class="form-inline">
-                                    {% csrf_token %}
-                                     <input class="form-control heading" id="group-name-field" type="text"
-                                            placeholder="Group Name" ng-model="new_param.group_name"
-                                            />
-                                    <div class="keyword-line">
-                                        <label for="inclusive_keyword">Include</label>
-                                        <span>
-                                            <input class="form-control" id="inclusive-keyword-field" type="text"
-                                                   ng-model="new_param.inclusive_keywords"
-                                                   placeholder="filtering keywords (separate by space)"
-                                                    />
-                                        </span>
-                                    </div>
-                                    <div class="keyword-line">
-                                        <label for="exclusive_keyword">Exclude</label>
-                                        <span>
-                                            <input class="form-control" id="exclusive-keyword-field" type="text"
-                                                   ng-model="new_param.exclusive_keywords"
-                                                   placeholder="excluding keywords (separate by space)"
-                                                    />
-                                        </span>
-                                    </div>
-                                    <div class="btns">
-                                        <button class="btn btn-primary" ng-click="search($event)">Search</button>
-                                        <button class="btn btn-default" ng-click="finish_edit($event)">Cancel</button>
-                                        <button class="btn btn-success" ng-click="save($event, group)">Save</button>
-                                    </div>
-                                    <span us-spinner="spinnerOptions" spinner-key="update-spinner"></span>
+                                    <form class="form">
+                                        {% csrf_token %}
+                                        <input class="form-control heading" id="group-name-field" type="text"
+                                            placeholder="Group Name" ng-model="edit_params.group_name"
+                                        />
+
+
+                                        <div class="search-keywords form-control">
+                                            <div class="btns">
+                                                <span class="glyphicon glyphicon-search" ng-click="search($event)"></span>
+                                                <!--<button class="btn btn-primary" ng-click="save($event, group)">Save</button>-->
+                                            </div>
+                                             <div class="selected-keyword-items">
+                                                 <div class="selected-keyword-item" ng-repeat="item in edit_params.selected_keyword_items">
+                                                     <span class="text"> {$ item $}</span>
+                                                     <span class="glyphicon glyphicon-remove" ng-click="remove_selected(item)"></span>
+                                                 </div>
+                                             </div>
+                                             <angucomplete-alt
+                                                  placeholder="Enter keywords"
+                                                  pause="500"
+                                                  selected-object="select_keywords"
+                                                  remote-url="{$ keyword_list_url $}"
+                                                  remote-url-data-field="keywords"
+                                                  title-field="text"
+                                                  minlength="1"
+                                                  clear-selected="true"
+                                                  input-class="input-box"
+                                                  enter-key-down="press_enter_key"
+                                                  backspace-key-down="delete_previous_item" />
+
+
+                                        </div>
+                                        <div class="tweet-type-options">
+                                            <strong>Search in:</strong>
+                                            <label>
+                                                <input type="checkbox" ng-model="edit_params.tweet_types.tweet" value='tweets' checked="checked"> original tweets
+                                            </label>
+                                            <label>
+                                                <input type="checkbox" ng-model="edit_params.tweet_types.retweet" value='retweets' > retweets
+                                            </label>
+                                            <label>
+                                                <input type="checkbox" ng-model="edit_params.tweet_types.reply" value='replies' > replies
+                                            </label>
+                                        </div>
+                                        <div class="close-btn" ng-show="is_being_editing(group)">
+                                            <span class="glyphicon glyphicon-ok" ng-click="finish_edit($event)" ></span>
+                                        </div>
+
                                     </form>
+                                    <span us-spinner="spinnerOptions" spinner-key="update-spinner"></span>
+
                                 </div>
 
                             </div>
@@ -188,6 +224,7 @@
                                 <span class="glyphicon glyphicon-remove"
                                      ng-click="delete_group($event, group)" ></span>
                             </div>
+
                             <!--<div class="mask" ng-show="show_mask(group)"></div>-->
                         </div>
                     </div>
@@ -202,7 +239,7 @@
                             <span ng-class="tab_class('keyword_list')"
                                   ng-click="change_mode('keyword_list')">Keywords</span>
                             <span ng-class="tab_class('group_messages')"
-                                  ng-click="change_mode('group_messages')">Group Messages</span>
+                                  ng-click="change_mode('group_messages')">Search Results</span>
 
                         </div>
 
@@ -210,49 +247,42 @@
                             <div class="heading">Keyword List</div>
                             Use these keywords to create groups.
                             <div class="keyword-dist">
-                                <div class="keywords_search">
-                                    <input type="text"
-                                           placeholder="Search in keywords"
-                                           ng-enter="keywords_search()"
-                                           ng-blur="set_back_cur_keywords_search()"
-                                           ng-model="keywords.search_key_tmp" />
-                                    <span class="glyphicon glyphicon-search"
-                                          ng-show="keywords.search_key_tmp"
-                                          ng-click="keywords_search()"   ></span>
-                                    <span class="glyphicon glyphicon-remove"
-                                          ng-show="keywords.search_key_tmp"
-                                          ng-click="keywords.reset_keywords_search()"   ></span>
-                                </div>
-
 
                                 <div id="keywords-list" class="keywords-list" when-scrolled="loadMoreKeywords()">
                                     <keywords-histogram
-                                        keywords="keywords" >
+                                        keywords="Keywords" >
                                     </keywords-histogram>
                                 </div>
                                 <span us-spinner="spinnerOptions" spinner-key="keywords-spinner"></span>
                             </div>
                         </div>
                         <div ng-show="is_mode('group_messages')">
-                            <div class="heading" ng-show="!edit_mode">Search Results <span ng-hide="is_empty()">({$ messages.count $})</span></div>
-                            <div class="heading" ng-show="edit_mode">Messages in Group [{$ Group.current_group_name() $}]<span ng-hide="is_empty()">({$ messages.count $})</span></div>
+                            <div class="heading" ng-show="!edit_mode">Search Results <span ng-hide="is_empty()">({$ Messages.count $})</span></div>
+                            <div ng-show="is_empty()" class="search-results-place-holder">
+                                Start from the search box above.
+                            </div>
+                            <div class="heading" ng-show="edit_mode">Messages in Group [{$ Group.current_group_name() $}]<span ng-hide="is_empty()">({$ Messages.count $})</span></div>
+                            <button class="btn btn-default btn-save" ng-hide="is_empty()" ng-click="save()">
+                                <span class="glyphicon glyphicon-heart"></span>
+                                {$ (edit_mode) ? "Save changes" : "Save as a group" $}
+                            </button>
                             <div class="pages">
-                                <span ng-show="messages.count>0">Pages:</span>
-                                <a ng-show="messages.prev_page" ng-click="update_page(messages.prev_page)"
+                                <span ng-show="Messages.count>0">Pages:</span>
+                                <a ng-show="Messages.prev_page" ng-click="update_page(Messages.prev_page)"
                                       class="page-link glyphicon glyphicon-chevron-left"> </a>
-                                <a ng-show="messages.count>0"
-                                   ng-repeat="i in messages.pages" ng-click="update_page(i)"
+                                <a ng-show="Messages.count>0"
+                                   ng-repeat="i in Messages.pages" ng-click="update_page(i)"
                                    ng-class="highlight_current_page(i)" class="page-link"  > {$ i $} </a>
-                                <a ng-show="messages.next_page" ng-click="update_page(messages.next_page)"
+                                <a ng-show="Messages.next_page" ng-click="update_page(Messages.next_page)"
                                       class="page-link glyphicon glyphicon-chevron-right"> </a>
-                                <span ng-show="messages.count==0">No search results.</span>
+                                <span ng-show="Messages.count==0">No search results.</span>
                             </div>
                             <div class="message-list heading-body">
-                                <div ng-repeat="message in messages.list" class="tweet-wrapper">
+                                <div ng-repeat="message in Messages.list" class="tweet-wrapper">
                                     <!--<script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
                                     <div ng-bind-html="message.embedded_html"></div>-->
                                     <div class="media">
-                                        <img class="profile_img" ng-if="not_empty_url(message.media_url)"
+                                        <img class="photo" ng-if="not_empty_url(message.media_url)"
                                              ng-src="{% static 'media/photos/' %}{$ message.media_url $}" />
                                     </div>
 
@@ -327,22 +357,22 @@
                             <div class="heading">Example Messages</div>
                             <div class="examples-description" ng-bind="convert_request_to_readable_str()"></div>
                             <div class="pages" ng-hide="is_empty()">
-                                <span ng-show="messages.count>0">Pages:</span>
-                                <a ng-show="messages.prev_page" ng-click="update_page(messages.prev_page)"
+                                <span ng-show="Messages.count>0">Pages:</span>
+                                <a ng-show="Messages.prev_page" ng-click="update_page(Messages.prev_page)"
                                       class="page-link glyphicon glyphicon-chevron-left"> </a>
-                                <a ng-show="messages.count>0"
-                                   ng-repeat="i in messages.pages" ng-click="update_page(i)"
+                                <a ng-show="Messages.count>0"
+                                   ng-repeat="i in Messages.pages" ng-click="update_page(i)"
                                    ng-class="highlight_current_page(i)" class="page-link"  > {$ i $} </a>
-                                <a ng-show="messages.next_page" ng-click="update_page(messages.next_page)"
+                                <a ng-show="Messages.next_page" ng-click="update_page(Messages.next_page)"
                                       class="page-link glyphicon glyphicon-chevron-right"> </a>
-                                <span ng-show="messages.count==0">No message in current selection.</span>
+                                <span ng-show="Messages.count==0">No message in current selection.</span>
                             </div>
                             <div ng-show="is_empty()" class="search-results-place-holder">
-                                Click points in the visualization to get example messages.
+                                Click points in the visualization to get example Messages.
                             </div>
                             <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
                             <div class="message-list heading-body">
-                                <div ng-repeat="message in messages.list" class="tweet-wrapper">
+                                <div ng-repeat="message in Messages.list" class="tweet-wrapper">
                                     <!--<script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
                                     <div ng-bind-html="message.embedded_html"></div>-->
                                     <div class="media">

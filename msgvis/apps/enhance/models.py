@@ -5,6 +5,7 @@ import textblob
 from fields import PositiveBigIntegerField
 from msgvis.apps.corpus.models import Message, Dataset
 from msgvis.apps.base import models as base_models
+from msgvis.apps.corpus import utils
 
 # Create your models here.
 
@@ -405,7 +406,9 @@ def set_message_sentiment(message, save=True):
 
 class TweetWord(models.Model):
     dataset = models.ForeignKey(Dataset, related_name="tweet_words", null=True, blank=True, default=None)
-    text = base_models.Utf8CharField(max_length=100)
+    original_text = base_models.Utf8CharField(max_length=100, db_index=True, blank=True, default="")
+    pos = models.CharField(max_length=4, null=True, blank=True, default="")
+    text = base_models.Utf8CharField(max_length=100, db_index=True, blank=True, default="")
     messages = models.ManyToManyField(Message, related_name='tweet_words')
 
     def __repr__(self):
@@ -413,6 +416,18 @@ class TweetWord(models.Model):
 
     def __unicode__(self):
         return self.__repr__()
+
+    @property
+    def related_words(self):
+        return TweetWord.objects.filter(dataset=self.dataset, text=self.text).all()
+
+    @property
+    def all_messages(self):
+        queryset = self.dataset.message_set.all()
+        queryset = queryset.filter(utils.levels_or("tweet_words__id", map(lambda x: x.id, self.related_words)))
+        return queryset
+
+
 
 class PrecalcCategoricalDistribution(models.Model):
     dataset = models.ForeignKey(Dataset, related_name="distributions", null=True, blank=True, default=None)

@@ -526,7 +526,7 @@ class DataTable(object):
             for group in groups:
                 group_obj = groups_models.Group.objects.get(id=group)
                 group_labels.append(group_obj.name)
-                queryset = group_obj.messages_online()
+                queryset = group_obj.messages
 
 
                 # Filter out null time

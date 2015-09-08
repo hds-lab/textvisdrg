@@ -195,6 +195,19 @@ class QuestionSerializer(serializers.ModelSerializer):
         fields = ('id', 'source', 'dimensions', 'text',)
         read_only_fields = fields
 
+class WordSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = enhance_models.Word
+
+    def to_representation(self, instance):
+        return instance.text
+
+class MessageTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = corpus_models.MessageType
+
+    def to_representation(self, instance):
+        return instance.name
 
 class ExampleMessageSerializer(serializers.Serializer):
     dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
@@ -221,10 +234,10 @@ class ExampleMessageSerializer(serializers.Serializer):
 
 class KeywordMessageSerializer(serializers.Serializer):
     dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
-    inclusive_keywords = serializers.ListField(child=serializers.CharField(), required=False)
-    exclusive_keywords = serializers.ListField(child=serializers.CharField(), required=False)
-    #messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
+    keywords = serializers.CharField(allow_null=True, allow_blank=True, required=False)
     messages = serializers.SerializerMethodField('paginated_messages')
+    types_list = serializers.ListField(child=serializers.CharField(), required=False)
+
     def paginated_messages(self, obj):
         request = self.context.get('request')
         messages_per_page = 10
@@ -242,74 +255,55 @@ class KeywordMessageSerializer(serializers.Serializer):
         return serializer.data
 
 
-class GroupSerializer(serializers.Serializer):
-    id = serializers.IntegerField(required=False)
-    dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
-    name = serializers.CharField(allow_null=True, allow_blank=True, required=False)
-    inclusive_keywords = serializers.ListField(child=serializers.CharField(), required=False)
-    exclusive_keywords = serializers.ListField(child=serializers.CharField(), required=False)
-    #messages = serializers.ListField(child=MessageSerializer(), required=False, read_only=True)
 
-    def create(self, validated_data):
-        group = groups_models.Group.objects.create(dataset=validated_data["dataset"],
-                                                   name=validated_data["name"])
 
-        dictionary = validated_data["dataset"].get_dictionary()
-        if dictionary is not None:
-            inclusive_keywords = validated_data.get("inclusive_keywords")
-            if inclusive_keywords:
-                group.add_inclusive_keywords(inclusive_keywords)
-
-            exclusive_keywords = validated_data.get("exclusive_keywords")
-            if exclusive_keywords:
-                group.add_exclusive_keywords(exclusive_keywords)
-
-        return group
-
-class WordSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = enhance_models.Word
-
-    def to_representation(self, instance):
-        return instance.text
-
-class GroupListSerializer(serializers.ModelSerializer):
-    inclusive_keywords = WordSerializer(many=True, required=False)
-    exclusive_keywords = WordSerializer(many=True, required=False)
-    message_count = serializers.IntegerField(required=False)
-    class Meta:
-        model = groups_models.Group
-        fields = ('id', 'dataset', 'name', 'inclusive_keywords', 'exclusive_keywords', 'message_count' )
+class KeywordListSerializer(serializers.Serializer):
+    dataset = serializers.IntegerField(required=True)
+    q = serializers.CharField(allow_null=True, allow_blank=True, required=False)
+    keywords = serializers.ListField(child=serializers.CharField(), required=False)
 
 class PaginatedMessageSerializer(pagination.PaginationSerializer):
     class Meta:
         object_serializer_class = MessageSerializer
 
 
+class GroupSerializer(serializers.ModelSerializer):
 
-
-class GroupListItemSerializer(serializers.ModelSerializer):
-    inclusive_keywords = WordSerializer(many=True, required=False)
-    exclusive_keywords = WordSerializer(many=True, required=False)
-    messages = serializers.SerializerMethodField('paginated_messages')
+    messages = serializers.SerializerMethodField('paginated_messages', required=False)
     message_count = serializers.IntegerField(required=False)
-    #messages = serializers.IntegerField(required=False)
+    include_types = MessageTypeSerializer(many=True, required=False)
+    types_list = serializers.ListField(child=serializers.CharField(), required=False)
 
     class Meta:
         model = groups_models.Group
-        fields = ('id', 'dataset', 'name', 'inclusive_keywords', 'exclusive_keywords', 'messages', 'message_count' )
+        fields = ('id', 'dataset', 'name', 'keywords', 'messages', 'message_count', 'include_types', 'types_list')
 
     def paginated_messages(self, obj):
-        paginator = Paginator(obj.messages.all(), 10)
-        page = 1
-        request = self.context.get('request')
+        if self.context and self.context.get('show_message'):
+            paginator = Paginator(obj.messages.all(), 10)
+            page = 1
+            request = self.context.get('request')
 
-        if request and request.query_params.get('page'):
-            page = request.query_params.get('page')
-        messages = paginator.page(page)
+            if request and request.query_params.get('page'):
+                page = request.query_params.get('page')
+            messages = paginator.page(page)
 
-        serializer = PaginatedMessageSerializer(messages)
-        return serializer.data
+            serializer = PaginatedMessageSerializer(messages)
+            return serializer.data
+        else:
+            return None
+
+    def create(self, validated_data):
+        group = groups_models.Group.objects.create(dataset=validated_data["dataset"],
+                                                   name=validated_data["name"])
+        if validated_data.get('keywords'):
+            group.keywords = validated_data.get('keywords')
+            group.save()
+        if validated_data.get('types_list'):
+            include_types = [corpus_models.MessageType.objects.get(name=x) for x in validated_data.get('types_list')]
+            group.include_types = include_types
+
+        return group
 
 
 class SampleQuestionSerializer(serializers.Serializer):

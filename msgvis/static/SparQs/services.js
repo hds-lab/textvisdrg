@@ -331,8 +331,8 @@
 
             var KeywordMessages = function () {
                 var self = this;
-                self.inclusive_keywords = "";
-                self.exclusive_keywords = "";
+                self.keywords = "";
+                self.types_list = [];
 
                 self.list = [];
                 self.current_page = 1;
@@ -342,17 +342,17 @@
             };
 
             angular.extend(KeywordMessages.prototype, {
-                load: function (dataset, page, inclusive_keywords, exclusive_keywords) {
+                load: function (dataset, page, keywords, types_list) {
                     var self = this;
 
                     // using current lists if the lists are not given
-                    inclusive_keywords = inclusive_keywords || self.inclusive_keywords;
-                    exclusive_keywords = exclusive_keywords || self.exclusive_keywords;
+                    keywords = keywords || self.keywords;
+                    types_list = types_list || self.types_list;
 
                     var request = {
                         dataset: dataset,
-                        inclusive_keywords: ((inclusive_keywords != "")) ? inclusive_keywords.trim().split(" ") : [],
-                        exclusive_keywords: ((exclusive_keywords != "")) ? exclusive_keywords.trim().split(" ") : []
+                        keywords: keywords,
+                        types_list: types_list
                     };
                     var messages_per_page = 10;
                     var apiUrl_with_param = apiUrl + "?messages_per_page=" + messages_per_page;
@@ -396,8 +396,8 @@
                             }
                             self.prev_page = (self.current_page > 1) ? self.current_page - 1 : false;
                             self.next_page = (self.current_page < self.page_num) ? self.current_page + 1 : false;
-                            self.inclusive_keywords = inclusive_keywords;
-                            self.exclusive_keywords = exclusive_keywords;
+                            self.keywords = keywords;
+                            self.types_list = types_list;
 
                         });
                 }
@@ -415,6 +415,7 @@
 
             var Keywords = function () {
                 var self = this;
+                self.list_url = djangoUrl.reverse('keyword') + "?dataset=" + Dataset.id + "&q="
                 self.key = "words";
                 self.search_results = {"": self};
                 self.table = undefined;
@@ -578,45 +579,38 @@
                             console.log(self.group_list);
                         });
                 },
-                save: function (dataset, name, inclusive_keywords, exclusive_keywords) {
+                save: function (dataset, name, keywords, types_list) {
                     var self = this;
 
                     var request = {
                         dataset: dataset,
                         name: name,
-                        inclusive_keywords: inclusive_keywords,
-                        exclusive_keywords: exclusive_keywords
+                        keywords: keywords,
+                        types_list: types_list
                     };
 
                     self.messages = [];
                     if ( self.current_group_id != -1 ){
                         request.id = self.current_group_id;
-                        if (inclusive_keywords.join(" ") == self.group_dict[self.current_group_id].inclusive_keywords.join(" ") &&
-                            exclusive_keywords.join(" ") == self.group_dict[self.current_group_id].exclusive_keywords.join(" ") &&
+
+                        // Check if anything changes
+                        if (keywords == self.group_dict[self.current_group_id].keywords &&
+                            types_list.join(" ") == self.group_dict[self.current_group_id].include_types.join(" ") &&
                             name.trim() == self.group_dict[self.current_group_id].name.trim())
                             return false;
 
                         return $http.put(apiUrl, request)
                         .success(function (data) {
-                            self.messages = data.messages.results.map(function (msgdata) {
-                                return new Message(msgdata);
-                            });
-                            self.group_dict[self.current_group_id].name = name;
-                            self.group_dict[self.current_group_id].inclusive_keywords = inclusive_keywords;
-                            self.group_dict[self.current_group_id].exclusive_keywords = exclusive_keywords;
+                            self.group_dict[self.current_group_id].name = data.name;
+                            self.group_dict[self.current_group_id].keywords = data.keywords;
+                            self.group_dict[self.current_group_id].include_types =  data.include_types;
                             self.group_dict[self.current_group_id].message_count = data.message_count;
                         });
                     }
                     else{
                         return $http.post(apiUrl, request)
                             .success(function (data) {
-                                //self.current_group_id = data.id;
-                                self.messages = data.messages.results.map(function (msgdata) {
-                                    return new Message(msgdata);
-                                });
-                                var new_group = new GroupItem(request);
-                                new_group.id = data.id;
-                                new_group.message_count = data.message_count;
+                                var new_group = new GroupItem(data);
                                 new_group.selected = false;
                                 self.group_dict[new_group.id] = new_group;
                                 self.group_list.push(new_group);
@@ -651,8 +645,8 @@
                     self.current_group_id = group.id;
                     var group_ctrl = {
                         name: group.name,
-                        inclusive_keywords: group.inclusive_keywords.join(" "),
-                        exclusive_keywords: group.exclusive_keywords.join(" ")
+                        keywords: group.keywords,
+                        include_types: group.types_list
                     };
 
                     return group_ctrl;

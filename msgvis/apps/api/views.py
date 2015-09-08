@@ -24,6 +24,7 @@ from rest_framework.reverse import reverse
 from rest_framework.compat import get_resolver_match, OrderedDict
 from django.core.context_processors import csrf
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Count
 
 from msgvis.apps.api import serializers
 from msgvis.apps.corpus import models as corpus_models
@@ -235,7 +236,7 @@ class KeywordMessagesView(APIView):
 
         {
             "dataset": 1,
-            "keyword": "like",
+            "keywords": "some",
             "messages": [
                 {
                     "id": 52,
@@ -261,17 +262,13 @@ class KeywordMessagesView(APIView):
 
             dataset = data['dataset']
 
-            inclusive_keywords = data.get('inclusive_keywords') or []
-            exclusive_keywords = data.get('exclusive_keywords') or []
+            keywords = data.get('keywords') or ""
+            types_list = data.get('types_list') or []
+            include_types = []
+            if len(types_list) > 0:
+                include_types = [corpus_models.MessageType.objects.get(name=x) for x in types_list]
 
-            words = dataset.get_dictionary().words
-
-            # convert to Word object
-            inclusive_keywords = filter(lambda x: x is not None, map(lambda x: words.get(text=x), inclusive_keywords))
-            exclusive_keywords = filter(lambda x: x is not None, map(lambda x: words.get(text=x), exclusive_keywords))
-
-
-            messages = dataset.get_advanced_search_results(inclusive_keywords, exclusive_keywords)
+            messages = dataset.get_advanced_search_results(keywords, include_types)
 
             # Just add the messages key to the response
             response_data = data
@@ -322,39 +319,46 @@ class GroupView(APIView):
 
             # Just add the messages key to the response
 
-            output = serializers.GroupListItemSerializer(group, context={'request': request})
+            output = serializers.GroupSerializer(group, context={'request': request, 'show_message': False})
             return Response(output.data, status=status.HTTP_200_OK)
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, format=None):
         if request.query_params.get('dataset'):
-            groups = groups_models.Group.objects.filter(dataset_id=int(request.query_params.get('dataset'))).all()
-            output = serializers.GroupListSerializer(groups, many=True)
+            dataset_id = int(request.query_params.get('dataset'))
+            groups = groups_models.Group.objects.filter(dataset_id=dataset_id, deleted=False).all()
+            output = serializers.GroupSerializer(groups, many=True)
             return Response(output.data, status=status.HTTP_200_OK)
         elif request.query_params.get('group_id'):
             group = groups_models.Group.objects.get(id=int(request.query_params.get('group_id')))
-            output = serializers.GroupListItemSerializer(group, context={'request': request})
+            output = serializers.GroupSerializer(group, context={'request': request, 'show_message': True})
             return Response(output.data, status=status.HTTP_200_OK)
         else:
             groups = groups_models.Group.objects.all()
-            output = serializers.GroupListSerializer(groups, many=True)
+            output = serializers.GroupSerializer(groups, many=True)
             return Response(output.data, status=status.HTTP_200_OK)
 
     def put(self, request, format=None):
         input = serializers.GroupSerializer(data=request.data)
         if input.is_valid():
             data = input.validated_data
-            group = groups_models.Group.objects.get(id=data["id"])
+            group = groups_models.Group.objects.get(id=request.data["id"])
             if data.get('name') is not None:
                 group.name = data["name"]
                 group.save()
-            if data.get('inclusive_keywords'):
-                group.add_inclusive_keywords(data.get('inclusive_keywords'))
-            if data.get('exclusive_keywords'):
-                group.add_exclusive_keywords(data.get('exclusive_keywords'))
+            if data.get('keywords') is not None:
+                group.keywords = data.get('keywords')
+                group.save()
 
-            output = serializers.GroupListItemSerializer(group, context={'request': request})
+            if data.get('types_list') is not None:
+                type_list = data.get('types_list')
+                include_types = map(lambda x: corpus_models.MessageType.objects.get(name=x), type_list)
+                group.include_types = include_types
+
+
+
+            output = serializers.GroupSerializer(group, context={'request': request, 'show_message': False})
             return Response(output.data, status=status.HTTP_200_OK)
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -362,9 +366,60 @@ class GroupView(APIView):
     def delete(self, request, format=None):
         if request.query_params.get('id'):
             group = groups_models.Group.objects.get(id=request.query_params.get('id'))
-            group.delete()
+            if group:
+                group.deleted = True
+                group.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
+
+class KeywordView(APIView):
+    """
+    Get top 10 keyword results.
+
+    **Request:** ``GET /api/keyword?dataset=1&q= [...]``
+
+    ::
+
+        {
+            "dataset": 1,
+            "q": "mudslide oso",
+            "keywords": ["mudslide oso", "mudslide oso soup", "mudslide oso ladies"]
+        }
+    """
+
+
+    def get(self, request, format=None):
+        if request.query_params.get('dataset'):
+            dataset_id = request.query_params.get('dataset')
+            response_data = {
+                "dataset": dataset_id
+            }
+
+            if request.query_params.get('q') is None:
+                keywords = enhance_models.TweetWord.objects.filter(dataset_id=dataset_id).values('text').distinct()[:20]
+                response_data["keywords"] = keywords
+                output = serializers.KeywordListSerializer(response_data)
+            else:
+                q = request.query_params.get('q')
+                response_data["q"] = q
+
+                strings = q.split(' ')
+                prefix = " ".join(strings[:-1]) + " "
+                keyword = strings[-1]
+                keywords = enhance_models.PrecalcCategoricalDistribution.objects.filter(dataset_id=dataset_id,
+                                                                                        dimension_key="words",
+                                                                                        level__istartswith=keyword).order_by('-count')
+
+                response_data["keywords"] = map(lambda x: prefix + x.level, keywords[:20])
+                output = serializers.KeywordListSerializer(response_data)
+
+                for idx, keyword in enumerate(output.data['keywords']):
+                    output.data['keywords'][idx] = {"text": output.data['keywords'][idx]}
+
+            #output = serializers.GroupListItemSerializer(group, context={'request': request})
+            return Response(output.data, status=status.HTTP_200_OK)
+
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class ResearchQuestionsView(APIView):
     """

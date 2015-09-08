@@ -84,7 +84,7 @@ register(models.TextDimension, dict(
     key='words',
     name='Keywords',
     description='The words found in the message',
-    field_name='words__text',
+    field_name='tweet_words__text',
 ))
 
 register(models.RelatedCategoricalDimension, dict(

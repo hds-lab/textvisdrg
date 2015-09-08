@@ -4,7 +4,8 @@
 
     var module = angular.module('SparQs.controllers', [
         'SparQs.services',
-        'angularSpinner'
+        'angularSpinner',
+        'angucomplete-alt'
     ]);
 
     module.config(['$interpolateProvider', function ($interpolateProvider) {
@@ -90,9 +91,9 @@
         'SparQs.services.Selection'];
     module.controller('SparQs.controllers.DimensionController', DimensionController);
 
-    var ExampleMessageController = function ($scope, ExampleMessages, Selection, Dataset, usSpinnerService) {
+    var ExampleMessageController = function ($scope, ExampleMessages, Selection, Group, Dataset, usSpinnerService) {
 
-        $scope.messages = ExampleMessages;
+        $scope.Messages = ExampleMessages;
 
         $scope.spinnerOptions = {
             radius: 20,
@@ -154,7 +155,7 @@
                 if ( request.hasOwnProperty('groups') && request.groups ){
                     str += "in Group";
                     request.groups.forEach(function(d){
-                        str += " " + d;
+                        str += " " + Group.group_dict[d].name;
                     });
                 }
             }
@@ -198,6 +199,7 @@
         '$scope',
         'SparQs.services.ExampleMessages',
         'SparQs.services.Selection',
+        'SparQs.services.Group',
         'SparQs.services.Dataset',
         'usSpinnerService'
     ];
@@ -205,20 +207,32 @@
 
     var SearchAndGroupController = function ($scope, Keywords, KeywordMessages, Group, Dataset, Selection, usSpinnerService) {
 
-        $scope.keywords = Keywords;
         $scope.Group = Group;
         Group.load(Dataset.id);
+        $scope.keyword_list_url = Keywords.list_url;
+        $scope.Messages = KeywordMessages;
+        $scope.Keywords = Keywords;
 
-        $scope.group_name = "";
-        $scope.messages = KeywordMessages;
-        $scope.inclusive_keywords = "";
-        $scope.exclusive_keywords = "";
+        $scope.search_params = {
+            group_name: "",
+            keywords: "",
+            types_list: [],
+            selected_keyword_items: [],
+            tweet_types: {tweet: true, retweet: true, reply: true}
+        };
+        $scope.edit_params = {
+            group_name: "",
+            keywords: "",
+            types_list: [],
+            selected_keyword_items: [],
+            tweet_types: {tweet: true, retweet: true, reply: true}
+        };
+
+        var params = {};
+        params["edit_mode_" + false] = $scope.search_params;
+        params["edit_mode_" + true] = $scope.edit_params;
 
         $scope.edit_mode = false;
-        $scope.new_param = {};
-        $scope.new_param.group_name = "";
-        $scope.new_param.inclusive_keywords = "";
-        $scope.new_param.exclusive_keywords = "";
 
 
         $scope.spinnerOptions = {
@@ -232,9 +246,16 @@
             if ($event){
                 $event.stopPropagation();
             }
-            var inclusive_keywords = ($scope.edit_mode) ? $scope.new_param.inclusive_keywords : $scope.inclusive_keywords;
-            var exclusive_keywords = ($scope.edit_mode) ? $scope.new_param.exclusive_keywords : $scope.exclusive_keywords;
-            var request = KeywordMessages.load(Dataset.id, 1, inclusive_keywords, exclusive_keywords);
+            var current_params = params["edit_mode_" + $scope.edit_mode];
+            var keywords = current_params.selected_keyword_items.join(",");
+            var types_list = [];
+            for ( var type in current_params.tweet_types ){
+                if ( current_params.tweet_types.hasOwnProperty(type) && current_params.tweet_types[type] === true ){
+                    types_list.push(type);
+                }
+            }
+
+            var request = KeywordMessages.load(Dataset.id, 1, keywords, types_list);
             if (request) {
                 usSpinnerService.spin('search-spinner');
                 $scope.change_mode("group_messages");
@@ -264,30 +285,39 @@
         };
 
         $scope.reset_search = function(){
-            $scope.messages = KeywordMessages;
-            $scope.group_name = "";
-            $scope.inclusive_keywords = "";
-            $scope.exclusive_keywords = "";
-            $scope.messages.count = -1;
+
+            var current_params = params["edit_mode_" + $scope.edit_mode];
+            current_params.group_name = "";
+            current_params.selected_keyword_items = [];
+            current_params.tweet_types = {tweets: true, retweets: false, replies: false};
+            $scope.$broadcast('angucomplete-alt:clearInput');
+
+            KeywordMessages.messages.count = -1;
             $scope.change_mode("keyword_list");
+
         };
 
         $scope.save = function ($event, group) {
-            var name = ($scope.edit_mode) ? $scope.new_param.group_name : $scope.group_name;
-            var inclusive_keywords = ($scope.edit_mode) ? $scope.new_param.inclusive_keywords : $scope.inclusive_keywords;
-            var exclusive_keywords = ($scope.edit_mode) ? $scope.new_param.exclusive_keywords : $scope.exclusive_keywords;
+            var current_params = params["edit_mode_" + $scope.edit_mode];
 
-            if (name == "" || name == undefined){
-                name = "";
-                name += (inclusive_keywords != "") ? inclusive_keywords + " " : "";
-                name += (exclusive_keywords != "") ? "excluding " + exclusive_keywords + " " : "";
+            var name = current_params.group_name;
+            var keywords = current_params.selected_keyword_items.join(",");
+            var types_list = [];
+            for ( var type in current_params.tweet_types ){
+                if ( current_params.tweet_types.hasOwnProperty(type) && current_params.tweet_types[type] === true ){
+                    types_list.push(type);
+                }
             }
 
-            inclusive_keywords = ((inclusive_keywords != "")) ? inclusive_keywords.split(" ") : [];
-            exclusive_keywords = ((exclusive_keywords != "")) ? exclusive_keywords.split(" ") : [];
+            if (name == "" || name == undefined){
+                name = keywords;
+                if (name.length > 40){
+                    name = name.substr(0, 40) + "...";
+                }
+            }
 
 
-            var request = Group.save(Dataset.id, name, inclusive_keywords, exclusive_keywords);
+            var request = Group.save(Dataset.id, name, keywords, types_list);
             if (request) {
                 if ($scope.edit_mode){
 
@@ -306,7 +336,7 @@
 
                     request.then(function() {
                         usSpinnerService.stop('save-spinner');
-                        $scope.reset_search();
+
                     });
                 }
             }
@@ -321,7 +351,7 @@
         };
 
         $scope.is_empty = function(){
-            return ($scope.messages.count == -1 )
+            return (KeywordMessages.count == -1 )
         };
         $scope.is_being_editing = function(group){
             return $scope.edit_mode && Group.current_group_id == group.id;
@@ -332,18 +362,30 @@
         $scope.editing_class = function(group){
             return ($scope.is_being_editing(group)) ? "edit-class" : "";
         };
+        $scope.show_messages = function($event, group){
+            $event.stopPropagation();
+            var current_params = params["edit_mode_" + $scope.edit_mode];
+            current_params.group_name = group.name;
+            current_params.selected_keyword_items = group.keywords.split(',');
+            current_params.tweet_types = {tweet: false, retweet: false, reply: false};
+            group.include_types.forEach(function(d){
+                current_params.tweet_types[d] = true;
+            });
+
+            Group.current_group_id = group.id;
+            $scope.search($event);
+        };
+
 
         $scope.edit_group = function($event, group){
-            $event.stopPropagation();
+
             $scope.edit_mode = true;
-            $scope.new_param.group_name = group.name;
-            $scope.new_param.inclusive_keywords = group.inclusive_keywords.join(' ');
-            $scope.new_param.exclusive_keywords = group.exclusive_keywords.join(' ');
-            Group.current_group_id = group.id;
-            $scope.search($event, true);
+            $scope.show_messages($event, group);
+
         };
         $scope.group_color = function(group){
-            return {'background-color': group.color };
+            if (group.selected) return {'background-color': group.color};
+            return {'border': "1px solid #ccc" };
         };
 
 
@@ -352,15 +394,16 @@
                 $event.stopPropagation();
             }
             Group.current_group_id = -1;
+            KeywordMessages.count = -1;
+
             $scope.edit_mode = false;
-            $scope.messages.count = -1;
             $scope.change_mode("keyword_list");
         };
 
 
         $scope.delete_group = function($event, group){
             $event.stopPropagation();
-            var msg = "Are you sure you want to delete group #" + group.id + "?";
+            var msg = "Are you sure you want to delete group \"" + group.name + "\"?";
             if ( window.confirm(msg) ){
                 Group.delete_group(group);
             }
@@ -378,6 +421,7 @@
         $scope.group_class = function(group){
             return ($scope.is_being_editing(group)) ? "edit-class" : ((group.selected) ? "active" : "");
         };
+
 
         // Load keywords distribution
         Keywords.load_keywords_distributions();
@@ -417,6 +461,41 @@
         $scope.change_mode = function(mode){
             current_mode = mode;
         };
+
+
+        $scope.select_keywords = function(selected_item){
+            var self = this;
+            var current_params = params["edit_mode_" + $scope.edit_mode];
+            if ( selected_item && current_params.selected_keyword_items.indexOf(selected_item.title) == -1) {
+                current_params.selected_keyword_items.push(selected_item.title);
+            }
+        };
+        $scope.remove_selected = function(item){
+            var current_params = params["edit_mode_" + $scope.edit_mode];
+            var idx = current_params.selected_keyword_items.indexOf(item);
+            if ( idx != -1 ){
+                current_params.selected_keyword_items.splice(idx, 1);
+            }
+        };
+        $scope.press_enter_key = function(searchStr){
+            if ( searchStr && searchStr.trim() != "" ){
+                $scope.select_keywords({title: searchStr.trim()});
+                $scope.$broadcast('angucomplete-alt:clearInput');
+            }
+            else {
+
+                $scope.search();
+            }
+        };
+        $scope.delete_previous_item = function(){
+            var current_params = params["edit_mode_" + $scope.edit_mode];
+            if ( current_params.selected_keyword_items.length > 0 ){
+                return current_params.selected_keyword_items.pop();
+            }
+            return "";
+        }
+
+
 
     };
     SearchAndGroupController.$inject = [
