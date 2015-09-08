@@ -292,7 +292,7 @@
             current_params.tweet_types = {tweets: true, retweets: false, replies: false};
             $scope.$broadcast('angucomplete-alt:clearInput');
 
-            KeywordMessages.messages.count = -1;
+            KeywordMessages.count = -1;
             $scope.change_mode("keyword_list");
 
         };
