@@ -154,8 +154,9 @@
                 });
                 if ( request.hasOwnProperty('groups') && request.groups ){
                     str += "in Group";
-                    request.groups.forEach(function(d){
-                        str += " " + Group.group_dict[d].name;
+                    request.groups.forEach(function(d, i){
+                        str += (i > 0) ? " | " : "";
+                        str += Group.group_dict[d].name;
                     });
                 }
             }
