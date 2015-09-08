@@ -84,10 +84,7 @@
                             <div class="heading">Search Messages by Keywords</div>
                             Use NOT as prefix for excluding a keyword (e.g., NOT job).
                             <div class="search-keywords form-control">
-                                <div class="btns">
-                                    <span class="glyphicon glyphicon-search" ng-click="search($event)"></span>
-                                    <span class="glyphicon glyphicon-remove" ng-show="search_params.selected_keyword_items.length" ng-click="reset_search()"></span>
-                                </div>
+
                                  <div class="selected-keyword-items">
                                      <div class="selected-keyword-item" ng-repeat="item in search_params.selected_keyword_items">
                                          <span class="text"> {$ item $}</span>
@@ -108,7 +105,10 @@
                                       enter-key-down="press_enter_key"
                                       backspace-key-down="delete_previous_item" />
 
-
+                                <div class="btns">
+                                    <span class="glyphicon glyphicon-search" ng-click="search($event)"></span>
+                                    <span class="glyphicon glyphicon-remove" ng-show="search_params.selected_keyword_items.length" ng-click="reset_search()"></span>
+                                </div>
                             </div>
                         </form>
                         <div class="tweet-type-options">
@@ -142,7 +142,7 @@
                                         <span class="group-color-box"
                                              ng-click="toggle_group($event, group)" ng-style="group_color(group)">
                                         </span>
-                                        {$ group.name $}
+                                        #{$ group.id $} {$ group.name $}
                                     </div>
 
                                     <div class="keyword-list">
@@ -157,7 +157,7 @@
                                         </div>
                                         <div class="show-vis-btn"
                                              ng-click="show_messages($event, group)">
-                                            show messages
+                                            show in search
                                         </div>
                                     </div>
                                 </div>

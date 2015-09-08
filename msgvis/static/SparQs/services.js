@@ -656,7 +656,7 @@
                     if (group.selected == true){
                         if (self.selected_groups.indexOf(group) == -1)
                         self.selected_groups.push(group);
-                        group.color = self.colors(group.name);
+                        group.color = self.colors(group.id);
                     }
                     else{
                         var idx = self.selected_groups.indexOf(group);

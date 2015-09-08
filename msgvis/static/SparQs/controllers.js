@@ -372,15 +372,15 @@
                 current_params.tweet_types[d] = true;
             });
 
-            Group.current_group_id = group.id;
+
             $scope.search($event);
         };
 
 
         $scope.edit_group = function($event, group){
-
             $scope.edit_mode = true;
             $scope.show_messages($event, group);
+            Group.current_group_id = group.id;
 
         };
         $scope.group_color = function(group){

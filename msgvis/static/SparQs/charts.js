@@ -900,7 +900,10 @@
                                 text: primary.name,
                                 position: 'outer-center'
                             },
-                            height: 60
+                            height: 60,
+                            extent: function(domain){
+                                return domain;
+                            }
                         },
                         y: {
                             label: {
@@ -919,12 +922,15 @@
                     subchart: {
                         show: function(primary){
                             return primary.is_quantitative_or_time();
-                        }(primary)
+                        }(primary),
+                        size: {
+                            height: 30
+                        }
                     },
                     color: {
                         pattern: function(){
-                            if (domain_labels.hasOwnProperty("groups")){
-                                return domain_labels.groups.map(function(d){ return self.group_color(d) });
+                            if (domains.hasOwnProperty("groups")){
+                                return domains.groups.map(function(d){ return self.group_color(d) });
                             }
                             else {
                                 return ["#999"]
@@ -938,7 +944,8 @@
                         y: {
                             show: true
                         }
-                    }
+                    },
+
 
                 };
 
@@ -997,13 +1004,20 @@
                         // The secondary dimension is categorical, so it
                         // requires a legend to reveal the groups.
                         config.legend.show = true;
-                        config.legend.position = 'inset';
-                        config.legend.inset = {
-                            anchor: 'top-right',
-                            x: 20,
-                            y: 20,
-                            step: 3
+                        config.legend.position = 'bottom';
+                        config.legend.item = {
+                            onclick: function(id){
+                                var is_shown = (self.chart.data.shown(id).length > 0);
+                                if (is_shown){
+                                    self.chart.hide();
+                                    self.chart.show(id);
+                                }
+                                else {
+                                    self.chart.show(id);
+                                }
+                            }
                         };
+
                         var num_of_levels = domains[secondary.key].length;
                         if ( num_of_levels > 12 ){
                             config.legend.inset.step = 6;
@@ -1014,7 +1028,7 @@
                 return config;
             }
 
-            this.render = function (dataTable) {
+            self.render = function (dataTable) {
                 if (!dataTable) {
                     return;
                 }
@@ -1027,12 +1041,13 @@
                     secondary = dimensions[1];
                 }
                 if (primary) {
-                    this.primary_domain = dataTable.domains;
+                    self.primary_domain = dataTable.domains;
                     var table = buildFullTable(primary, secondary, dataTable.table, dataTable.domains, dataTable.domain_labels);
                     var config = getC3Config(primary, secondary, dataTable.domains, dataTable.domain_labels);
                     config.data.rows = table;
                     config.bindto = $element.find('.sparqs-vis-render-target')[0];
-                    this.chart = c3.generate(config);
+
+                    self.chart = c3.generate(config);
                     self.primary = primary;
                     self.secondary = secondary;
                 }

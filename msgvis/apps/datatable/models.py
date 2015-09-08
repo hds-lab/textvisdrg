@@ -650,7 +650,10 @@ class DataTable(object):
                     final_table.extend(group_table)
 
                 domains['groups'] = groups
-                domain_labels['groups'] = group_labels
+                domain_labels['groups'] = []
+                for idx, label in enumerate(group_labels):
+                    domain_labels['groups'].append("#" + str(groups[idx]) + " " + label)
+
                 results = {
                     'table': final_table,
                     'domains': domains,

@@ -163,6 +163,10 @@ body {
                 box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
                 padding: 5px 10px;
                 cursor: pointer;
+                &:hover {
+                    background-color: rgba(153, 198, 228, 0.24)
+
+                }
             }
 
 
@@ -334,6 +338,7 @@ body {
         position: absolute;
         right: 5px;
         top: 0px;
+        z-index: 1000;
 
         .btn {
             font-size: 11px;
@@ -487,6 +492,16 @@ body {
         .c3-grid line {
             stroke-dasharray: 0;
             stroke: #E2E2E2;
+        }
+        .c3-brush{
+            .extent {
+                fill: steelblue;
+            }
+            .resize rect {
+                opacity: 0.8 !important;
+                fill: steelblue !important;
+                visibility: visible !important;
+            }
         }
 
     }
