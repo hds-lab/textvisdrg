@@ -20,7 +20,7 @@
         });
     }]);
 
-    var DimensionController = function ($scope, Dimensions, Filtering, Selection) {
+    var DimensionController = function ($scope, Dimensions, Filtering, Selection, History) {
 
         $scope.draggableOptions = {
             revert: 'invalid',
@@ -70,8 +70,9 @@
             $scope.dropped = undefined; // remove the dropped dimension
         };
         $scope.changeDimension = function(dimension){
-                Selection.change_dimension(dimension);
-                Selection.changed('dimensions');
+            History.add_record("dimension:changed", {dimension: dimension.key});
+            Selection.change_dimension(dimension);
+            Selection.changed('dimensions');
         };
         $scope.is_current_dimension = function(dimension){
             return Selection.get_current_dimension() == dimension;
@@ -81,17 +82,23 @@
                 return "active";
             else
                 return "";
-        }
+        };
+
+        $scope.$on('add-history', function($event, type, contents){
+            History.add_record(type, contents);
+        });
     };
 
     DimensionController.$inject = [
         '$scope',
         'SparQs.services.Dimensions',
         'SparQs.services.Filtering',
-        'SparQs.services.Selection'];
+        'SparQs.services.Selection',
+        'SparQs.services.ActionHistory'
+    ];
     module.controller('SparQs.controllers.DimensionController', DimensionController);
 
-    var ExampleMessageController = function ($scope, ExampleMessages, Selection, Group, Dataset, usSpinnerService) {
+    var ExampleMessageController = function ($scope, ExampleMessages, Selection, Group, Dataset, usSpinnerService, History) {
 
         $scope.Messages = ExampleMessages;
 
@@ -118,24 +125,17 @@
             var request = ExampleMessages.load(Dataset.id, 1, filters, focus, exclude, groups);
             if (request) {
                 usSpinnerService.spin('examples-spinner');
+                $('#messages .message-list').scrollTop(0);
+                History.add_record("example-messages:load:request-start", "");
 
                 request.then(function() {
 
                     usSpinnerService.stop('examples-spinner');
+                    History.add_record("example-messages:load:request-end", "");
                 });
             }
         };
-        $scope.refresh = function () {
-            var request = ExampleMessages.refresh();
-            if (request) {
-                usSpinnerService.spin('examples-spinner');
 
-                request.then(function() {
-
-                    usSpinnerService.stop('examples-spinner');
-                });
-            }
-        };
         $scope.convert_request_to_readable_str = function() {
             var request = ExampleMessages.prev_request;
             var str = "";
@@ -178,9 +178,10 @@
             var request = ExampleMessages.load(Dataset.id, page);
             if (request) {
                 usSpinnerService.spin('examples-spinner');
+                History.add_record("example-message:switch-page:request-start", {page: page});
 
                 request.then(function() {
-
+                    History.add_record("example-message:switch-page:request-end", {page: page});
                     usSpinnerService.stop('examples-spinner');
                 });
             }
@@ -191,9 +192,9 @@
 
         Selection.changed('filters,focus,groups', $scope, $scope.get_example_messages);
 
-
-
-        //$scope.get_example_messages();
+        $scope.$on('add-history', function($event, type, contents){
+            History.add_record(type, contents);
+        });
 
 
     };
@@ -203,11 +204,12 @@
         'SparQs.services.Selection',
         'SparQs.services.Group',
         'SparQs.services.Dataset',
-        'usSpinnerService'
+        'usSpinnerService',
+        'SparQs.services.ActionHistory'
     ];
     module.controller('SparQs.controllers.ExampleMessageController', ExampleMessageController);
 
-    var SearchAndGroupController = function ($scope, Keywords, KeywordMessages, Group, Dataset, Selection, usSpinnerService) {
+    var SearchAndGroupController = function ($scope, Keywords, KeywordMessages, Group, Dataset, Selection, usSpinnerService, History) {
 
         $scope.Group = Group;
         Group.load(Dataset.id);
@@ -261,23 +263,28 @@
             if (request) {
                 usSpinnerService.spin('search-spinner');
                 $scope.change_mode("group_messages");
+                $('#search .message-list').scrollTop(0);
+
+                History.add_record("search:request-start", {edit_mode: $scope.edit_mode, current_params: current_params});
 
                 request.then(function() {
                     usSpinnerService.stop('search-spinner');
+                    History.add_record("search:request-end", {edit_mode: $scope.edit_mode, current_params: current_params});
                 });
             }
         };
 
 
         $scope.update_page = function (page) {
-
             var request = KeywordMessages.load(Dataset.id, page);
             if (request) {
                 usSpinnerService.spin('search-spinner');
                 $scope.change_mode("group_messages");
+                History.add_record("search:switch-page:request-start", {page: page});
 
                 request.then(function() {
                     usSpinnerService.stop('search-spinner');
+                    History.add_record("search:switch-page:request-stop", {page: page});
                 });
             }
         };
@@ -287,11 +294,12 @@
         };
 
         $scope.reset_search = function(){
-
             var current_params = params["edit_mode_" + $scope.edit_mode];
+            History.add_record("search:reset-search", {edit_mode: $scope.edit_mode, current_params: current_params});
+
             current_params.group_name = "";
             current_params.selected_keyword_items = [];
-            current_params.tweet_types = {tweets: true, retweets: false, replies: false};
+            current_params.tweet_types = {tweet: true, retweet: false, reply: false};
             $scope.$broadcast('angucomplete-alt:clearInput');
 
             KeywordMessages.count = -1;
@@ -322,11 +330,12 @@
             var request = Group.save(Dataset.id, name, keywords, types_list);
             if (request) {
                 if ($scope.edit_mode){
-
+                    History.add_record("group:save-edit:request-start", {group: group});
                     usSpinnerService.spin('update-spinner');
 
                     request.then(function() {
                         usSpinnerService.stop('update-spinner');
+                        History.add_record("group:save-edit:request-stop", {group: group});
                         $scope.finish_edit();
                         if (group.selected) {
                             Selection.changed('groups');
@@ -335,14 +344,17 @@
                 }
                 else{
                     usSpinnerService.spin('save-spinner');
+                    History.add_record("group:save-search:request-start", "");
 
                     request.then(function() {
                         usSpinnerService.stop('save-spinner');
+                        History.add_record("group:save-search:request-end", "");
 
                     });
                 }
             }
             else{
+                History.add_record("group:save-edit:no-change", {group: group});
                 $scope.edit_mode = false;
                 $scope.change_mode("keyword_list");
             }
@@ -366,9 +378,11 @@
         };
         $scope.show_messages = function($event, group){
             $event.stopPropagation();
+            History.add_record("group:show-messages", {group: group});
+
             var current_params = params["edit_mode_" + $scope.edit_mode];
             current_params.group_name = group.name;
-            current_params.selected_keyword_items = group.keywords.split(',');
+            current_params.selected_keyword_items = group.keywords.split(',').map(function(d){ return d.trim() });
             current_params.tweet_types = {tweet: false, retweet: false, reply: false};
             group.include_types.forEach(function(d){
                 current_params.tweet_types[d] = true;
@@ -381,6 +395,7 @@
 
         $scope.edit_group = function($event, group){
             $scope.edit_mode = true;
+            History.add_record("group:start_edit", {group: group});
             $scope.show_messages($event, group);
             Group.current_group_id = group.id;
 
@@ -391,10 +406,11 @@
         };
 
 
-        $scope.finish_edit = function($event){
+        $scope.finish_edit = function($event, group){
             if ($event){
                 $event.stopPropagation();
             }
+            History.add_record("group:finish-edit", {group: group});
             Group.current_group_id = -1;
             KeywordMessages.count = -1;
 
@@ -406,6 +422,7 @@
         $scope.delete_group = function($event, group){
             $event.stopPropagation();
             var msg = "Are you sure you want to delete group \"" + group.name + "\"?";
+            History.add_record("group:delete-attempt", {group: group});
             if ( window.confirm(msg) ){
                 var is_selected = group.selected;
                 var request = Group.delete_group(group);
@@ -426,8 +443,10 @@
         $scope.toggle_group = function($event, group){
             $event.stopPropagation();
             group.selected = !group.selected;
+            History.add_record("group:toggle", {group: group, is_selected_now: group.selected});
             Group.select_group(group);
             Selection.changed('groups');
+
 
         };
 
@@ -450,19 +469,10 @@
         });
 
         $scope.loadMoreKeywords = function() {
+            History.add_record("keyword-list:load-more", "");
             Keywords.load_keywords_distributions();
         };
 
-        $scope.keywords_search = function() {
-            Keywords.search_key = Keywords.search_key_tmp;
-            Keywords.load_keywords_distributions();
-            $('#keywords-list').scrollTop(0);
-        };
-        $scope.set_back_cur_keywords_search = function() {
-            if ( Keywords.search_key_tmp !== Keywords.search_key )
-                Keywords.search_key_tmp = Keywords.search_key;
-
-        };
 
         var current_mode = "keyword_list";
         $scope.is_mode = function(mode){
@@ -471,16 +481,22 @@
         $scope.tab_class = function(mode){
             return ($scope.is_mode(mode)) ? 'active' : "";
         };
-        $scope.change_mode = function(mode){
-            current_mode = mode;
+        $scope.change_mode = function(mode, $event){
+            if (mode != current_mode){
+                History.add_record("search-result:switch-mode", {target_mode: mode, by_user: ($event !== undefined)});
+                current_mode = mode;
+            }
         };
-
+        $scope.input_changed = function(selected_item){
+            History.add_record("keyword:input-changed", {currentStr: selected_item});
+        };
 
         $scope.select_keywords = function(selected_item){
             var self = this;
             var current_params = params["edit_mode_" + $scope.edit_mode];
             if ( selected_item && current_params.selected_keyword_items.indexOf(selected_item.title) == -1) {
                 current_params.selected_keyword_items.push(selected_item.title);
+                History.add_record("keyword:select", {item: selected_item.title});
             }
         };
         $scope.remove_selected = function(item){
@@ -488,26 +504,34 @@
             var idx = current_params.selected_keyword_items.indexOf(item);
             if ( idx != -1 ){
                 current_params.selected_keyword_items.splice(idx, 1);
+                History.add_record("keyword:remove", {item: item});
             }
         };
         $scope.press_enter_key = function(searchStr){
             if ( searchStr && searchStr.trim() != "" ){
                 $scope.select_keywords({title: searchStr.trim()});
                 $scope.$broadcast('angucomplete-alt:clearInput');
+                History.add_record("keyword:press-enter:add-keyword", {item: searchStr.trim()});
             }
             else {
-
+                History.add_record("keyword:press-enter:search", "");
                 $scope.search();
             }
         };
+
         $scope.delete_previous_item = function(){
             var current_params = params["edit_mode_" + $scope.edit_mode];
             if ( current_params.selected_keyword_items.length > 0 ){
-                return current_params.selected_keyword_items.pop();
+                var item = current_params.selected_keyword_items.pop();
+                History.add_record("keyword:delete-previous-item", {item: item});
+                return item;
             }
             return "";
-        }
+        };
 
+        $scope.$on('add-history', function($event, type, contents){
+            History.add_record(type, contents);
+        });
 
 
     };
@@ -518,12 +542,13 @@
         'SparQs.services.Group',
         'SparQs.services.Dataset',
         'SparQs.services.Selection',
-        'usSpinnerService'
+        'usSpinnerService',
+        'SparQs.services.ActionHistory'
     ];
     module.controller('SparQs.controllers.SearchAndGroupController', SearchAndGroupController);
 
 
-    var VisualizationController = function ($scope, Group, Selection, Filtering, DataTables, Dataset, usSpinnerService) {
+    var VisualizationController = function ($scope, Group, Selection, Filtering, DataTables, Dataset, usSpinnerService, History) {
 
         $scope.datatable = DataTables;
         $scope.selection = Selection;
@@ -539,9 +564,11 @@
 
             if (request) {
                 usSpinnerService.spin('vis-spinner');
+                History.add_record("data-table:request-start", "");
 
                 request.then(function () {
                     usSpinnerService.stop('vis-spinner');
+                    History.add_record("data-table:request-stop", "");
 
                 });
             }
@@ -552,6 +579,7 @@
         Selection.changed('filters,groups', $scope, $scope.get_data_table);
 
         $scope.onVisClicked = function(data) {
+            History.add_record("vis:click-point", {data: data});
             Selection.set_focus(data);
         };
         $scope.show_filter = function(){
@@ -582,12 +610,13 @@
                     offset.top = Math.max(0, offset.top);
                 }
             }
-
+            History.add_record("vis:open-filter", {dimension: dimension.key});
             Filtering.toggle(dimension, offset);
         };
 
         $scope.reload = function(){
             if (Filtering.dimension && Filtering.dimension.filtering ){
+                History.add_record("vis:clear-filtering", {dimension: Filtering.dimension.key});
                 Filtering.dimension.clear_filtering();
                 //Filtering.toggle();
             }
@@ -602,7 +631,9 @@
             color: "#000000"
         };
 
-
+        $scope.$on('add-history', function($event, type, contents){
+            History.add_record(type, contents);
+        });
     };
 
     VisualizationController.$inject = [
@@ -612,13 +643,14 @@
         'SparQs.services.Filtering',
         'SparQs.services.DataTables',
         'SparQs.services.Dataset',
-        'usSpinnerService'
+        'usSpinnerService',
+        'SparQs.services.ActionHistory'
     ];
     module.controller('SparQs.controllers.VisualizationController', VisualizationController);
 
 
     //Extends DimensionsController
-    var FilterController = function ($scope, Filtering, Selection, usSpinnerService) {
+    var FilterController = function ($scope, Filtering, Selection, usSpinnerService, History) {
 
         $scope.filtering = Filtering;
 
@@ -640,11 +672,13 @@
         });
 
         $scope.closeFilter = function() {
+            History.add_record("filter:close", {dimension: Filtering.dimension.key});
             Filtering.toggle();
         };
 
         $scope.saveFilter = function () {
             if (Filtering.dimension.is_dirty()) {
+                History.add_record("filter:changed", {dimension: Filtering.dimension.key});
                 Selection.changed('filters');
                 Filtering.dimension.current_filter().saved();
             }
@@ -652,6 +686,7 @@
 
         $scope.resetFilter = function () {
             if (!Filtering.dimension.is_not_applying_filters()) {
+                History.add_record("filter:reset", {dimension: Filtering.dimension.key});
                 if (Filtering.dimension.is_categorical()){
                     Filtering.dimension.search_key = "";
                     Filtering.dimension.search_key_tmp = "";
@@ -669,20 +704,26 @@
         };
 
         $scope.loadMore = function() {
+            History.add_record("filter:load-more", {dimension: Filtering.dimension.key});
             Filtering.dimension.load_categorical_distribution();
         };
 
         $scope.search = function() {
+            History.add_record("filter:search", {dimension: Filtering.dimension.key, search_key: Filtering.dimension.search_key});
             Filtering.dimension.search_key = Filtering.dimension.search_key_tmp;
             Filtering.dimension.load_categorical_distribution();
         };
         $scope.set_back_cur_search = function() {
-            if ( Filtering.dimension.search_key_tmp !== Filtering.dimension.search_key )
+            if ( Filtering.dimension.search_key_tmp !== Filtering.dimension.search_key ){
+                History.add_record("filter:set-back-cur-search", {dimension: Filtering.dimension.key, search_key: Filtering.dimension.search_key});
                 Filtering.dimension.search_key_tmp = Filtering.dimension.search_key;
+            }
 
         };
 
-
+        $scope.$on('add-history', function($event, type, contents){
+            History.add_record(type, contents);
+        });
 
     };
 
@@ -690,7 +731,8 @@
         '$scope',
         'SparQs.services.Filtering',
         'SparQs.services.Selection',
-        'usSpinnerService'
+        'usSpinnerService',
+        'SparQs.services.ActionHistory'
     ];
     module.controller('SparQs.controllers.FilterController', FilterController);
 
@@ -742,26 +784,6 @@
         };
     });
 
-    module.animation('.slide', [function() {
-        return {
-        // make note that other events (like addClass/removeClass)
-        // have different function input parameters
-        enter: function(element, doneFn) {
-          jQuery(element).fadeIn(1000, doneFn);
-
-          // remember to call doneFn so that angular
-          // knows that the animation has concluded
-        },
-
-        move: function(element, doneFn) {
-          jQuery(element).fadeIn(1000, doneFn);
-        },
-
-        leave: function(element, doneFn) {
-          jQuery(element).fadeOut(1000, doneFn);
-        }
-        }
-    }]);
 
 
 })();

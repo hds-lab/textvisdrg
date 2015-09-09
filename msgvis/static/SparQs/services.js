@@ -576,7 +576,6 @@
                             self.group_list.forEach(function(d){
                                 self.group_dict[d.id] = d;
                             });
-                            console.log(self.group_list);
                         });
                 },
                 save: function (dataset, name, keywords, types_list) {
@@ -595,7 +594,7 @@
 
                         // Check if anything changes
                         if (keywords == self.group_dict[self.current_group_id].keywords &&
-                            types_list.join(" ") == self.group_dict[self.current_group_id].include_types.join(" ") &&
+                            types_list.sort().join(" ") == self.group_dict[self.current_group_id].include_types.sort().join(" ") &&
                             name.trim() == self.group_dict[self.current_group_id].name.trim())
                             return false;
 
@@ -744,6 +743,79 @@
             });
 
             return new DataTables();
+        }
+    ]);
+
+    //A service for add history.
+    module.factory('SparQs.services.ActionHistory', [
+        '$rootScope', '$http', '$interval', '$window', 'djangoUrl',
+        function actionHistoryFactory($rootScope, $http, $interval, $window, djangoUrl) {
+
+            var apiUrl = djangoUrl.reverse('action-history');
+
+            var ActionHistory = function () {
+                var self = this;
+                var second = 1000;
+                var submit_interval = 30;
+                self.queue = [];
+                var interval_timer = $interval(self.submit_records.bind(self), submit_interval * second);
+
+                if ($window.location.search.indexOf('safe') != -1){
+                    window.onbeforeunload = function(){
+                        self.submit_records.call(self);
+                        return "Are you sure you want to leave the page?";
+                    };
+                }
+
+                self.init();
+
+            };
+
+            angular.extend(ActionHistory.prototype, {
+                init: function(){
+                    var self = this;
+                    self.add_record('start:server-time', '', true);
+                    self.add_record('start:client-time', '');
+                    self.submit_records();
+                },
+                add_record: function (type, contents, use_server_time) {
+                    var self = this;
+                    if ( typeof(contents) !== typeof("string") ){
+                        contents = JSON.stringify(contents);
+                    }
+
+                    var record = {
+                        type: type,
+                        contents: contents
+                    };
+                    if (!use_server_time)
+                        record.created_at =  moment.utc().format('YYYY-MM-DD hh:mm:ss');
+                    console.log(record);
+                    self.queue.push(record);
+
+
+                },
+                submit_records: function(){
+                    var self = this;
+                    console.log(self.queue.length + " record(s) in the action history queue ... " );
+                    if (self.queue.length == 0) return;
+
+                    var request = {
+                        records: self.queue
+                    };
+                    self.queue = [];
+
+                    return $http.post(apiUrl, request)
+                        .success(function (data) {
+                            console.log('save ' + data.records.length + ' record(s)');
+                        }).error(function (data) {
+                            // push the records back to queue
+                            self.queue.concat(request.records);
+                        });
+                }
+            });
+
+            return new ActionHistory();
         }
     ]);
 

@@ -199,8 +199,8 @@
                             (!this.is_categorical() && this.current_filter().is_empty()));
                 },
                 is_dirty: function(){
-                    console.log("is_dirty is called");
-                    console.log(this.filter_type['filter'].dirty || this.filter_type['exclude'].dirty);
+                    //console.log("is_dirty is called");
+                    //console.log(this.filter_type['filter'].dirty || this.filter_type['exclude'].dirty);
                     return this.filter_type['filter'].dirty ||
                            this.filter_type['exclude'].dirty;
                 },
