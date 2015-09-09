@@ -105,6 +105,7 @@
                                       minlength="1"
                                       clear-selected="true"
                                       input-class="input-box"
+                                      input-changed="input_changed"
                                       enter-key-down="press_enter_key"
                                       backspace-key-down="delete_previous_item" />
 
@@ -151,7 +152,7 @@
                                     </div>
 
                                     <div class="keyword-list">
-                                        <strong>Keywords: </strong>{$ group.keywords $}
+                                        <strong>Keywords: </strong>{$ group.keywords.split(',').join(', ') $}
                                     </div>
                                     <div class="type-list">
                                         <strong>Includes: </strong> {$ (group.include_types.length == 0 || group.include_types.length == 3) ? "all types" : group.include_types.join(', ') $}
@@ -194,6 +195,7 @@
                                                   minlength="1"
                                                   clear-selected="true"
                                                   input-class="input-box"
+                                                  input-changed="input_changed"
                                                   enter-key-down="press_enter_key"
                                                   backspace-key-down="delete_previous_item" />
 
@@ -214,7 +216,7 @@
 
                                         <div class="close-btn" ng-show="is_being_editing(group)">
                                             <span class="glyphicon glyphicon-ok" ng-click="save($event, group)" ></span>
-                                            <span class="glyphicon glyphicon-share-alt" ng-click="finish_edit($event)" ></span>
+                                            <span class="glyphicon glyphicon-share-alt" ng-click="finish_edit($event, group)" ></span>
                                         </div>
 
                                     </form>
@@ -242,9 +244,9 @@
                     <div id="search" class="box">
                         <div id="search-tab">
                             <span ng-class="tab_class('keyword_list')"
-                                  ng-click="change_mode('keyword_list')">Keywords</span>
+                                  ng-click="change_mode('keyword_list', $event)">Keywords</span>
                             <span ng-class="tab_class('group_messages')"
-                                  ng-click="change_mode('group_messages')">Search Results</span>
+                                  ng-click="change_mode('group_messages', $event)">Search Results</span>
 
                         </div>
 

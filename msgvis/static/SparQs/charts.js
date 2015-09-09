@@ -552,7 +552,7 @@
 
     module.directive('sparqsVis', function () {
 
-        var SparQsVis = function ($element, attrs, onClicked, groupColor) {
+        var SparQsVis = function (scope, $element, attrs, onClicked, groupColor) {
 
             var DEFAULT_VALUE_KEY = 'value';
 
@@ -917,7 +917,13 @@
                         show: false
                     },
                     tooltip: {
-                        grouped: false // Default true
+                        grouped: false, // Default true
+                        position: function (data, width, height, element) {
+                            var position = $(element).position();
+                            position.top += 20;
+                            position.left += 20;
+                            return position;
+                        }
                     },
                     subchart: {
                         show: function(primary){
@@ -925,6 +931,9 @@
                         }(primary),
                         size: {
                             height: 30
+                        },
+                        onbrush: function (domain) {
+                            scope.$parent.$broadcast('add-history', 'vis:subchart:onbrush', {domain: domain});
                         }
                     },
                     color: {
@@ -1015,9 +1024,11 @@
                                 if (is_shown){
                                     self.chart.hide();
                                     self.chart.show(id);
+                                    scope.$parent.$broadcast('add-history', 'vis:legend:click', {id: id, action:'only-show'});
                                 }
                                 else {
                                     self.chart.show(id);
+                                    scope.$parent.$broadcast('add-history', 'vis:legend:click', {id: id, action:'from-hide-to-show'});
                                 }
                             }
                         };
@@ -1071,7 +1082,7 @@
                     }
                 };
 
-                var vis = scope._sparqsVis = new SparQsVis($element, attrs, onClicked, scope.groupColors);
+                var vis = scope._sparqsVis = new SparQsVis(scope, $element, attrs, onClicked, scope.groupColors);
 
                 // Watch for changes to the datatable
                 scope.$watch('dataTable.table', function (newVals, oldVals) {

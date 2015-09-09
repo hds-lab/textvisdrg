@@ -327,3 +327,13 @@ class DataTableSerializer(serializers.Serializer):
     search_key = serializers.CharField(allow_null=True, allow_blank=True, required=False)
     mode = serializers.CharField(allow_null=True, allow_blank=True, required=False)
     groups = serializers.ListField(child=serializers.IntegerField(), required=False)
+
+class ActionHistorySerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(required=False)
+    class Meta:
+        model = groups_models.ActionHistory
+        fields = ('id', 'owner', 'type', 'contents', 'created_at', )
+        read_only_fields = ('id', )
+
+class ActionHistoryListSerializer(serializers.Serializer):
+    records = serializers.ListField(child=ActionHistorySerializer(), required=True)

@@ -4,6 +4,7 @@ from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.enhance import models as enhance_models
 from django.contrib.auth.models import User
 import operator
+from django.utils import timezone
 
 class Group(models.Model):
     """
@@ -11,8 +12,10 @@ class Group(models.Model):
     """
 
     owner = models.ForeignKey(User, default=None, null=True)
+    """User"""
 
     order = models.IntegerField(default=0)
+    """The order in a user's group set"""
 
     name = models.CharField(max_length=250, default=None, blank=True)
     """The group name."""
@@ -21,7 +24,7 @@ class Group(models.Model):
     """Which :class:`corpus_models.Dataset` this group belongs to"""
 
     created_at = models.DateTimeField(auto_now_add=True)
-    """Creation time"""
+    """The group created time"""
 
     keywords = models.TextField(default="", blank=True)
     """keywords for including / excluding messages."""
@@ -50,3 +53,18 @@ class Group(models.Model):
     def __unicode__(self):
         return self.__repr__()
 
+class ActionHistory(models.Model):
+    """
+    A model to record history
+    """
+
+    owner = models.ForeignKey(User, default=None, null=True)
+
+    created_at = models.DateTimeField(default=timezone.now(), db_index=True)
+    """Created time"""
+
+    from_server = models.BooleanField(default=False)
+
+    type = models.CharField(max_length=100, default="", blank=True, db_index=True)
+
+    contents = models.TextField(default="", blank=True)

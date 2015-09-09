@@ -16,6 +16,7 @@ The view classes below define the API endpoints.
 +-----------------------------------------------------------------+-----------------+-------------------------------------------------+
 """
 import types
+from django.db import transaction
 
 from rest_framework import status
 from rest_framework.views import APIView, Response
@@ -33,10 +34,15 @@ from msgvis.apps.questions import models as questions_models
 from msgvis.apps.datatable import models as datatable_models
 from msgvis.apps.enhance import models as enhance_models
 import msgvis.apps.groups.models as groups_models
+import json
 import logging
 
 logger = logging.getLogger(__name__)
 
+def add_history(user, type, contents):
+    user = User.objects.get(id=user.id)
+    history = groups_models.ActionHistory(owner=user, type=type, contents=json.dumps(contents), from_server=True)
+    history.save()
 
 class DataTableView(APIView):
     """
@@ -111,6 +117,8 @@ class DataTableView(APIView):
     """
 
     def post(self, request, format=None):
+        add_history(self.request.user, 'data-table', request.data)
+
         input = serializers.DataTableSerializer(data=request.data)
         if input.is_valid():
             data = input.validated_data
@@ -200,6 +208,7 @@ class ExampleMessagesView(APIView):
     """
 
     def post(self, request, format=None):
+        add_history(self.request.user, 'example-messages', request.data)
         input = serializers.ExampleMessageSerializer(data=request.data)
         if input.is_valid():
             data = input.validated_data
@@ -237,7 +246,7 @@ class KeywordMessagesView(APIView):
 
         {
             "dataset": 1,
-            "keywords": "some",
+            "keywords": "soup ladies,food,NOT job",
             "messages": [
                 {
                     "id": 52,
@@ -257,6 +266,7 @@ class KeywordMessagesView(APIView):
     """
 
     def post(self, request, format=None):
+        add_history(self.request.user, 'search', request.data)
         input = serializers.KeywordMessageSerializer(data=request.data)
         if input.is_valid():
             data = input.validated_data
@@ -277,6 +287,52 @@ class KeywordMessagesView(APIView):
 
             output = serializers.KeywordMessageSerializer(response_data, context={'request': request})
             return Response(output.data, status=status.HTTP_200_OK)
+
+        return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class ActionHistoryView(APIView):
+    """
+    Add a action history record.
+
+    **Request:** ``POST /api/history``
+
+    **Format:**: (request should not have ``messages`` key)
+
+    ::
+
+        {
+           "records": [
+               {
+                    "type": "click-legend",
+                    "contents": "group 10"
+                },
+                {
+                    "type": "group:delete",
+                    "contents": "{\\"group\\": 10}"
+                }
+            ]
+        }
+    """
+
+    def post(self, request, format=None):
+        input = serializers.ActionHistoryListSerializer(data=request.data)
+        if input.is_valid():
+            data = input.validated_data
+            records = []
+            owner = None
+            if self.request.user is not None:
+                owner = User.objects.get(id=self.request.user.id)
+
+            for record in data["records"]:
+                record_obj = groups_models.ActionHistory(owner=owner, type=record["type"], contents=record["contents"])
+                if record.get('created_at'):
+                    record_obj.created_at = record.get('created_at')
+                records.append(record_obj)
+
+            with transaction.atomic(savepoint=False):
+                groups_models.ActionHistory.objects.bulk_create(records)
+
+            return Response(data, status=status.HTTP_200_OK)
 
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -313,6 +369,7 @@ class GroupView(APIView):
 
 
     def post(self, request, format=None):
+        add_history(self.request.user, 'group:create', request.data)
         input = serializers.GroupSerializer(data=request.data)
         if input.is_valid():
             data = input.validated_data
@@ -332,6 +389,7 @@ class GroupView(APIView):
 
     def get(self, request, format=None):
         if request.query_params.get('dataset'):
+            add_history(self.request.user, 'group:get-list', request.query_params)
             dataset_id = int(request.query_params.get('dataset'))
             groups = groups_models.Group.objects.filter(dataset_id=dataset_id, deleted=False)
             if self.request.user is not None:
@@ -342,15 +400,18 @@ class GroupView(APIView):
             output = serializers.GroupSerializer(groups, many=True)
             return Response(output.data, status=status.HTTP_200_OK)
         elif request.query_params.get('group_id'):
+            add_history(self.request.user, 'group:get-single-group', request.data)
             group = groups_models.Group.objects.get(id=int(request.query_params.get('group_id')))
             output = serializers.GroupSerializer(group, context={'request': request, 'show_message': True})
             return Response(output.data, status=status.HTTP_200_OK)
         else:
+            add_history(self.request.user, 'group:get-all-groups', request.data)
             groups = groups_models.Group.objects.all()
             output = serializers.GroupSerializer(groups, many=True)
             return Response(output.data, status=status.HTTP_200_OK)
 
     def put(self, request, format=None):
+        add_history(self.request.user, 'group:update', request.data)
         input = serializers.GroupSerializer(data=request.data)
         if input.is_valid():
             data = input.validated_data
@@ -375,6 +436,7 @@ class GroupView(APIView):
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, format=None):
+        add_history(self.request.user, 'group:delete', request.query_params)
         if request.query_params.get('id'):
             group = groups_models.Group.objects.get(id=request.query_params.get('id'))
             if group:
@@ -400,6 +462,7 @@ class KeywordView(APIView):
 
 
     def get(self, request, format=None):
+        add_history(self.request.user, 'auto-complete:get-list', request.query_params)
         if request.query_params.get('dataset'):
             dataset_id = request.query_params.get('dataset')
             response_data = {

@@ -10,6 +10,7 @@ api_root_urls = {
     'keyword': url(r'^keyword/$', views.KeywordView.as_view(), name='keyword'),
     'group': url(r'^group/$', csrf_exempt(views.GroupView.as_view()), name='group'),
     'research-questions': url(r'^questions/$', views.ResearchQuestionsView.as_view(), name='research-questions'),
+    'action-history': url(r'^history/$', views.ActionHistoryView.as_view(), name='action-history'),
 }
 
 urlpatterns = api_root_urls.values() + [
