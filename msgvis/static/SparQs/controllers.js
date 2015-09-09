@@ -153,11 +153,12 @@
                     }
                 });
                 if ( request.hasOwnProperty('groups') && request.groups ){
-                    str += "in Group";
+                    str += "in Group [";
                     request.groups.forEach(function(d, i){
                         str += (i > 0) ? " | " : "";
                         str += Group.group_dict[d].name;
                     });
+                    str += "]"
                 }
             }
             if (str != ""){

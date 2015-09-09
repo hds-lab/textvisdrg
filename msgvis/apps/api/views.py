@@ -318,9 +318,10 @@ class GroupView(APIView):
             data = input.validated_data
             group = input.save()
             owner = User.objects.get(id=self.request.user.id)
-            group.order = groups_models.Group.objects.filter(owner=owner).count() + 1
-            group.owner = owner
-            group.save()
+            if owner is not None:
+                group.order = groups_models.Group.objects.filter(owner=owner).count() + 1
+                group.owner = owner
+                group.save()
 
             # Just add the messages key to the response
 
@@ -332,7 +333,12 @@ class GroupView(APIView):
     def get(self, request, format=None):
         if request.query_params.get('dataset'):
             dataset_id = int(request.query_params.get('dataset'))
-            groups = groups_models.Group.objects.filter(dataset_id=dataset_id, deleted=False).all()
+            groups = groups_models.Group.objects.filter(dataset_id=dataset_id, deleted=False)
+            if self.request.user is not None:
+                owner = User.objects.get(id=self.request.user.id)
+                if owner is not None:
+                    groups = groups.filter(owner=owner)
+            groups = groups.order_by('order').all()
             output = serializers.GroupSerializer(groups, many=True)
             return Response(output.data, status=status.HTTP_200_OK)
         elif request.query_params.get('group_id'):
