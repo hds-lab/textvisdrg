@@ -1,0 +1,16 @@
+{% extends "_layouts/base.html" %}
+{% load bsform %}
+
+{% block content %}
+    <div class="container">
+    <h1>Visual Analytics on Social Media Data</h1>
+        Welcome come to our tool! Please login to explore the data.
+        <div class="row login-form">
+            <div class="panel panel-default col-sm-12 col-md-8">
+                <div class="panel-body">
+                    {% bsform form %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

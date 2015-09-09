@@ -1,0 +1,33 @@
+{% load widget_tweaks %}
+
+        {# borrowed from http://wisercoder.com/django-forms-bootstrap/ #}
+        <form class="form" action="" method="POST" {% if form.is_multipart %}enctype="multipart/form-data"{% endif %}>
+            {% csrf_token %}
+            {{ form.media }}
+            {% if form.errors %}
+                <div class="alert alert-error">
+                    <ul>
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            {% for field in form.visible_fields %}
+                <div class="form-group {{ field.html_name }} {% if field.errors %}has-error{% endif %}">
+                    <label class="control-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+                    {% if field.help_text %}<p class="help-block">{{ field.help_text }}</p>{% endif %}
+                    {% render_field field class+="form-control" %}
+                    {% if field.errors %}<div class="alert alert-danger" role="alert">{{ field.errors.as_text }}</div>{% endif %}
+                </div>
+            {% endfor %}
+            {% for field in form.hidden_fields %}
+                {{ field }}
+            {% endfor %}
+
+            <div class="form-actions">
+                <input class="btn btn-primary btn-large" type="submit" value="Submit"/>
+                {% block extra_buttons %}
+                {% endblock extra_buttons %}
+            </div>
+        </form>

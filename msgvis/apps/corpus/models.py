@@ -194,13 +194,11 @@ class Dataset(models.Model):
 
 
 
-class MessageType(CachingMixin, models.Model):
+class MessageType(models.Model):
     """The type of a message, e.g. retweet, reply, original, system..."""
 
     name = models.CharField(max_length=100, unique=True)
     """The name of the message type"""
-
-    objects = CachingManager()
 
     def __unicode__(self):
         return self.name

@@ -406,7 +406,18 @@
             $event.stopPropagation();
             var msg = "Are you sure you want to delete group \"" + group.name + "\"?";
             if ( window.confirm(msg) ){
-                Group.delete_group(group);
+                var is_selected = group.selected;
+                var request = Group.delete_group(group);
+                if (request) {
+                    usSpinnerService.spin('update-spinner');
+                    request.then(function() {
+                        usSpinnerService.stop('update-spinner');
+                        if (is_selected) {
+                            Selection.changed('groups');
+                        }
+                    });
+                }
+
             }
         };
 

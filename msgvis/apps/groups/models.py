@@ -2,12 +2,17 @@ from django.db import models
 from msgvis.apps.corpus import utils
 from msgvis.apps.corpus import models as corpus_models
 from msgvis.apps.enhance import models as enhance_models
+from django.contrib.auth.models import User
 import operator
 
 class Group(models.Model):
     """
     A group of messages, created by inclusive and exclusive keywords.
     """
+
+    owner = models.ForeignKey(User, default=None, null=True)
+
+    order = models.IntegerField(default=0)
 
     name = models.CharField(max_length=250, default=None, blank=True)
     """The group name."""

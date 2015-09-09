@@ -3,8 +3,18 @@ from django.http import Http404
 from django.utils.translation import ugettext as _
 
 from msgvis.apps.corpus import models as corpus_models
+from django.contrib.auth.decorators import login_required
 
-class HomeView(generic.TemplateView):
+
+class LoginRequiredMixin(object):
+    """A mixin that forces a login to view the CBTemplate."""
+
+    @classmethod
+    def as_view(cls, **initkwargs):
+        view = super(LoginRequiredMixin, cls).as_view(**initkwargs)
+        return login_required(view)
+
+class HomeView(LoginRequiredMixin, generic.TemplateView):
     """The homepage view for the website."""
 
     template_name = 'home.html'
@@ -41,7 +51,8 @@ class ExplorerView(generic.DetailView):
                           {'verbose_name': queryset.model._meta.verbose_name})
         return obj
 
-class GrouperView(generic.DetailView):
+
+class GrouperView(LoginRequiredMixin, generic.DetailView):
     """The view for the visualization tool."""
 
     template_name = 'grouper.html'
