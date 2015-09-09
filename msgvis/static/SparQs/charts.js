@@ -1004,7 +1004,11 @@
                         // The secondary dimension is categorical, so it
                         // requires a legend to reveal the groups.
                         config.legend.show = true;
-                        config.legend.position = 'bottom';
+                        config.legend.position = 'inset';
+                        config.legend.inset = {
+                              anchor: 'top-right',
+                              x: 10
+                        };
                         config.legend.item = {
                             onclick: function(id){
                                 var is_shown = (self.chart.data.shown(id).length > 0);
@@ -1019,9 +1023,12 @@
                         };
 
                         var num_of_levels = domains[secondary.key].length;
-                        if ( num_of_levels > 12 ){
-                            config.legend.inset.step = 6;
-                        }
+                        var legend_step = Math.ceil(num_of_levels / 4);
+                        config.legend.inset.step = legend_step;
+                        config.padding = {top: 30 * legend_step}
+                        config.legend.inset.y = -config.padding.top;
+
+
                     }
                 }
 

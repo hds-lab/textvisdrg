@@ -131,6 +131,7 @@ class Dataset(models.Model):
                     for or_word_list in word_list:
                         clause_queryset = clause_queryset.filter(or_word_list)
 
+
                     final_queryset |= clause_queryset
 
 
@@ -145,7 +146,7 @@ class Dataset(models.Model):
             for word in exclusive_keywords:
                 queryset = queryset.exclude(word)
 
-        return queryset
+        return queryset.distinct()
 
     def get_precalc_distribution(self, dimension, search_key=None, page=None, page_size=100, mode=None):
         dimension_key = dimension.key
