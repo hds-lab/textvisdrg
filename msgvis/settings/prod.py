@@ -14,6 +14,13 @@ INSTALLED_APPS += (
     'djsupervisor',
 )
 
+REST_FRAMEWORK = {
+    'VIEW_DESCRIPTION_FUNCTION': 'msgvis.apps.api.drf.get_view_description',
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}
+
 SUPERVISOR_LOG_MAXBYTES = '50MB'
 SUPERVISOR_LOG_BACKUPS = 10
 WSGI_MODULE = 'msgvis.wsgi'

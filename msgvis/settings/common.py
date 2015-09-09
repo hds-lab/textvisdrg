@@ -234,6 +234,7 @@ DJANGO_APPS = (
 
     # Utilities
     'django_extensions',
+    'widget_tweaks',
 )
 
 # Apps specific for this project go here.
@@ -398,7 +399,7 @@ INSTALLED_APPS += (
 )
 
 REST_FRAMEWORK = {
-    'VIEW_DESCRIPTION_FUNCTION': 'msgvis.apps.api.drf.get_view_description'
+    'VIEW_DESCRIPTION_FUNCTION': 'msgvis.apps.api.drf.get_view_description',
 }
 ######### END REST FRAMEWORK
 

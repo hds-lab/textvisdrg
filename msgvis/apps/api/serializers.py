@@ -19,7 +19,7 @@ import msgvis.apps.questions.models as questions_models
 import msgvis.apps.enhance.models as enhance_models
 import msgvis.apps.groups.models as groups_models
 from msgvis.apps.dimensions import registry
-
+from django.contrib.auth.models import User
 
 # A simple string field that looks up dimensions on deserialization
 class DimensionKeySerializer(serializers.CharField):
@@ -232,6 +232,7 @@ class ExampleMessageSerializer(serializers.Serializer):
         serializer = PaginatedMessageSerializer(messages)
         return serializer.data
 
+
 class KeywordMessageSerializer(serializers.Serializer):
     dataset = serializers.PrimaryKeyRelatedField(queryset=corpus_models.Dataset.objects.all())
     keywords = serializers.CharField(allow_null=True, allow_blank=True, required=False)
@@ -255,12 +256,11 @@ class KeywordMessageSerializer(serializers.Serializer):
         return serializer.data
 
 
-
-
 class KeywordListSerializer(serializers.Serializer):
     dataset = serializers.IntegerField(required=True)
     q = serializers.CharField(allow_null=True, allow_blank=True, required=False)
     keywords = serializers.ListField(child=serializers.CharField(), required=False)
+
 
 class PaginatedMessageSerializer(pagination.PaginationSerializer):
     class Meta:
@@ -268,15 +268,16 @@ class PaginatedMessageSerializer(pagination.PaginationSerializer):
 
 
 class GroupSerializer(serializers.ModelSerializer):
-
     messages = serializers.SerializerMethodField('paginated_messages', required=False)
     message_count = serializers.IntegerField(required=False)
     include_types = MessageTypeSerializer(many=True, required=False)
     types_list = serializers.ListField(child=serializers.CharField(), required=False)
+    order = serializers.IntegerField(required=False, read_only=True)
 
     class Meta:
         model = groups_models.Group
-        fields = ('id', 'dataset', 'name', 'keywords', 'messages', 'message_count', 'include_types', 'types_list')
+        fields = ('id', 'owner', 'order', 'dataset', 'name', 'keywords', 'messages', 'message_count', 'include_types', 'types_list', )
+        read_only_fields = ('owner', 'order', )
 
     def paginated_messages(self, obj):
         if self.context and self.context.get('show_message'):
@@ -302,6 +303,10 @@ class GroupSerializer(serializers.ModelSerializer):
         if validated_data.get('types_list'):
             include_types = [corpus_models.MessageType.objects.get(name=x) for x in validated_data.get('types_list')]
             group.include_types = include_types
+        else:
+            include_types = corpus_models.MessageType.objects.filter(id > 0).all()
+            group.include_types = include_types
+
 
         return group
 

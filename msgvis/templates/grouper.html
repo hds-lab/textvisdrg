@@ -135,6 +135,7 @@
                              ng-repeat="group in Group.group_list | orderBy:'id':true"
                              ng-class="group_class(group)">
 
+
                             <div class="group-wrap" id="group_{$ group.id $}">
                                 <div class="group-content" ng-hide="is_being_editing(group)"
                                      ng-click="toggle_group($event, group)" >
@@ -142,7 +143,7 @@
                                         <span class="group-color-box"
                                              ng-click="toggle_group($event, group)" ng-style="group_color(group)">
                                         </span>
-                                        #{$ group.id $} {$ group.name $}
+                                        #{$ group.order $} {$ group.name $}
                                     </div>
 
                                     <div class="keyword-list">
@@ -209,8 +210,8 @@
                                             </label>
                                         </div>
                                         <div class="close-btn" ng-show="is_being_editing(group)">
-                                            <span class="glyphicon glyphicon-ok" ng-click="save($event)" ></span>
-                                            <span class="glyphicon glyphicon-remove" ng-click="save($event)" ng-click="finish_edit($event)" ></span>
+                                            <span class="glyphicon glyphicon-ok" ng-click="save($event, group)" ></span>
+                                            <span class="glyphicon glyphicon-remove" ng-click="finish_edit($event)" ></span>
                                         </div>
 
                                     </form>

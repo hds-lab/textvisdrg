@@ -14,3 +14,11 @@ DEV = True
 # See: https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 ########## END EMAIL CONFIGURATION
+
+
+REST_FRAMEWORK = {
+    'VIEW_DESCRIPTION_FUNCTION': 'msgvis.apps.api.drf.get_view_description',
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+}

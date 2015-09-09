@@ -525,7 +525,7 @@ class DataTable(object):
 
             for group in groups:
                 group_obj = groups_models.Group.objects.get(id=group)
-                group_labels.append(group_obj.name)
+                group_labels.append("#%d %s"%(group_obj.order, group_obj.name))
                 queryset = group_obj.messages
 
 
@@ -650,9 +650,7 @@ class DataTable(object):
                     final_table.extend(group_table)
 
                 domains['groups'] = groups
-                domain_labels['groups'] = []
-                for idx, label in enumerate(group_labels):
-                    domain_labels['groups'].append("#" + str(groups[idx]) + " " + label)
+                domain_labels['groups'] = group_labels
 
                 results = {
                     'table': final_table,
