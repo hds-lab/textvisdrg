@@ -84,7 +84,10 @@
                             <div class="heading">Search Messages by Keywords</div>
                             Use NOT as prefix for excluding a keyword (e.g., NOT job).
                             <div class="search-keywords form-control">
-
+                                <div class="btns">
+                                    <span class="glyphicon glyphicon-search" ng-click="search($event)"></span>
+                                    <span class="glyphicon glyphicon-remove" ng-show="search_params.selected_keyword_items.length" ng-click="reset_search()"></span>
+                                </div>
                                  <div class="selected-keyword-items">
                                      <div class="selected-keyword-item" ng-repeat="item in search_params.selected_keyword_items">
                                          <span class="text"> {$ item $}</span>
@@ -105,10 +108,7 @@
                                       enter-key-down="press_enter_key"
                                       backspace-key-down="delete_previous_item" />
 
-                                <div class="btns">
-                                    <span class="glyphicon glyphicon-search" ng-click="search($event)"></span>
-                                    <span class="glyphicon glyphicon-remove" ng-show="search_params.selected_keyword_items.length" ng-click="reset_search()"></span>
-                                </div>
+
                             </div>
                         </form>
                         <div class="tweet-type-options">
@@ -124,9 +124,13 @@
                             </label>
                         </div>
 
+
                         <div class="mask" ng-show="edit_mode"></div>
 
                     </div>
+                    <button class="btn btn-default btn-save" ng-click="save()">
+                        <span class="glyphicon glyphicon-heart"></span> Save
+                    </button>
                     <span us-spinner="spinnerOptions" spinner-key="save-spinner"></span>
                 </div>
                 <div id="groups" class="col-md-9">
@@ -169,8 +173,6 @@
                                         <input class="form-control heading" id="group-name-field" type="text"
                                             placeholder="Group Name" ng-model="edit_params.group_name"
                                         />
-
-
                                         <div class="search-keywords form-control">
                                             <div class="btns">
                                                 <span class="glyphicon glyphicon-search" ng-click="search($event)"></span>
@@ -209,9 +211,10 @@
                                                 <input type="checkbox" ng-model="edit_params.tweet_types.reply" value='replies' > replies
                                             </label>
                                         </div>
+
                                         <div class="close-btn" ng-show="is_being_editing(group)">
                                             <span class="glyphicon glyphicon-ok" ng-click="save($event, group)" ></span>
-                                            <span class="glyphicon glyphicon-remove" ng-click="finish_edit($event)" ></span>
+                                            <span class="glyphicon glyphicon-share-alt" ng-click="finish_edit($event)" ></span>
                                         </div>
 
                                     </form>
@@ -264,10 +267,7 @@
                                 Start from the search box above.
                             </div>
                             <div class="heading" ng-show="edit_mode">Messages in Group [{$ Group.current_group_name() $}]<span ng-hide="is_empty()">({$ Messages.count $})</span></div>
-                            <button class="btn btn-default btn-save" ng-hide="is_empty() || edit_mode" ng-click="save()">
-                                <span class="glyphicon glyphicon-heart"></span>
-                                {$ "Save as a group" $}
-                            </button>
+
                             <div class="pages">
                                 <span ng-show="Messages.count>0">Pages:</span>
                                 <a ng-show="Messages.prev_page" ng-click="update_page(Messages.prev_page)"
