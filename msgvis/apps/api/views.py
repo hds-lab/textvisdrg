@@ -360,13 +360,7 @@ class GroupView(APIView):
                 type_list = data.get('types_list')
                 include_types = map(lambda x: corpus_models.MessageType.objects.get(name=x), type_list)
                 group.include_types.clear()
-                if group.include_types.count() > 0:
-                    group.include_types.clear()
-                for type in include_types:
-                    group.include_types.add(type)
-
-                print group.include_types.all()
-
+                group.include_types = include_types
 
 
             output = serializers.GroupSerializer(group, context={'request': request, 'show_message': False})
