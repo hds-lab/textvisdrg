@@ -40,8 +40,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 def add_history(user, type, contents):
-    user = User.objects.get(id=user.id)
-    history = groups_models.ActionHistory(owner=user, type=type, contents=json.dumps(contents), from_server=True)
+    history = groups_models.ActionHistory(type=type, contents=json.dumps(contents), from_server=True)
+    if user.id is not None and User.objects.filter(id=1).count() != 0:
+        user = User.objects.get(id=user.id)
+        history.owner = user
     history.save()
 
 class DataTableView(APIView):
@@ -321,7 +323,9 @@ class ActionHistoryView(APIView):
             records = []
             owner = None
             if self.request.user is not None:
-                owner = User.objects.get(id=self.request.user.id)
+                user = self.request.user
+                if user.id is not None and User.objects.filter(id=1).count() != 0:
+                    owner = User.objects.get(id=self.request.user.id)
 
             for record in data["records"]:
                 record_obj = groups_models.ActionHistory(owner=owner, type=record["type"], contents=record["contents"])
@@ -374,8 +378,9 @@ class GroupView(APIView):
         if input.is_valid():
             data = input.validated_data
             group = input.save()
-            owner = User.objects.get(id=self.request.user.id)
-            if owner is not None:
+            user = self.request.user
+            if user.id is not None and User.objects.filter(id=1).count() != 0:
+                owner = User.objects.get(id=self.request.user.id)
                 group.order = groups_models.Group.objects.filter(owner=owner).count() + 1
                 group.owner = owner
                 group.save()
@@ -392,10 +397,10 @@ class GroupView(APIView):
             add_history(self.request.user, 'group:get-list', request.query_params)
             dataset_id = int(request.query_params.get('dataset'))
             groups = groups_models.Group.objects.filter(dataset_id=dataset_id, deleted=False)
-            if self.request.user is not None:
+            user = self.request.user
+            if user.id is not None and User.objects.filter(id=1).count() != 0:
                 owner = User.objects.get(id=self.request.user.id)
-                if owner is not None:
-                    groups = groups.filter(owner=owner)
+                groups = groups.filter(owner=owner)
             groups = groups.order_by('order').all()
             output = serializers.GroupSerializer(groups, many=True)
             return Response(output.data, status=status.HTTP_200_OK)
