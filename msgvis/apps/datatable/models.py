@@ -525,7 +525,10 @@ class DataTable(object):
 
             for group in groups:
                 group_obj = groups_models.Group.objects.get(id=group)
-                group_labels.append("#%d %s"%(group_obj.order, group_obj.name))
+                if group_obj.order > 0:
+                    group_labels.append("#%d %s"%(group_obj.order, group_obj.name))
+                else:
+                    group_labels.append("%s"%(group_obj.name))
                 queryset = group_obj.messages
 
 

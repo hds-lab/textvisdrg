@@ -1,7 +1,7 @@
 {% extends '_layouts/base.html' %}
 {% load staticfiles djangular_tags %}
 
-{% block page_title %}Message Grouper{% endblock %}
+{% block page_title %}Larait - Visual Analytics for Exploring Social Media Data{% endblock %}
 
 {% block meta %}
 <meta name="twitter:widgets:csp" content="on">
@@ -70,10 +70,12 @@
 <div ng-app="SparQs" id="application" class="container-fluid">
          <div id="titleWrap" class="row clearfix">
 
-            <div class="logo-titles">
-                <span class="title">Message Grouper</span>
+             <div class="logo-titles">
+                 <span class="title"><img class="logo" ng-src="{% static 'images/Lariat.png' %}" />Larait</span>
+                 <span class="description"> Visual Analytics for Exploring Social Media Data</span>
+                 <span class="dataset">2014 Oso Washington State Mudslide Twitter Dataset (685311 tweets)</span>
+             </div>
 
-            </div>
         </div>
         <div id="content" class="row ng-cloak" ng-cloak  ng-controller="SparQs.controllers.SearchAndGroupController">
             <div id="top" class="row">
@@ -81,11 +83,15 @@
                     <div class="box edit-box">
                         <form class="form">
                             {% csrf_token %}
-                            <div class="heading">Search Messages by Keywords</div>
+                            <div class="heading">
+                                <span class="group-color-box"
+                                     ng-click="toggle_group($event)" ng-style="group_color()">
+                                </span>
+                                Search Tweets by Keywords</div>
                             Use NOT as prefix for excluding a keyword (e.g., NOT job).
                             <div class="search-keywords form-control">
                                 <div class="btns">
-                                    <span class="glyphicon glyphicon-search" ng-click="search($event)"></span>
+                                    <span class="glyphicon glyphicon-search" ng-click="search($event, true)"></span>
                                     <span class="glyphicon glyphicon-remove" ng-show="search_params.selected_keyword_items.length" ng-click="reset_search()"></span>
                                 </div>
                                  <div class="selected-keyword-items">
@@ -97,7 +103,7 @@
                                  <angucomplete-alt
                                       id="keyword_autocomplete"
                                       placeholder="Enter keywords"
-                                      pause="500"
+                                      pause="400"
                                       selected-object="select_keywords"
                                       remote-url="{$ keyword_list_url $}"
                                       remote-url-data-field="keywords"
@@ -129,13 +135,16 @@
                         <div class="mask" ng-show="edit_mode"></div>
 
                     </div>
-                    <button class="btn btn-default btn-save" ng-click="save()">
+                    <button class="btn btn-default btn-save" ng-click="save($event, false)">
                         <span class="glyphicon glyphicon-heart"></span> Save
                     </button>
                     <span us-spinner="spinnerOptions" spinner-key="save-spinner"></span>
                 </div>
                 <div id="groups" class="col-md-9">
                     <div id="group-wrapper">
+                        <div class="group-list-place-holder">
+
+                        </div>
                         <div class="box group-box"
                              ng-repeat="group in Group.group_list | orderBy:'id':true"
                              ng-class="group_class(group)">
@@ -159,10 +168,10 @@
                                     </div>
                                     <div class="bottom-bar">
                                         <div class="count">
-                                            {$ group.message_count $} messages
+                                            {$ group.message_count $} tweets
                                         </div>
                                         <div class="show-vis-btn"
-                                             ng-click="show_messages($event, group)">
+                                             ng-click="show_messages($event, group, true)">
                                             show in search
                                         </div>
                                     </div>
@@ -171,12 +180,19 @@
                                 <div class="edit-form" ng-show="is_being_editing(group)">
                                     <form class="form">
                                         {% csrf_token %}
-                                        <input class="form-control heading" id="group-name-field" type="text"
-                                            placeholder="Group Name" ng-model="edit_params.group_name"
-                                        />
+                                        <div class="heading">
+                                            <span class="group-color-box"
+                                                 ng-click="toggle_group($event, group)" ng-style="group_color(group)">
+                                            </span>
+                                            #{$ group.order $}
+                                            <input class="form-control heading-edit" id="group-name-field" type="text"
+                                                placeholder="Group Name" ng-model="edit_params.group_name"
+                                            />
+                                        </div>
+
                                         <div class="search-keywords form-control">
                                             <div class="btns">
-                                                <span class="glyphicon glyphicon-search" ng-click="search($event)"></span>
+                                                <span class="glyphicon glyphicon-search" ng-click="search($event, true)"></span>
                                                 <!--<button class="btn btn-primary" ng-click="save($event, group)">Save</button>-->
                                             </div>
                                              <div class="selected-keyword-items">
@@ -187,7 +203,7 @@
                                              </div>
                                              <angucomplete-alt
                                                   placeholder="Enter keywords"
-                                                  pause="500"
+                                                  pause="400"
                                                   selected-object="select_keywords"
                                                   remote-url="{$ keyword_list_url $}"
                                                   remote-url-data-field="keywords"
@@ -215,8 +231,8 @@
                                         </div>
 
                                         <div class="close-btn" ng-show="is_being_editing(group)">
-                                            <span class="glyphicon glyphicon-ok" ng-click="save($event, group)" ></span>
-                                            <span class="glyphicon glyphicon-share-alt" ng-click="finish_edit($event, group)" ></span>
+                                            <span class="glyphicon glyphicon-ok" ng-click="save($event, false, group)" ></span>
+                                            <span class="glyphicon glyphicon-share-alt" ng-click="finish_edit($event, group, true)" ></span>
                                         </div>
 
                                     </form>
@@ -247,6 +263,8 @@
                                   ng-click="change_mode('keyword_list', $event)">Keywords</span>
                             <span ng-class="tab_class('group_messages')"
                                   ng-click="change_mode('group_messages', $event)">Search Results</span>
+                            <span ng-class="tab_class('search_history')"
+                                  ng-click="change_mode('search_history', $event)">Search History</span>
 
                         </div>
 
@@ -268,7 +286,7 @@
                             <div ng-show="is_empty()" class="search-results-place-holder">
                                 Start from the search box above.
                             </div>
-                            <div class="heading" ng-show="edit_mode">Messages in Group [{$ Group.current_group_name() $}]<span ng-hide="is_empty()">({$ Messages.count $})</span></div>
+                            <div class="heading" ng-show="edit_mode">Tweets in Group [{$ Group.current_group_name() $}]<span ng-hide="is_empty()">({$ Messages.count $})</span></div>
 
                             <div class="pages">
                                 <span ng-show="Messages.count>0">Pages:</span>
@@ -306,6 +324,25 @@
                             </div>
                             <span us-spinner="spinnerOptions" spinner-key="search-spinner"></span>
                         </div>
+                        <div id="history" ng-show="is_mode('search_history')">
+                            <div class="heading" ng-show="!edit_mode">Search History </div>
+                            <div ng-show="Group.search_records.length == 0" class="search-results-place-holder">
+                                Search history will be shown here.
+                            </div>
+                            <div class="message-list heading-body">
+                             <div class="record-box"
+                                  ng-repeat="record in Group.search_records | orderBy:'created_at':true"
+                                  ng-click="show_messages($event, record, true)">
+                                <div class="record created_at">{$ record.created_at | date : 'yyyy-MM-dd HH:mm:ss'$}</div>
+                                <div class="record keywords"><strong>Keywords</strong> {$ record.keywords $}</div>
+                                <div class="record include_types"><strong>Includes</strong> {$ record.include_types.join(", ") $}</div>
+                                <div class="record count">{$ record.message_count $} tweets</div>
+
+
+                             </div>
+                            </div>
+
+                        </div>
 
                     </div>
 
@@ -315,7 +352,13 @@
                         <div id="viz-wrapper" class="col-md-8">
                             <div class="col-md-9">
                                 <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
-                                    <div class="heading">Visualization</div>
+                                    <div class="heading">Visualization {$ title() $}
+                                        <div ng-show="Group.selected_groups.length > 0"
+                                         class="btn btn-default reset-selection-btn"
+                                         ng-click="reset_selection()"   >
+                                        Reset selection</div>
+                                    </div>
+
                                     <div id="viz-content" class="heading-body">
                                         <sparqs-vis vis-data-table="datatable"
                                                         on-clicked="onVisClicked"
@@ -358,7 +401,7 @@
                             </div>
                         </div>
                         <div id="messages" class="col-md-4 app-panel" ng-controller="SparQs.controllers.ExampleMessageController">
-                            <div class="heading">Example Messages</div>
+                            <div class="heading">Example Tweets</div>
                             <div class="examples-description" ng-bind="convert_request_to_readable_str()"></div>
                             <div class="pages" ng-hide="is_empty()">
                                 <span ng-show="Messages.count>0">Pages:</span>
@@ -372,7 +415,7 @@
                                 <span ng-show="Messages.count==0">No message in current selection.</span>
                             </div>
                             <div ng-show="is_empty()" class="search-results-place-holder">
-                                Click points in the visualization to get example Messages.
+                                Click points in the visualization to get example tweets.
                             </div>
                             <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
                             <div class="message-list heading-body">

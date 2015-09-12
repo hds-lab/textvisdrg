@@ -56,13 +56,12 @@ body {
 }
 
 
-
 #application {
 
 }
 
 #titleWrap {
-    padding: 5px;
+
     background-color: white;
     -webkit-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
     -moz-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
@@ -72,6 +71,27 @@ body {
         font-size: 2em;
         font-weight: 700;
     }
+
+    .logo{
+        width: 45px;
+        height: 45px;
+        margin: 8px;
+    }
+
+    .description {
+        font-size: 1.6em;
+        margin-left: 10px;
+        margin-right: 20px;
+    }
+
+    .dataset {
+        padding-left: 20px;
+        font-size: 1.6em;
+        position: fixed;
+        top: 15px;
+        right: 10px;
+
+    }
 }
 #content {
     margin: 10px;
@@ -80,6 +100,16 @@ body {
     padding-left: 0;
 }
 @top-row-height: 154px;
+
+.group-color-box {
+    width: 1.2em;
+    height: 1.2em;
+    display: inline-block;
+    vertical-align: middle;
+}
+.group-color-box:hover {
+    cursor: pointer;
+}
 
 #search {
     height: @top-row-height;
@@ -101,7 +131,7 @@ body {
         font-weight: 700;
         font-size: 1.2em;
         line-height: 20px;
-        width: 85%;
+        width: 100%;
     }
     .keyword-list {
 
@@ -128,15 +158,7 @@ body {
         position: relative;
         white-space: normal;
 
-        .group-color-box {
-            width: 1.2em;
-            height: 1.2em;
-            display: inline-block;
-            vertical-align: middle;
-        }
-        .group-color-box:hover {
-            cursor: pointer;
-        }
+
 
         .group-wrap {
             position: absolute;
@@ -164,7 +186,7 @@ body {
                 padding: 5px 10px;
                 cursor: pointer;
                 &:hover {
-                    background-color: rgba(153, 198, 228, 0.24)
+                    background-color: rgba(153, 198, 228, 0.24);
 
                 }
             }
@@ -193,9 +215,11 @@ body {
             background-color: white;
             position: relative;
             //transition: visibility linear 1s;
-            .heading {
-                width: 100%;
+
+            .heading-edit {
+                width: 86.7%;
                 margin-bottom: 10px;
+                display: inline-block;
             }
 
 
@@ -472,6 +496,29 @@ body {
     font-weight: bold;
     margin: 0 0 5px;
 }
+
+#history {
+    .record-box {
+        position: relative;
+        padding: 5px;
+        margin: 5px 0;
+        -webkit-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+        -moz-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+        box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+        border: 0px solid #e3e3e3;
+        &:hover {
+            cursor: pointer;
+            background-color: rgba(153, 198, 228, 0.24);
+        }
+    }
+    .record {
+        font-size: 1.1em;
+        &.count {
+            color: #aaa;
+        }
+
+    }
+}
     
 #middle{
     padding-left: 0;
@@ -483,10 +530,19 @@ body {
 #viz-wrapper {
     height: @bottom-row-height - @stat-box-height;
     padding-left: 10px;
+    #viz {
+        position: relative;
+        .reset-selection-btn {
+            font-size: 8px;
+            padding: 4px 15px;
+        }
+    }
+
     .heading {
         font-weight: 600;
         font-size: 1.5em;
     }
+
 
     sparqs-vis {
         .c3-area {

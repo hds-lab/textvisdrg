@@ -319,8 +319,8 @@
 
     //A service for loading example messages.
     module.factory('SparQs.services.KeywordMessages', [
-        '$http', 'djangoUrl',
-        function keywordMessagesFactory($http, djangoUrl) {
+        '$rootScope', '$http', 'djangoUrl',
+        function keywordMessagesFactory($rootScope, $http, djangoUrl) {
 
             var apiUrl = djangoUrl.reverse('keyword-messages');
 
@@ -338,6 +338,9 @@
                 self.current_page = 1;
                 self.pages = 0;
                 self.count = -1;
+
+                self.prev_page = false;
+                self.next_page = false;
 
             };
 
@@ -400,7 +403,17 @@
                             self.types_list = types_list;
 
                         });
+                },
+                reset: function(){
+                    var self = this;
+                    self.prev_page = false;
+                    self.next_page = false;
+                    self.keywords = "";
+                    self.list = [];
+                    self.count = -1;
+                    self.types_list = [];
                 }
+
             });
 
             return new KeywordMessages();
@@ -556,6 +569,9 @@
                 this.group_dict = {};
                 this.selected_groups = [];
                 this.colors = d3.scale.category10();
+
+                this.search_records = [];
+                this.current_search_group_id = -1;
             };
 
 
@@ -570,22 +586,29 @@
                     };
                     return $http.get(apiUrl, request)
                         .success(function (data) {
-                            self.group_list = data.map(function (groupdata) {
-                                return new GroupItem(groupdata);
+                            self.group_list = [];
+                            data.forEach(function (groupdata) {
+                                var item = new GroupItem(groupdata);
+                                if (item.is_search_record)
+                                    self.search_records.push(item);
+                                else
+                                    self.group_list.push(item);
+
+                                self.group_dict[item.id] = item;
+
                             });
-                            self.group_list.forEach(function(d){
-                                self.group_dict[d.id] = d;
-                            });
+
                         });
                 },
-                save: function (dataset, name, keywords, types_list) {
+                save: function (dataset, name, keywords, types_list, is_search_record) {
                     var self = this;
 
                     var request = {
                         dataset: dataset,
                         name: name,
                         keywords: keywords,
-                        types_list: types_list
+                        types_list: types_list,
+                        is_search_record: is_search_record
                     };
 
                     self.messages = [];
@@ -600,19 +623,34 @@
 
                         return $http.put(apiUrl, request)
                         .success(function (data) {
-                            self.group_dict[self.current_group_id].name = data.name;
-                            self.group_dict[self.current_group_id].keywords = data.keywords;
-                            self.group_dict[self.current_group_id].include_types =  data.include_types;
-                            self.group_dict[self.current_group_id].message_count = data.message_count;
+                            self.group_dict[data.id].name = data.name;
+                            self.group_dict[data.id].keywords = data.keywords;
+                            self.group_dict[data.id].include_types =  data.include_types;
+                            self.group_dict[data.id].message_count = data.message_count;
                         });
                     }
                     else{
                         return $http.post(apiUrl, request)
                             .success(function (data) {
                                 var new_group = new GroupItem(data);
-                                new_group.selected = false;
                                 self.group_dict[new_group.id] = new_group;
-                                self.group_list.push(new_group);
+                                if (!is_search_record){
+                                    new_group.selected = false;
+                                    self.group_list.push(new_group);
+                                } else {
+                                    if (self.current_search_group_id != -1){
+                                        if (self.search_records[self.search_records.length - 1].selected){
+                                            self.search_records[self.search_records.length - 1].selected = false;
+                                            self.selected_groups.shift();
+                                        }
+                                    }
+                                    new_group.selected = true;
+                                    self.search_records.push(new_group);
+                                    self.current_search_group_id = new_group.id;
+                                    self.selected_groups.unshift(new_group);
+                                    new_group.color = "#ff9896";
+                                }
+
                             });
                     }
                 },
@@ -650,12 +688,13 @@
 
                     return group_ctrl;
                 },
-                select_group: function(group){
+                toggle_group: function(group){
                     var self = this;
+                    group.selected = !group.selected;
                     if (group.selected == true){
                         if (self.selected_groups.indexOf(group) == -1)
                         self.selected_groups.push(group);
-                        group.color = self.colors(group.id);
+                        group.color = self.colors(group.order);
                     }
                     else{
                         var idx = self.selected_groups.indexOf(group);
@@ -690,6 +729,51 @@
                     var self = this;
                     if (self.current_group_id != -1)
                         return self.group_dict[self.current_group_id].name.trim();
+                },
+                get_color: function(id){
+                    var self = this;
+                    return self.group_dict[id].color;
+                },
+                reset_selection: function(){
+                    var self = this;
+                    if ( self.selected_groups.length > 0 ){
+                        self.selected_groups.forEach(function(d){
+                            d.selected = false;
+                        });
+                        self.selected_groups = [];
+                        return true;
+                    }
+                    return false;
+
+                },
+                toggle_current_search_group: function(){
+                    var self = this;
+                    if ( self.current_search_group_id != -1 ){
+                        var search_group = self.group_dict[self.current_search_group_id]; 
+                        if (search_group.selected){
+                            search_group.selected = false;
+                            self.selected_groups.shift();
+                        }
+                        else {
+                            search_group.selected = true;
+                            self.selected_groups.unshift(search_group);
+                        }
+                        return true;
+                    }
+                    return false;
+                },
+                reset_search_group: function(){
+                    var self = this;
+                    if ( self.current_search_group_id != -1 ){
+                        var search_group = self.group_dict[self.current_search_group_id]; 
+                        if (search_group.selected){
+                            search_group.selected = false;
+                            self.selected_groups.shift();
+                        }
+                        self.current_search_group_id = -1;
+                        return true;
+                    }
+                    return false;
                 }
             });
 

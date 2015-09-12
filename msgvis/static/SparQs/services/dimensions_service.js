@@ -446,7 +446,7 @@
                             "group_name": "Contents",
                             "dimensions": [
                                 //this.get_by_key('topics'),
-                                this.get_by_key('words'),
+                                //this.get_by_key('words'),
                                 this.get_by_key('hashtags'),
                                 //this.get_by_key('contains_hashtag'),
                                 this.get_by_key('urls'),
@@ -567,7 +567,7 @@
                 },
                 {
                     "key": "type",
-                    "name": "Message Type",
+                    "name": "Tweet Type",
                     "type": "CategoricalDimension",
                     "description": "Whether a message is an original tweet, a retweet, or a reply."
                 },
