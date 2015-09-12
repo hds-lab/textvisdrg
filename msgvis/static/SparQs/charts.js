@@ -1022,9 +1022,17 @@
                             onclick: function(id){
                                 var is_shown = (self.chart.data.shown(id).length > 0);
                                 if (is_shown){
-                                    self.chart.hide();
-                                    self.chart.show(id);
-                                    scope.$parent.$broadcast('add-history', 'vis:legend:click', {id: id, action:'only-show'});
+                                    if ( self.chart.data.shown().length == 1 ){
+                                        self.chart.show();
+                                        self.chart.hide(id);
+                                        scope.$parent.$broadcast('add-history', 'vis:legend:click', {id: id, action:'hide-show'});
+
+                                    }else{
+                                        self.chart.hide();
+                                        self.chart.show(id);
+                                        scope.$parent.$broadcast('add-history', 'vis:legend:click', {id: id, action:'only-show'});
+                                    }
+
                                 }
                                 else {
                                     self.chart.show(id);
