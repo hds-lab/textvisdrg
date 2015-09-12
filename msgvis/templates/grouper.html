@@ -85,7 +85,7 @@
                             {% csrf_token %}
                             <div class="heading">
                                 <span class="group-color-box"
-                                     ng-click="Group.toggle_current_search_group()" ng-style="group_color()">
+                                     ng-click="toggle_group($event)" ng-style="group_color()">
                                 </span>
                                 Search Tweets by Keywords</div>
                             Use NOT as prefix for excluding a keyword (e.g., NOT job).
@@ -381,7 +381,7 @@
                                 <span ng-show="Messages.count==0">No message in current selection.</span>
                             </div>
                             <div ng-show="is_empty()" class="search-results-place-holder">
-                                Click points in the visualization to get example Messages.
+                                Click points in the visualization to get example tweets.
                             </div>
                             <span us-spinner="spinnerOptions" spinner-key="examples-spinner"></span>
                             <div class="message-list heading-body">

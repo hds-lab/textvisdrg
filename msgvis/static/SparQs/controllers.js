@@ -190,7 +190,7 @@
             return (page == ExampleMessages.current_page) ? "current-page" : "";
         };
 
-        Selection.changed('filters,focus', $scope, $scope.get_example_messages);
+        Selection.changed('focus', $scope, $scope.get_example_messages);
 
         $scope.$on('add-history', function($event, type, contents){
             History.add_record(type, contents);
@@ -464,10 +464,14 @@
 
         $scope.toggle_group = function($event, group){
             $event.stopPropagation();
-            History.add_record("group:toggle", {group: group, is_selected_now: !group.selected});
-            Group.toggle_group(group);
-            Selection.changed('groups');
-
+            if (group){
+                History.add_record("group:toggle", {group: group, is_selected_now: !group.selected});
+                Group.toggle_group(group);
+                Selection.changed('groups');
+            } else {
+                if (Group.toggle_current_search_group())
+                    Selection.changed('groups');
+            }
         };
 
         $scope.group_class = function(group){

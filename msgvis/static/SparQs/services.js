@@ -738,7 +738,9 @@
                             search_group.selected = true;
                             self.selected_groups.unshift(search_group);
                         }
+                        return true;
                     }
+                    return false;
                 },
                 reset_search_group: function(){
                     var self = this;
@@ -748,7 +750,7 @@
                             search_group.selected = false;
                             self.selected_groups.shift();
                         }
-                        self.current_search_group_id != -1;
+                        self.current_search_group_id = -1;
                         return true;
                     }
                     return false;
