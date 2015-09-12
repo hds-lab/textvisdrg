@@ -32,6 +32,8 @@ class Group(models.Model):
     include_types = models.ManyToManyField(corpus_models.MessageType, null=True, blank=True, default=None)
     """include tweets/retweets/replies"""
 
+    is_search_record = models.BooleanField(default=False)
+
     deleted = models.BooleanField(default=False)
 
     #messages = models.ManyToManyField(corpus_models.Message, null=True, blank=True, default=None, related_name='groups')

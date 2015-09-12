@@ -567,7 +567,7 @@
                 },
                 {
                     "key": "type",
-                    "name": "Message Type",
+                    "name": "Tweet Type",
                     "type": "CategoricalDimension",
                     "description": "Whether a message is an original tweet, a retweet, or a reply."
                 },

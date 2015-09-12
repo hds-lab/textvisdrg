@@ -273,10 +273,11 @@ class GroupSerializer(serializers.ModelSerializer):
     include_types = MessageTypeSerializer(many=True, required=False)
     types_list = serializers.ListField(child=serializers.CharField(), required=False)
     order = serializers.IntegerField(required=False, read_only=True)
+    is_search_record = serializers.BooleanField(default=False)
 
     class Meta:
         model = groups_models.Group
-        fields = ('id', 'owner', 'order', 'dataset', 'name', 'keywords', 'messages', 'message_count', 'include_types', 'types_list', )
+        fields = ('id', 'owner', 'order', 'dataset', 'name', 'keywords', 'messages', 'message_count', 'include_types', 'types_list', 'is_search_record', )
         read_only_fields = ('owner', 'order', )
 
     def paginated_messages(self, obj):

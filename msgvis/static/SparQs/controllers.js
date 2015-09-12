@@ -190,7 +190,7 @@
             return (page == ExampleMessages.current_page) ? "current-page" : "";
         };
 
-        Selection.changed('filters,focus,groups', $scope, $scope.get_example_messages);
+        Selection.changed('filters,focus', $scope, $scope.get_example_messages);
 
         $scope.$on('add-history', function($event, type, contents){
             History.add_record(type, contents);
@@ -246,7 +246,7 @@
             color: "#000000"
         };
 
-        $scope.search = function ($event) {
+        $scope.search = function ($event, is_search_record) {
             if ($event){
                 $event.stopPropagation();
             }
@@ -271,6 +271,10 @@
                     usSpinnerService.stop('search-spinner');
                     History.add_record("search:request-end", {edit_mode: $scope.edit_mode, current_params: current_params});
                 });
+            }
+
+            if ( is_search_record ){
+                $scope.save($event, is_search_record);
             }
         };
 
@@ -303,11 +307,16 @@
             $scope.$broadcast('angucomplete-alt:clearInput');
 
             KeywordMessages.count = -1;
+            KeywordMessages.list = [];
             $scope.change_mode("keyword_list");
+
+            if (Group.reset_search_group()){
+                Selection.changed('groups');
+            }
 
         };
 
-        $scope.save = function ($event, group) {
+        $scope.save = function ($event, is_search_record, group) {
             var current_params = params["edit_mode_" + $scope.edit_mode];
 
             var name = current_params.group_name;
@@ -319,7 +328,10 @@
                 }
             }
 
-            if (name == "" || name == undefined){
+            if (is_search_record){
+                name = "Current Search Results";
+            }
+            else if (name == "" || name == undefined){
                 name = keywords;
                 if (name.length > 40){
                     name = name.substr(0, 40) + "...";
@@ -327,9 +339,9 @@
             }
 
 
-            var request = Group.save(Dataset.id, name, keywords, types_list);
+            var request = Group.save(Dataset.id, name, keywords, types_list, is_search_record);
             if (request) {
-                if ($scope.edit_mode){
+                if (!is_search_record && $scope.edit_mode){
                     History.add_record("group:save-edit:request-start", {group: group});
                     usSpinnerService.spin('update-spinner');
 
@@ -345,11 +357,16 @@
                 else{
                     usSpinnerService.spin('save-spinner');
                     History.add_record("group:save-search:request-start", "");
+                    if (is_search_record){
+                        usSpinnerService.spin('vis-spinner');
+                    }
 
                     request.then(function() {
                         usSpinnerService.stop('save-spinner');
                         History.add_record("group:save-search:request-end", "");
-
+                        if (is_search_record){
+                            Selection.changed('groups');
+                        }
                     });
                 }
             }
@@ -389,7 +406,7 @@
             });
 
 
-            $scope.search($event);
+            $scope.search($event, false);
         };
 
 
@@ -401,8 +418,13 @@
 
         };
         $scope.group_color = function(group){
-            if (group.selected) return {'background-color': group.color};
+            if (!group){
+                group = Group.group_dict[Group.current_search_group_id];
+            }
+            if (group && group.selected) return {'background-color': group.color};
             return {'border': "1px solid #ccc" };
+
+
         };
 
 
@@ -421,18 +443,18 @@
 
         $scope.delete_group = function($event, group){
             $event.stopPropagation();
-            var msg = "Are you sure you want to delete group \"" + group.name + "\"?";
+            var msg = "Are you sure you want to delete group \"#" + group.order + " " + group.name + "\"?";
             History.add_record("group:delete-attempt", {group: group});
             if ( window.confirm(msg) ){
-                var is_selected = group.selected;
+                if (group.selected){
+                    $scope.toggle_group($event, group)
+                }
+
                 var request = Group.delete_group(group);
                 if (request) {
                     usSpinnerService.spin('update-spinner');
                     request.then(function() {
                         usSpinnerService.stop('update-spinner');
-                        if (is_selected) {
-                            Selection.changed('groups');
-                        }
                     });
                 }
 
@@ -442,11 +464,9 @@
 
         $scope.toggle_group = function($event, group){
             $event.stopPropagation();
-            group.selected = !group.selected;
-            History.add_record("group:toggle", {group: group, is_selected_now: group.selected});
-            Group.select_group(group);
+            History.add_record("group:toggle", {group: group, is_selected_now: !group.selected});
+            Group.toggle_group(group);
             Selection.changed('groups');
-
 
         };
 
@@ -515,7 +535,7 @@
             }
             else {
                 History.add_record("keyword:press-enter:search", "");
-                $scope.search();
+                $scope.search(undefined, true);
             }
         };
 
@@ -552,7 +572,12 @@
 
         $scope.datatable = DataTables;
         $scope.selection = Selection;
-        $scope.groupColors = Group.colors;
+        $scope.groupColors = Group.get_color.bind(Group);
+
+        $scope.title = function(){
+            return (Group.selected_groups.length == 0 ) ? "of the Whole Dataset" : "of the Tweets in Groups"
+        };
+
 
         $scope.get_data_table = function () {
             var dimensions = Selection.dimensions();

@@ -381,8 +381,12 @@ class GroupView(APIView):
             user = self.request.user
             if user.id is not None and User.objects.filter(id=1).count() != 0:
                 owner = User.objects.get(id=self.request.user.id)
-                group.order = groups_models.Group.objects.filter(owner=owner).count() + 1
                 group.owner = owner
+                if not data.get('is_search_record'):
+                    group.order = groups_models.Group.objects.filter(owner=owner, is_search_record=False).count() + 1
+                else:
+                    group.is_search_record = True
+                    group.order = 0
                 group.save()
 
             # Just add the messages key to the response
@@ -396,12 +400,12 @@ class GroupView(APIView):
         if request.query_params.get('dataset'):
             add_history(self.request.user, 'group:get-list', request.query_params)
             dataset_id = int(request.query_params.get('dataset'))
-            groups = groups_models.Group.objects.filter(dataset_id=dataset_id, deleted=False)
+            groups = groups_models.Group.objects.filter(dataset_id=dataset_id, is_search_record=False, deleted=False)
             user = self.request.user
             if user.id is not None and User.objects.filter(id=1).count() != 0:
                 owner = User.objects.get(id=self.request.user.id)
                 groups = groups.filter(owner=owner)
-            groups = groups.order_by('order').all()
+            groups = groups.order_by('order', 'created_at').all()
             output = serializers.GroupSerializer(groups, many=True)
             return Response(output.data, status=status.HTTP_200_OK)
         elif request.query_params.get('group_id'):
