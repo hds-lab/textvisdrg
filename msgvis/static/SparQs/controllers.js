@@ -324,6 +324,14 @@
             if (Group.reset_search_group()){
                 Selection.changed('groups');
             }
+        };
+        $scope.reset_selection = function(){
+
+            History.add_record("search:reset-selected-groups", {edit_mode: $scope.edit_mode, current_selection: Group.selected_groups});
+
+            if (Group.reset_selection()){
+                Selection.changed('groups');
+            }
 
         };
 
@@ -406,7 +414,7 @@
         };
         $scope.show_messages = function($event, group, is_search){
             $event.stopPropagation();
-            History.add_record("group:show-messages", {group: group});
+            History.add_record("group:show-messages", {group: group, is_search: is_search});
 
             var current_params = params["edit_mode_" + $scope.edit_mode];
             current_params.group_name = group.name;
@@ -473,7 +481,6 @@
 
 
         };
-
 
         $scope.finish_edit = function($event, group, reset_changes){
             if ( $event ){

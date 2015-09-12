@@ -324,16 +324,20 @@
                             </div>
                             <span us-spinner="spinnerOptions" spinner-key="search-spinner"></span>
                         </div>
-                        <div ng-show="is_mode('search_history')">
+                        <div id="history" ng-show="is_mode('search_history')">
                             <div class="heading" ng-show="!edit_mode">Search History </div>
                             <div ng-show="Group.search_records.length == 0" class="search-results-place-holder">
                                 Search history will be shown here.
                             </div>
                             <div class="message-list heading-body">
-                             <div class="box group-box"
-                                 ng-repeat="record in Group.search_records | orderBy:'created_at':true"
-                                 ">
-                                {$ record $}
+                             <div class="record-box"
+                                  ng-repeat="record in Group.search_records | orderBy:'created_at':true"
+                                  ng-click="show_messages($event, record, true)">
+                                <div class="record created_at">{$ record.created_at | date : 'yyyy-MM-dd HH:mm:ss'$}</div>
+                                <div class="record keywords"><strong>Keywords</strong> {$ record.keywords $}</div>
+                                <div class="record include_types"><strong>Includes</strong> {$ record.include_types.join(", ") $}</div>
+                                <div class="record count">{$ record.message_count $} tweets</div>
+
 
                              </div>
                             </div>
@@ -348,7 +352,13 @@
                         <div id="viz-wrapper" class="col-md-8">
                             <div class="col-md-9">
                                 <div id="viz" class="row app-panel" ng-controller="SparQs.controllers.VisualizationController">
-                                    <div class="heading">Visualization {$ title() $}</div>
+                                    <div class="heading">Visualization {$ title() $}
+                                        <div ng-show="Group.selected_groups.length > 0"
+                                         class="btn btn-default reset-selection-btn"
+                                         ng-click="reset_selection()"   >
+                                        Reset selection</div>
+                                    </div>
+
                                     <div id="viz-content" class="heading-body">
                                         <sparqs-vis vis-data-table="datatable"
                                                         on-clicked="onVisClicked"

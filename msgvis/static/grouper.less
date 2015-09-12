@@ -186,7 +186,7 @@ body {
                 padding: 5px 10px;
                 cursor: pointer;
                 &:hover {
-                    background-color: rgba(153, 198, 228, 0.24)
+                    background-color: rgba(153, 198, 228, 0.24);
 
                 }
             }
@@ -496,6 +496,29 @@ body {
     font-weight: bold;
     margin: 0 0 5px;
 }
+
+#history {
+    .record-box {
+        position: relative;
+        padding: 5px;
+        margin: 5px 0;
+        -webkit-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+        -moz-box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+        box-shadow: 0 1px 1px 1px rgba(0,0,0,.1);
+        border: 0px solid #e3e3e3;
+        &:hover {
+            cursor: pointer;
+            background-color: rgba(153, 198, 228, 0.24);
+        }
+    }
+    .record {
+        font-size: 1.1em;
+        &.count {
+            color: #aaa;
+        }
+
+    }
+}
     
 #middle{
     padding-left: 0;
@@ -507,10 +530,19 @@ body {
 #viz-wrapper {
     height: @bottom-row-height - @stat-box-height;
     padding-left: 10px;
+    #viz {
+        position: relative;
+        .reset-selection-btn {
+            font-size: 8px;
+            padding: 4px 15px;
+        }
+    }
+
     .heading {
         font-weight: 600;
         font-size: 1.5em;
     }
+
 
     sparqs-vis {
         .c3-area {

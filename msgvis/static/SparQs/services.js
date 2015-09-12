@@ -736,10 +736,15 @@
                 },
                 reset_selection: function(){
                     var self = this;
-                    self.selected_groups.forEach(function(d){
-                        d.selected = false;
-                    });
-                    self.selected_groups = [];
+                    if ( self.selected_groups.length > 0 ){
+                        self.selected_groups.forEach(function(d){
+                            d.selected = false;
+                        });
+                        self.selected_groups = [];
+                        return true;
+                    }
+                    return false;
+
                 },
                 toggle_current_search_group: function(){
                     var self = this;
