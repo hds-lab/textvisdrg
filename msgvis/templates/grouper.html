@@ -171,7 +171,7 @@
                                             {$ group.message_count $} tweets
                                         </div>
                                         <div class="show-vis-btn"
-                                             ng-click="show_messages($event, group)">
+                                             ng-click="show_messages($event, group, true)">
                                             show in search
                                         </div>
                                     </div>
@@ -180,9 +180,16 @@
                                 <div class="edit-form" ng-show="is_being_editing(group)">
                                     <form class="form">
                                         {% csrf_token %}
-                                        <input class="form-control heading" id="group-name-field" type="text"
-                                            placeholder="Group Name" ng-model="edit_params.group_name"
-                                        />
+                                        <div class="heading">
+                                            <span class="group-color-box"
+                                                 ng-click="toggle_group($event, group)" ng-style="group_color(group)">
+                                            </span>
+                                            #{$ group.order $}
+                                            <input class="form-control heading-edit" id="group-name-field" type="text"
+                                                placeholder="Group Name" ng-model="edit_params.group_name"
+                                            />
+                                        </div>
+
                                         <div class="search-keywords form-control">
                                             <div class="btns">
                                                 <span class="glyphicon glyphicon-search" ng-click="search($event, true)"></span>
@@ -225,7 +232,7 @@
 
                                         <div class="close-btn" ng-show="is_being_editing(group)">
                                             <span class="glyphicon glyphicon-ok" ng-click="save($event, false, group)" ></span>
-                                            <span class="glyphicon glyphicon-share-alt" ng-click="finish_edit($event, group)" ></span>
+                                            <span class="glyphicon glyphicon-share-alt" ng-click="finish_edit($event, group, true)" ></span>
                                         </div>
 
                                     </form>

@@ -319,8 +319,8 @@
 
     //A service for loading example messages.
     module.factory('SparQs.services.KeywordMessages', [
-        '$http', 'djangoUrl',
-        function keywordMessagesFactory($http, djangoUrl) {
+        '$rootScope', '$http', 'djangoUrl',
+        function keywordMessagesFactory($rootScope, $http, djangoUrl) {
 
             var apiUrl = djangoUrl.reverse('keyword-messages');
 
@@ -338,6 +338,9 @@
                 self.current_page = 1;
                 self.pages = 0;
                 self.count = -1;
+
+                self.prev_page = false;
+                self.next_page = false;
 
             };
 
@@ -400,7 +403,17 @@
                             self.types_list = types_list;
 
                         });
+                },
+                reset: function(){
+                    var self = this;
+                    self.prev_page = false;
+                    self.next_page = false;
+                    self.keywords = "";
+                    self.list = [];
+                    self.count = -1;
+                    self.types_list = [];
                 }
+
             });
 
             return new KeywordMessages();
@@ -599,7 +612,7 @@
                     };
 
                     self.messages = [];
-                    if ( !is_search_record && self.current_group_id != -1 ){
+                    if ( self.current_group_id != -1 ){
                         request.id = self.current_group_id;
 
                         // Check if anything changes
@@ -610,10 +623,10 @@
 
                         return $http.put(apiUrl, request)
                         .success(function (data) {
-                            self.group_dict[self.current_group_id].name = data.name;
-                            self.group_dict[self.current_group_id].keywords = data.keywords;
-                            self.group_dict[self.current_group_id].include_types =  data.include_types;
-                            self.group_dict[self.current_group_id].message_count = data.message_count;
+                            self.group_dict[data.id].name = data.name;
+                            self.group_dict[data.id].keywords = data.keywords;
+                            self.group_dict[data.id].include_types =  data.include_types;
+                            self.group_dict[data.id].message_count = data.message_count;
                         });
                     }
                     else{
@@ -626,14 +639,16 @@
                                     self.group_list.push(new_group);
                                 } else {
                                     if (self.current_search_group_id != -1){
-                                        self.search_records[self.search_records.length - 1].selected = false;
-                                        self.selected_groups.shift();
+                                        if (self.search_records[self.search_records.length - 1].selected){
+                                            self.search_records[self.search_records.length - 1].selected = false;
+                                            self.selected_groups.shift();
+                                        }
                                     }
                                     new_group.selected = true;
                                     self.search_records.push(new_group);
                                     self.current_search_group_id = new_group.id;
                                     self.selected_groups.unshift(new_group);
-                                    new_group.color = "#8c564b";
+                                    new_group.color = "#ff9896";
                                 }
 
                             });
