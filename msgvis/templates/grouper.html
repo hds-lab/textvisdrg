@@ -256,6 +256,8 @@
                                   ng-click="change_mode('keyword_list', $event)">Keywords</span>
                             <span ng-class="tab_class('group_messages')"
                                   ng-click="change_mode('group_messages', $event)">Search Results</span>
+                            <span ng-class="tab_class('search_history')"
+                                  ng-click="change_mode('search_history', $event)">Search History</span>
 
                         </div>
 
@@ -314,6 +316,21 @@
                                 </div>
                             </div>
                             <span us-spinner="spinnerOptions" spinner-key="search-spinner"></span>
+                        </div>
+                        <div ng-show="is_mode('search_history')">
+                            <div class="heading" ng-show="!edit_mode">Search History </div>
+                            <div ng-show="Group.search_records.length == 0" class="search-results-place-holder">
+                                Search history will be shown here.
+                            </div>
+                            <div class="message-list heading-body">
+                             <div class="box group-box"
+                                 ng-repeat="record in Group.search_records | orderBy:'created_at':true"
+                                 ">
+                                {$ record $}
+
+                             </div>
+                            </div>
+
                         </div>
 
                     </div>

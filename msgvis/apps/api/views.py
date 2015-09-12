@@ -400,7 +400,7 @@ class GroupView(APIView):
         if request.query_params.get('dataset'):
             add_history(self.request.user, 'group:get-list', request.query_params)
             dataset_id = int(request.query_params.get('dataset'))
-            groups = groups_models.Group.objects.filter(dataset_id=dataset_id, is_search_record=False, deleted=False)
+            groups = groups_models.Group.objects.filter(dataset_id=dataset_id, deleted=False)
             user = self.request.user
             if user.id is not None and User.objects.filter(id=1).count() != 0:
                 owner = User.objects.get(id=self.request.user.id)

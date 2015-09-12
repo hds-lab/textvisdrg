@@ -482,7 +482,7 @@
         // Load keywords distribution
         Keywords.load_keywords_distributions();
 
-        $scope.$watch('keywords.request', function(newVal, oldVal) {
+        $scope.$watch('Keywords.request', function(newVal, oldVal) {
             if (Keywords && Keywords.request) {
                 usSpinnerService.spin('keywords-spinner');
 

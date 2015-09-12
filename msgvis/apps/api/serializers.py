@@ -277,8 +277,8 @@ class GroupSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = groups_models.Group
-        fields = ('id', 'owner', 'order', 'dataset', 'name', 'keywords', 'messages', 'message_count', 'include_types', 'types_list', 'is_search_record', )
-        read_only_fields = ('owner', 'order', )
+        fields = ('id', 'owner', 'order', 'created_at', 'dataset', 'name', 'keywords', 'messages', 'message_count', 'include_types', 'types_list', 'is_search_record', )
+        read_only_fields = ('owner', 'order', 'created_at', )
 
     def paginated_messages(self, obj):
         if self.context and self.context.get('show_message'):
