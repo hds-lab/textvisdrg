@@ -1,7 +1,7 @@
 {% extends '_layouts/base.html' %}
 {% load staticfiles djangular_tags %}
 
-{% block page_title %}Larait - Visual Analytics for Exploring Social Media Data{% endblock %}
+{% block page_title %}Lariat - Visual Analytics for Exploring Social Media Data{% endblock %}
 
 {% block meta %}
 <meta name="twitter:widgets:csp" content="on">
@@ -71,7 +71,7 @@
          <div id="titleWrap" class="row clearfix">
 
              <div class="logo-titles">
-                 <span class="title"><img class="logo" ng-src="{% static 'images/Lariat.png' %}" />Larait</span>
+                 <span class="title"><img class="logo" ng-src="{% static 'images/Lariat.png' %}" />Lariat</span>
                  <span class="description"> Visual Analytics for Exploring Social Media Data</span>
                  <span class="dataset">2014 Oso Washington State Mudslide Twitter Dataset (685311 tweets)</span>
              </div>
@@ -88,7 +88,7 @@
                                      ng-click="toggle_group($event)" ng-style="group_color()">
                                 </span>
                                 Search Tweets by Keywords</div>
-                            Use NOT as prefix for excluding a keyword (e.g., NOT job).
+                            <span class="search-instructions">Use NOT as prefix for excluding a keyword (e.g., NOT job).</span>
                             <div class="search-keywords form-control">
                                 <div class="btns">
                                     <span class="glyphicon glyphicon-search" ng-click="search($event, true)"></span>
@@ -151,7 +151,7 @@
                     <div id="group-wrapper">
                         <div class="group-list-place-holder"
                              ng-show="Group.group_list.length==0">
-                            <div class="prompt">Saved tweets group will show up here.</div>
+                            <div class="prompt">Saved tweet groups will show up here.</div>
 
                         </div>
                         <div class="box group-box"
