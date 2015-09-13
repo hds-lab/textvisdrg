@@ -96,7 +96,10 @@
                                 </div>
                                  <div class="selected-keyword-items">
                                      <div class="selected-keyword-item" ng-repeat="item in search_params.selected_keyword_items">
-                                         <span class="text"> {$ item $}</span>
+                                         <!--<span class="text"> {$ item $}</span>-->
+                                         <input class='text' type="text" ng-model="item.text"
+                                                 ng-keypress="record_changes_of_old_keywords(item)"
+                                                 ng-style="calc_input_width(item.text)"/>
                                          <span class="glyphicon glyphicon-remove" ng-click="remove_selected(item)"></span>
                                      </div>
                                  </div>
@@ -113,7 +116,8 @@
                                       input-class="input-box"
                                       input-changed="input_changed"
                                       enter-key-down="press_enter_key"
-                                      backspace-key-down="delete_previous_item" />
+                                      backspace-key-down="delete_previous_item"
+                                      input-style="calc_input_width"   />
 
 
                             </div>
@@ -199,7 +203,10 @@
                                             </div>
                                              <div class="selected-keyword-items">
                                                  <div class="selected-keyword-item" ng-repeat="item in edit_params.selected_keyword_items">
-                                                     <span class="text"> {$ item $}</span>
+                                                     <!--<span class="text"> {$ item $}</span>-->
+                                                     <input class='text' type="text" ng-model="item.text"
+                                                             ng-keypress="record_changes_of_old_keywords(item)"
+                                                             ng-style="calc_input_width(item.text)"/>
                                                      <span class="glyphicon glyphicon-remove" ng-click="remove_selected(item)"></span>
                                                  </div>
                                              </div>
@@ -215,7 +222,9 @@
                                                   input-class="input-box"
                                                   input-changed="input_changed"
                                                   enter-key-down="press_enter_key"
-                                                  backspace-key-down="delete_previous_item" />
+                                                  backspace-key-down="delete_previous_item"
+                                                  input-style="calc_input_width"
+                                                     />
 
 
                                         </div>

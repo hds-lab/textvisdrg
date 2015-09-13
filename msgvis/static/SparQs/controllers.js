@@ -259,7 +259,7 @@
                 $event.stopPropagation();
             }
             var current_params = params["edit_mode_" + $scope.edit_mode];
-            var keywords = current_params.selected_keyword_items.join(",");
+            var keywords = current_params.selected_keyword_items.map(function(d){ return d.text }).join(",");
             var types_list = [];
             for ( var type in current_params.tweet_types ){
                 if ( current_params.tweet_types.hasOwnProperty(type) && current_params.tweet_types[type] === true ){
@@ -339,7 +339,7 @@
             var current_params = params["edit_mode_" + $scope.edit_mode];
 
             var name = current_params.group_name;
-            var keywords = current_params.selected_keyword_items.join(",");
+            var keywords = current_params.selected_keyword_items.map(function(d){ return d.text }).join(",");
             var types_list = [];
             for ( var type in current_params.tweet_types ){
                 if ( current_params.tweet_types.hasOwnProperty(type) && current_params.tweet_types[type] === true ){
@@ -418,7 +418,7 @@
 
             var current_params = params["edit_mode_" + $scope.edit_mode];
             current_params.group_name = group.name;
-            current_params.selected_keyword_items = group.keywords.split(',').map(function(d){ return d.trim() });
+            current_params.selected_keyword_items = group.keywords.split(',').map(function(d){ return {text: d.trim()} });
             current_params.tweet_types = {tweet: false, retweet: false, reply: false};
             group.include_types.forEach(function(d){
                 current_params.tweet_types[d] = true;
@@ -438,7 +438,7 @@
                 }
                 var original_group = tmp_params.group;
                 original_group.name = tmp_params.group_name;
-                original_group.keywords = tmp_params.selected_keyword_items.join(',');
+                original_group.keywords = tmp_params.selected_keyword_items.map(function(d){ return d.text }).join(',');
                 original_group.include_types = [];
                 for ( var type in tmp_params.tweet_types ){
                     if (tmp_params.tweet_types.hasOwnProperty(type) && tmp_params.tweet_types[type]){
@@ -456,7 +456,7 @@
             $scope.edit_mode = true;
             var tmp_params = params["edit_mode_tmp"];
             tmp_params.group_name = group.name;
-            tmp_params.selected_keyword_items = group.keywords.split(',').map(function(d){ return d.trim() });
+            tmp_params.selected_keyword_items = group.keywords.split(',').map(function(d){ return { text: d.trim() }; });
             tmp_params.tweet_types = {tweet: false, retweet: false, reply: false};
             group.include_types.forEach(function(d){
                 tmp_params.tweet_types[d] = true;
@@ -586,8 +586,8 @@
         $scope.select_keywords = function(selected_item){
             var self = this;
             var current_params = params["edit_mode_" + $scope.edit_mode];
-            if ( selected_item && current_params.selected_keyword_items.indexOf(selected_item.title) == -1) {
-                current_params.selected_keyword_items.push(selected_item.title);
+            if ( selected_item && current_params.selected_keyword_items.filter(function(d){ return d.text == selected_item.title; }).length == 0) {
+                current_params.selected_keyword_items.push({text: selected_item.title});
                 History.add_record("keyword:select", {item: selected_item.title});
             }
         };
@@ -616,9 +616,17 @@
             if ( current_params.selected_keyword_items.length > 0 ){
                 var item = current_params.selected_keyword_items.pop();
                 History.add_record("keyword:delete-previous-item", {item: item});
-                return item;
+                return item.text;
             }
             return "";
+        };
+
+        $scope.calc_input_width = function(text){
+            return { width: (text) ? ((text.length + 1) * 5.4 + 20) : 150 };
+        };
+
+        $scope.record_changes_of_old_keywords = function(item){
+            History.add_record("keyword:edit-previous-item", {item: item});
         };
 
         $scope.$on('add-history', function($event, type, contents){
