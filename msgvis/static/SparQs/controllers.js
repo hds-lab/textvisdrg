@@ -143,8 +143,8 @@
                 request.focus.forEach(function(d){
                     if (d.dimension != "groups"){
                         str += d.dimension;
-                        if (d.hasOwnProperty('value') && value != "" )
-                            str += '=' + d.value;
+                        if (d.hasOwnProperty('value') )
+                            str += '=' + ((d.value != "") ? d.value : "No contains");
                         else if (d.hasOwnProperty('min_time') )
                             str += '=' + d.min_time;
                         else if (d.hasOwnProperty('min') )
@@ -823,13 +823,13 @@
         };
 
         $scope.search = function() {
-            History.add_record("filter:search", {dimension: Filtering.dimension.key, search_key: Filtering.dimension.search_key});
+            History.add_record("filter:search", {dimension: Filtering.dimension.key, search_key: Filtering.dimension.search_key_tmp});
             Filtering.dimension.search_key = Filtering.dimension.search_key_tmp;
             Filtering.dimension.load_categorical_distribution();
         };
         $scope.set_back_cur_search = function() {
             if ( Filtering.dimension.search_key_tmp !== Filtering.dimension.search_key ){
-                History.add_record("filter:set-back-cur-search", {dimension: Filtering.dimension.key, search_key: Filtering.dimension.search_key});
+                History.add_record("filter:set-back-cur-search", {dimension: Filtering.dimension.key, search_key: Filtering.dimension.search_key_tmp});
                 Filtering.dimension.search_key_tmp = Filtering.dimension.search_key;
             }
 
