@@ -858,8 +858,8 @@
             angular.extend(ActionHistory.prototype, {
                 init: function(){
                     var self = this;
-                    self.add_record('start:server-time', '', true);
-                    self.add_record('start:client-time', '');
+                    self.add_record('initialization:server-time', '', true);
+                    self.add_record('initialization:client-time', '');
                     self.submit_records();
                 },
                 add_record: function (type, contents, use_server_time) {
@@ -873,7 +873,7 @@
                         contents: contents
                     };
                     if (!use_server_time)
-                        record.created_at =  moment.utc().format('YYYY-MM-DD hh:mm:ss');
+                        record.created_at =  moment.utc().format('YYYY-MM-DD HH:mm:ss');
                     console.log(record);
                     self.queue.push(record);
 

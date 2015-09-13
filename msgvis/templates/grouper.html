@@ -125,13 +125,16 @@
                         <div class="tweet-type-options">
                             <strong>Search in:</strong>
                             <label>
-                                <input type="checkbox" ng-model="search_params.tweet_types.tweet" value='tweets' checked="checked"> original tweets
+                                <input type="checkbox" ng-model="search_params.tweet_types.tweet"
+                                       ng-change="record_change('tweet', search_params.tweet_types.tweet)"> original tweets
                             </label>
                             <label>
-                                <input type="checkbox" ng-model="search_params.tweet_types.retweet" value='retweets' > retweets
+                                <input type="checkbox" ng-model="search_params.tweet_types.retweet"
+                                       ng-change="record_change('retweet', search_params.tweet_types.retweet)"> retweets
                             </label>
                             <label>
-                                <input type="checkbox" ng-model="search_params.tweet_types.reply" value='replies' > replies
+                                <input type="checkbox" ng-model="search_params.tweet_types.reply"
+                                       ng-change="record_change('reply', search_params.tweet_types.reply)"> replies
                             </label>
                         </div>
 
@@ -231,13 +234,16 @@
                                         <div class="tweet-type-options">
                                             <strong>Search in:</strong>
                                             <label>
-                                                <input type="checkbox" ng-model="edit_params.tweet_types.tweet" value='tweets' checked="checked"> original tweets
+                                                <input type="checkbox" ng-model="edit_params.tweet_types.tweet"
+                                                       ng-change="record_change('tweet', edit_params.tweet_types.tweet)"> original tweets
                                             </label>
                                             <label>
-                                                <input type="checkbox" ng-model="edit_params.tweet_types.retweet" value='retweets' > retweets
+                                                <input type="checkbox" ng-model="edit_params.tweet_types.retweet"
+                                                       ng-change="record_change('retweet', edit_params.tweet_types.retweet)"> retweets
                                             </label>
                                             <label>
-                                                <input type="checkbox" ng-model="edit_params.tweet_types.reply" value='replies' > replies
+                                                <input type="checkbox" ng-model="edit_params.tweet_types.reply"
+                                                       ng-change="record_change('reply', edit_params.tweet_types.reply)"> replies
                                             </label>
                                         </div>
 

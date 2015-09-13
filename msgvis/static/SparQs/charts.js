@@ -890,6 +890,9 @@
                             value: 'Num. Messages'
                         },
                         onclick: dataClicked,
+                        onmouseover: function(d){
+                            scope.$parent.$broadcast('add-history', 'vis:point:mouseover', {d: d});
+                        },
                         xLocaltime: false
                     },
                     axis:  {
@@ -1020,8 +1023,13 @@
                         };
                         config.legend.item = {
                             onmouseover: function(id){
-                                self.chart.revert();
+                                self.chart.focus();
                                 self.chart.defocus(id);
+                                scope.$parent.$broadcast('add-history', 'vis:legend:mouseover', {id: id});
+                            },
+                            onclick: function(id){
+                                self.chart.toggle(id);
+                                scope.$parent.$broadcast('add-history', 'vis:legend:click', {id: id});
                             }
                         };
 

@@ -319,7 +319,7 @@ class Person(models.Model):
     def profile_image_local_name(self):
         url = self.profile_image_url
         if url != "":
-            pattern = re.compile('/[_\-\w\d]+\.([\w]+)$')
+            pattern = re.compile('/[_\.\-\w\d]+\.([\w]+)$')
             results = pattern.search(url)
             if results:
                 suffix = results.groups()[0]
@@ -415,7 +415,7 @@ class Message(models.Model):
         url = ""
         if self.contains_media:
             url = self.media.all()[0].media_url
-            pattern = re.compile('/([_\-\w\d]+\.[\w]+)$')
+            pattern = re.compile('/([_\.\-\w\d]+\.[\w]+)$')
             results = pattern.search(url)
             if results:
                 url = results.groups()[0]

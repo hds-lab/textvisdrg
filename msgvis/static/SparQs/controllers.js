@@ -126,12 +126,12 @@
             if (request) {
                 usSpinnerService.spin('examples-spinner');
                 $('#messages .message-list').scrollTop(0);
-                History.add_record("example-messages:load:request-start", "");
+                History.add_record("example-messages:load:request-start", {filters: filters, exclude: exclude, focus: focus, groups: groups});
 
                 request.then(function() {
 
                     usSpinnerService.stop('examples-spinner');
-                    History.add_record("example-messages:load:request-end", "");
+                    History.add_record("example-messages:load:request-end", {filters: filters, exclude: exclude, focus: focus, groups: groups});
                 });
             }
         };
@@ -143,7 +143,7 @@
                 request.focus.forEach(function(d){
                     if (d.dimension != "groups"){
                         str += d.dimension;
-                        if (d.hasOwnProperty('value'))
+                        if (d.hasOwnProperty('value') && value != "" )
                             str += '=' + d.value;
                         else if (d.hasOwnProperty('min_time') )
                             str += '=' + d.min_time;
@@ -315,7 +315,7 @@
 
             current_params.group_name = "";
             current_params.selected_keyword_items = [];
-            current_params.tweet_types = {tweet: true, retweet: false, reply: false};
+            current_params.tweet_types = {tweet: true, retweet: true, reply: true};
             $scope.$broadcast('angucomplete-alt:clearInput');
 
             KeywordMessages.reset();
@@ -537,8 +537,11 @@
                 Group.toggle_group(group);
                 Selection.changed('groups');
             } else {
-                if (Group.toggle_current_search_group())
+                if (Group.toggle_current_search_group()){
+                    History.add_record("group:toggle:current-search-group", "");
                     Selection.changed('groups');
+                }
+
             }
         };
 
@@ -553,9 +556,11 @@
         $scope.$watch('Keywords.request', function(newVal, oldVal) {
             if (Keywords && Keywords.request) {
                 usSpinnerService.spin('keywords-spinner');
+                History.add_record("keyword-list:request-start", "");
 
                 Keywords.request.then(function() {
                     usSpinnerService.stop('keywords-spinner');
+                    History.add_record("keyword-list:request-stop", "");
                 })
             }
         });
@@ -629,6 +634,10 @@
             History.add_record("keyword:edit-previous-item", {item: item});
         };
 
+        $scope.record_change = function(type, is_selected){
+            History.add_record("search:change-type", {type: type, is_selected: is_selected});
+        };
+
         $scope.$on('add-history', function($event, type, contents){
             History.add_record(type, contents);
         });
@@ -669,11 +678,11 @@
 
             if (request) {
                 usSpinnerService.spin('vis-spinner');
-                History.add_record("data-table:request-start", "");
+                History.add_record("data-table:request-start", {dimensions: dimensions.map(function(d){ return d.key; }), filters: filters, exclude: exclude, groups: groups});
 
                 request.then(function () {
                     usSpinnerService.stop('vis-spinner');
-                    History.add_record("data-table:request-stop", "");
+                    History.add_record("data-table:request-stop", {dimensions: dimensions.map(function(d){ return d.key; }), filters: filters, exclude: exclude, groups: groups});
 
                 });
             }
@@ -684,7 +693,7 @@
         Selection.changed('filters,groups', $scope, $scope.get_data_table);
 
         $scope.onVisClicked = function(data) {
-            History.add_record("vis:click-point", {data: data});
+            History.add_record("vis:point:click", {data: data});
             Selection.set_focus(data);
         };
         $scope.show_filter = function(){
