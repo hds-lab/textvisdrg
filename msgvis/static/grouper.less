@@ -118,6 +118,25 @@ body {
     height: @top-row-height + 20;
     overflow-x: auto;
     padding-left: 0;
+    .group-list-place-holder{
+        height: @top-row-height - 1;
+        border: 1px dashed #999;
+        border-radius: 5px 5px 5px 5px;
+        -moz-border-radius: 5px 5px 5px 5px;
+        -webkit-border-radius: 5px 5px 5px 5px;
+        position: relative;
+        .prompt{
+            position: absolute;
+            text-align: center;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5em;
+            color: #999;
+        }
+
+
+    }
     #group-wrapper {
         white-space: nowrap;
     }

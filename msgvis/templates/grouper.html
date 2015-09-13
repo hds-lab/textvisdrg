@@ -142,7 +142,9 @@
                 </div>
                 <div id="groups" class="col-md-9">
                     <div id="group-wrapper">
-                        <div class="group-list-place-holder">
+                        <div class="group-list-place-holder"
+                             ng-show="Group.group_list.length==0">
+                            <div class="prompt">Saved tweets group will show up here.</div>
 
                         </div>
                         <div class="box group-box"
