@@ -903,10 +903,7 @@
                                 text: primary.name,
                                 position: 'outer-center'
                             },
-                            height: 60,
-                            extent: function(domain){
-                                return domain;
-                            }
+                            height: 60
                         },
                         y: {
                             label: {
