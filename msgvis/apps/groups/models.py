@@ -62,7 +62,7 @@ class ActionHistory(models.Model):
 
     owner = models.ForeignKey(User, default=None, null=True)
 
-    created_at = models.DateTimeField(default=timezone.now(), db_index=True)
+    created_at = models.DateTimeField(default=timezone.now, db_index=True)
     """Created time"""
 
     from_server = models.BooleanField(default=False)

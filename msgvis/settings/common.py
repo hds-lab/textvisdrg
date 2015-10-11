@@ -235,6 +235,7 @@ DJANGO_APPS = (
     # Utilities
     'django_extensions',
     'widget_tweaks',
+    'twitter_stream',
 )
 
 # Apps specific for this project go here.

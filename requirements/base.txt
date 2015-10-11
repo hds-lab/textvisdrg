@@ -23,6 +23,7 @@ path.py
 django-extensions
 dj-database-url
 django-widget-tweaks
+-e git+https://github.com/michaelbrooks/django-twitter-stream.git#egg=django-twitter-stream
 
 # rest api
 djangorestframework==3.0.5
