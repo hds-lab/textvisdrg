@@ -11,6 +11,7 @@ api_root_urls = {
     'group': url(r'^group/$', csrf_exempt(views.GroupView.as_view()), name='group'),
     'research-questions': url(r'^questions/$', views.ResearchQuestionsView.as_view(), name='research-questions'),
     'action-history': url(r'^history/$', views.ActionHistoryView.as_view(), name='action-history'),
+    'dataset': url(r'^dataset/$', csrf_exempt(views.DatasetView.as_view()), name='dataset'),
 }
 
 urlpatterns = api_root_urls.values() + [

@@ -4,8 +4,13 @@ from models import Dictionary, MessageWord, Word, MessageTopic, TweetWord, Preca
 from msgvis.apps.corpus.models import Dataset, Message
 from msgvis.apps.dimensions import registry
 from msgvis.apps.datatable import models as datatable_models
-import codecs, re
+import codecs
+import re
 from time import time
+import subprocess
+import os
+import glob
+from nltk.stem import WordNetLemmatizer
 
 logger = logging.getLogger(__name__)
 
@@ -325,3 +330,95 @@ def precalc_categorical_dimension(dataset_id=1, dimension_key=None):
 
     PrecalcCategoricalDistribution.objects.bulk_create(objs=bulk, batch_size=10000)
 
+
+def dump_tweets(dataset_id, save_path):
+    dataset = Dataset.objects.get(id=dataset_id)
+    total_count = dataset.message_set.count()
+    messages = dataset.message_set.all().exclude(time__isnull=True)
+
+    start = 0
+    limit = 10000
+
+    while start < total_count:
+        filename = "%s/dataset_%d_message_%d_%d.txt" %(save_path, dataset_id, start, start + limit)
+        with codecs.open(filename, encoding='utf-8', mode='w') as f:
+            for msg in messages[start:start + limit]:
+
+                try:
+                    tweet_id = msg.id
+                    full_name = msg.sender.full_name.lower() if msg.sender.full_name is not None else ""
+                    username = msg.sender.username.lower() if msg.sender.username is not None else ""
+                    text = msg.text.lower()
+
+                    line = "TWEETID%dSTART\n" %(tweet_id)
+                    f.write(line)
+
+                    line = "%s @%s" %(full_name, username)
+                    f.write(line)
+
+                    line = "%s\n" %(text)
+                    f.write(line)
+
+                    line = "TWEETID%dEND\n" %(tweet_id)
+                    f.write(line)
+
+                except:
+                    pass
+
+        start += limit
+
+def parse_tweets(tweet_parser_path, input_path, output_path):
+    parser_cmd = "%s/runTagger.sh" %tweet_parser_path
+    input_files = glob.glob("%s/dataset_*.txt" % input_path)
+
+    for input_file in input_files:
+        results = re.search('(dataset_.+)\.txt', input_file)
+        filename = results.groups()[0]
+
+        output_file = "%s/%s.out" % (output_path, filename)
+
+        with codecs.open(output_file, encoding='utf-8', mode='w') as f:
+            cmd = "%s --output-format conll %s" %(parser_cmd, input_file)
+            print cmd
+            try:
+                subprocess.call(cmd.split(" "), stdout=f, stderr=subprocess.PIPE)
+            except:
+                pass
+
+
+
+def lemmatize_tweets(input_path, output_path):
+    wordnet_lemmatizer = WordNetLemmatizer()
+
+    input_files = glob.glob("%s/dataset_*.out" % input_path)
+
+    for input_file in input_files:
+        results = re.search('(dataset_.+)\.out', input_file)
+        filename = results.groups()[0]
+
+        output_file = "%s/%s_converted.out" % (output_path, filename)
+        output_file2 = "%s/%s_converted.out.id" % (output_path, filename)
+
+        with codecs.open(output_file, encoding='utf-8', mode='w') as out:
+            with codecs.open(output_file2, encoding='utf-8', mode='w') as out2:
+                print >>out, "<doc>"
+                with codecs.open(input_file, encoding='utf-8', mode='r') as f:
+                    for line in f:
+                        if re.search('TWEETID(\d+)START', line):
+                            results = re.match('TWEETID(\d+)START', line)
+                            groups = results.groups()
+                            print >>out, "<p>"
+                            print >>out2, "ID=%d" %(int(groups[0]))
+
+                        elif re.search('TWEETID(\d+)END', line):
+                            print >>out, "<\p>"
+                        elif re.search("(.+)\t(.+)\t(.+)\n", line):
+                            results = re.match("(.+)\t(.+)\t(.+)\n", line)
+                            groups = results.groups()
+                            word = groups[0]
+                            pos = groups[1]
+                            lemma = wordnet_lemmatizer.lemmatize(word)
+                            print >>out, "%s\t%s\t%s" %(word, pos, lemma)
+                            print >>out2, "%s\t%s\t%s" %(word, pos, lemma)
+
+                print >>out, "</doc>"

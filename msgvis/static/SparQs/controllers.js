@@ -20,6 +20,16 @@
         });
     }]);
 
+    var DatasetController = function ($scope, Dataset) {
+        $scope.Dataset = Dataset;
+
+    };
+    DatasetController.$inject = [
+        '$scope',
+        'SparQs.services.Dataset'
+    ];
+    module.controller('SparQs.controllers.DatasetController', DatasetController);
+
     var DimensionController = function ($scope, Dimensions, Filtering, Selection, History) {
 
         $scope.draggableOptions = {
