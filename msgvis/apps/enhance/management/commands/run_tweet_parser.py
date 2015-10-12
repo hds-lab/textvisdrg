@@ -49,6 +49,7 @@ class Command(BaseCommand):
 
         if action == 'all' or action == 'dump':
             from msgvis.apps.enhance.tasks import dump_tweets
+            print "Dumping messages..."
             dump_tweets(dataset_id, save_path)
 
         if action == 'all' or action == 'parse':
@@ -56,6 +57,8 @@ class Command(BaseCommand):
             output_path = "%s/parsed_tweets" %save_path
             check_or_create_dir(output_path)
 
+            print "\n=========="
+            print "Parsing messages..."
             parse_tweets(tweet_parser_path, save_path, output_path)
 
         if action == 'all' or action == 'lemmatize':
@@ -64,4 +67,6 @@ class Command(BaseCommand):
             output_path = "%s/converted_tweets" %save_path
             check_or_create_dir(output_path)
 
+            print "\n=========="
+            print "Lemmatizing messages..."
             lemmatize_tweets(input_path, output_path)
