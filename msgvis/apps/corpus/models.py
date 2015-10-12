@@ -30,6 +30,10 @@ class Dataset(models.Model):
     end_time = models.DateTimeField(null=True, default=None, blank=True)
     """The time of the last real message in the dataset"""
 
+    @property
+    def message_count(self):
+        return self.message_set.count()
+
     def __unicode__(self):
         return self.name
 

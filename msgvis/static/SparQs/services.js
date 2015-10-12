@@ -8,11 +8,27 @@
     ]);
 
     module.factory('SparQs.services.Dataset', [
+        '$http', 'djangoUrl',
         'SparQs.bootstrap.dataset',
-        function(datasetId) {
-            return {
-                id: datasetId
+        function datasetFactory($http, djangoUrl, datasetId) {
+            var apiUrl = djangoUrl.reverse('dataset');
+
+            var Dataset = function () {
+                this.id = datasetId
             };
+
+            var request = {
+                params: {
+                    id: datasetId
+                }
+            };
+            $http.get(apiUrl, request)
+                .success(function (data) {
+                    angular.extend(Dataset.prototype, data);
+                });
+
+            return new Dataset();
+
         }
     ]);
 

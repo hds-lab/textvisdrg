@@ -6,14 +6,6 @@ from django.db import transaction
 class Command(BaseCommand):
     help = "From Tweet Parser results, extract words and connect with messages for a dataset."
     args = '<dataset_id> <parsed_filename> [...]'
-    option_list = BaseCommand.option_list + (
-        make_option('-d', '--dataset',
-                    action='store',
-                    dest='dataset',
-                    help='Set a target dataset to link to'
-        ),
-    )
-
 
     def handle(self, dataset_id, *filenames, **options):
 

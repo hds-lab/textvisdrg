@@ -68,12 +68,12 @@
 
 {% block content %}
 <div ng-app="SparQs" id="application" class="container-fluid">
-         <div id="titleWrap" class="row clearfix">
+         <div id="titleWrap" class="row clearfix" ng-controller="SparQs.controllers.DatasetController">
 
              <div class="logo-titles">
                  <span class="title"><img class="logo" ng-src="{% static 'images/Lariat.png' %}" />Lariat</span>
                  <span class="description"> Visual Analytics for Exploring Social Media Data</span>
-                 <span class="dataset">2014 Oso Washington State Mudslide Twitter Dataset (685311 tweets)</span>
+                 <span class="dataset">{$ Dataset.description $} ({$ Dataset.message_count $} tweets)</span>
              </div>
 
         </div>

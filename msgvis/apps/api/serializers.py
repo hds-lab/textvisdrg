@@ -311,6 +311,14 @@ class GroupSerializer(serializers.ModelSerializer):
 
         return group
 
+class DatasetSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = corpus_models.Dataset
+        fields = ('id', 'name', 'description', 'message_count', )
+        read_only_fields = ('id', 'name', 'description', 'message_count', )
+
+
 
 class SampleQuestionSerializer(serializers.Serializer):
     dimensions = serializers.ListField(child=serializers.CharField(), required=False)

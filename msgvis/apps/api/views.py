@@ -552,6 +552,27 @@ class ResearchQuestionsView(APIView):
         return Response(input.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class DatasetView(APIView):
+    """
+    Get details of a dataset
+
+    **Request:** ``GET /api/dataset/1``
+    """
+
+
+    def get(self, request, format=None):
+        if request.query_params.get('id'):
+            dataset_id = int(request.query_params.get('id'))
+            try:
+                dataset = corpus_models.Dataset.objects.get(id=dataset_id)
+                output = serializers.DatasetSerializer(dataset)
+                return Response(output.data, status=status.HTTP_200_OK)
+            except:
+                return Response("Dataset not exist", status=status.HTTP_400_BAD_REQUEST)
+
+        return Response("Please specify dataset id", status=status.HTTP_400_BAD_REQUEST)
+
+
 class APIRoot(APIView):
     """
     The Text Visualization DRG Root API View.
