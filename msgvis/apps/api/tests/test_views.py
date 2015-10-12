@@ -154,7 +154,7 @@ class ExampleMessagesViewTest(APITestCase):
                             'original_id': m.sender.original_id,
                             'username': m.sender.username,
                             'full_name': m.sender.full_name,
-                            'profile_image_local_name': m.sender.profile_image_local_name
+                            'profile_image_processed_url': m.sender.profile_image_processed_url
                         },
                         'original_id': None,
                         'embedded_html': corpus_utils.render_html_tag(m.text),

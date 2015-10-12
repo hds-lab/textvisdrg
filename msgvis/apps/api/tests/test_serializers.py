@@ -40,7 +40,7 @@ class PersonSerializerTest(TestCase):
             "original_id": person.original_id,
             "username": person.username,
             "full_name": person.full_name,
-            "profile_image_local_name": person.profile_image_local_name
+            "profile_image_processed_url": person.profile_image_processed_url
         }
 
         serializer = serializers.PersonSerializer(person)
