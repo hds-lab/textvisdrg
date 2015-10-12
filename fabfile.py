@@ -25,7 +25,7 @@ pip_requirements = {
     'test': ('-r requirements/test.txt',),
 }
 
-required_nltk_corpora = ["stopwords", "punkt"]
+required_nltk_corpora = ["stopwords", "punkt", "wordnet"]
 
 pip_install = factories.pip_install_task(pip_requirements, default_env='dev')
 
