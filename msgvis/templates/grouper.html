@@ -67,8 +67,8 @@
 {% endblock %}
 
 {% block content %}
-<div ng-app="SparQs" id="application" class="container-fluid">
-         <div id="titleWrap" class="row clearfix" ng-controller="SparQs.controllers.DatasetController">
+<div ng-app="SparQs" id="application" class="container-fluid" ng-controller="SparQs.controllers.DatasetController">
+         <div id="titleWrap" class="row clearfix">
 
              <div class="logo-titles">
                  <span class="title"><img class="logo" ng-src="{% static 'images/Lariat.png' %}" />Lariat</span>
@@ -321,13 +321,17 @@
                                     <!--<script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
                                     <div ng-bind-html="message.embedded_html"></div>-->
                                     <div class="media">
-                                        <img class="photo" ng-if="not_empty_url(message.media_url)"
+                                        <img class="photo" ng-if="Dataset.has_prefetched_images && not_empty_url(message.media_url)"
                                              ng-src="{% static 'media/photos/' %}{$ message.media_url $}" />
+                                        <img class="photo" ng-if="!Dataset.has_prefetched_images && not_empty_url(message.media_url)"
+                                             ng-src="{$ message.media_url $}" />
                                     </div>
 
                                     <div class="sender">
-                                        <img class="profile_img" ng-if="not_empty_url(message.sender.profile_image_local_name)"
-                                             ng-src="{% static 'media/profile_images/' %}{$ message.sender.profile_image_local_name $}" />
+                                        <img class="profile_img" ng-if="Dataset.has_prefetched_images && not_empty_url(message.sender.profile_image_processed_url)"
+                                             ng-src="{% static 'media/profile_images/' %}{$ message.sender.profile_image_processed_url $}" />
+                                        <img class="profile_img" ng-if="!Dataset.has_prefetched_images && not_empty_url(message.sender.profile_image_processed_url)"
+                                             ng-src="{$ message.sender.profile_image_processed_url $}" />
                                         <div class="name">{$ message.sender.full_name.trim() $}</div>
                                         <div class="username">@{$ message.sender.username.trim() $}</div>
                                     </div>
@@ -440,13 +444,17 @@
                                     <!--<script src='http://platform.twitter.com/widgets.js' charset='utf-8'></script>
                                     <div ng-bind-html="message.embedded_html"></div>-->
                                     <div class="media">
-                                        <img class="profile_img" ng-if="not_empty_url(message.media_url)"
+                                        <img class="profile_img" ng-if="Dataset.has_prefetched_images && not_empty_url(message.media_url)"
                                              ng-src="{% static 'media/photos/' %}{$ message.media_url $}" />
+                                        <img class="profile_img" ng-if="!Dataset.has_prefetched_images && not_empty_url(message.media_url)"
+                                             ng-src="{$ message.media_url $}" />
                                     </div>
 
                                     <div class="sender">
-                                        <img class="profile_img" ng-if="not_empty_url(message.sender.profile_image_local_name)"
-                                             ng-src="{% static 'media/profile_images/' %}{$ message.sender.profile_image_local_name $}" />
+                                        <img class="profile_img" ng-if="Dataset.has_prefetched_images && not_empty_url(message.sender.profile_image_processed_url)"
+                                             ng-src="{% static 'media/profile_images/' %}{$ message.sender.profile_image_processed_url $}" />
+                                        <img class="profile_img" ng-if="!Dataset.has_prefetched_images && not_empty_url(message.sender.profile_image_processed_url)"
+                                             ng-src="{$ message.sender.profile_image_processed_url $}" />
                                         <div class="name">{$ message.sender.full_name.trim() $}</div>
                                         <div class="username">@{$ message.sender.username.trim() $}</div>
                                     </div>

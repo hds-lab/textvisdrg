@@ -30,6 +30,8 @@ class Dataset(models.Model):
     end_time = models.DateTimeField(null=True, default=None, blank=True)
     """The time of the last real message in the dataset"""
 
+    has_prefetched_images = models.BooleanField(default=False)
+
     @property
     def message_count(self):
         return self.message_set.count()
@@ -320,9 +322,9 @@ class Person(models.Model):
         return self.username
 
     @property
-    def profile_image_local_name(self):
+    def profile_image_processed_url(self):
         url = self.profile_image_url
-        if url != "":
+        if url != "" and self.dataset.has_prefetched_images:
             pattern = re.compile('/[_\.\-\w\d]+\.([\w]+)$')
             results = pattern.search(url)
             if results:
@@ -419,10 +421,11 @@ class Message(models.Model):
         url = ""
         if self.contains_media:
             url = self.media.all()[0].media_url
-            pattern = re.compile('/([_\.\-\w\d]+\.[\w]+)$')
-            results = pattern.search(url)
-            if results:
-                url = results.groups()[0]
+            if self.dataset.has_prefetched_images:
+                pattern = re.compile('/([_\.\-\w\d]+\.[\w]+)$')
+                results = pattern.search(url)
+                if results:
+                    url = results.groups()[0]
         return url
 
 

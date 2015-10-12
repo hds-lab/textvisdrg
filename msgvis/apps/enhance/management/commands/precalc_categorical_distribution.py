@@ -18,7 +18,8 @@ class Command(BaseCommand):
 
         from msgvis.apps.enhance.tasks import precalc_categorical_dimension
         #categorical_dimensions = ["hashtags", "words", "urls", "timezone", "contains_media", "sentiment", "type", "sender", "mentions"]
-        categorical_dimensions = ["words"]
+        categorical_dimensions = ["hashtags", "urls", "timezone", "contains_media", "sentiment", "type", "sender", "mentions"]
+        #categorical_dimensions = ["words"]
         for dimension_key in categorical_dimensions:
             print >>sys.stderr, "Precalculating %s..." %(dimension_key)
             with transaction.atomic(savepoint=False):
