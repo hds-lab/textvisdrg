@@ -373,7 +373,7 @@
                         keywords: keywords,
                         types_list: types_list
                     };
-                    var messages_per_page = 10;
+                    var messages_per_page = 50;
                     var apiUrl_with_param = apiUrl + "?messages_per_page=" + messages_per_page;
                     if ($.isNumeric(page)){
                         apiUrl_with_param += "&page=" + page;
