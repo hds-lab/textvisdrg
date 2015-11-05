@@ -155,17 +155,10 @@
                     if (d.dimension != "groups"){
                         str += d.dimension;
                         if(d.dimension == "time"){                        
-                            /*if (d.hasOwnProperty('value') )
-                                str += '=' + ((d.value != "") ? moment(d.value).utcOffset(0).format('MMM DD, YYYY H:mm') : "No contains");
-                            else if (d.hasOwnProperty('min_time') )*/
                                 str += '=' + moment(d.min_time).utcOffset(0).format('MMM DD, YYYY H:mm');
-                            /*else if (d.hasOwnProperty('min') )
-                                str += '=' + moment(d.min).utcOffset(0).format('MMM DD, YYYY H:mm');;*/
                         } else {
                             if (d.hasOwnProperty('value') )
                                 str +=  '=' + ((d.value != "") ? d.value : "No contains");
-                            /*else if (d.hasOwnProperty('min_time') )
-                                str += '=' + d.min_time;*/
                             else if (d.hasOwnProperty('min') )
                                 str += '=' + d.min;                            
                        }
@@ -181,9 +174,6 @@
                     str += "]"
                 }
             }
-            /*if (str != ""){
-                str = "Current Source: " + str;
-            }*/
             return str;
         };
 
