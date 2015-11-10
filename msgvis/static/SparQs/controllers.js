@@ -75,12 +75,14 @@
                 //Turn off the zone of this dimension
                 $scope.dropped.zone = undefined;
 
+                // Dimension change event 
                 Selection.changed('dimensions');
             }
             $scope.dropped = undefined; // remove the dropped dimension
         };
         $scope.changeDimension = function(dimension){
             History.add_record("dimension:changed", {dimension: dimension.key});
+            console.log($scope.Messages);
             Selection.change_dimension(dimension);
             Selection.changed('dimensions');
         };
@@ -210,7 +212,10 @@
             return (page == ExampleMessages.current_page) ? "current-page" : "";
         };
 
+
+        // Callback functions for focus & dimension change events
         Selection.changed('focus', $scope, $scope.get_example_messages);
+        Selection.changed('dimensions', $scope, ExampleMessages.clear.bind(ExampleMessages));
 
         $scope.$on('add-history', function($event, type, contents){
             History.add_record(type, contents);

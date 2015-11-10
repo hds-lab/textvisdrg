@@ -241,7 +241,7 @@
     //A service for loading example messages.
     module.factory('SparQs.services.ExampleMessages', [
         '$http', 'djangoUrl',
-        function sampleQuestionsFactory($http, djangoUrl) {
+        function exampleMessageFactory($http, djangoUrl) {
 
             var apiUrl = djangoUrl.reverse('example-messages');
 
@@ -326,6 +326,15 @@
                                 return new Message(msgdata);
                             });
                         });
+                },
+                clear: function(){
+                    var self = this;
+                    self.list = [];
+                    self.prev_request = 0;
+
+                    self.current_page = 1;
+                    self.pages = 0;
+                    self.count = -1;
                 }
             });
 
