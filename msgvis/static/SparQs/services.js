@@ -241,7 +241,7 @@
     //A service for loading example messages.
     module.factory('SparQs.services.ExampleMessages', [
         '$http', 'djangoUrl',
-        function sampleQuestionsFactory($http, djangoUrl) {
+        function exampleMessageFactory($http, djangoUrl) {
 
             var apiUrl = djangoUrl.reverse('example-messages');
 
@@ -274,7 +274,7 @@
                             groups: groups
                         };
                     }
-                    var messages_per_page = 10;
+                    var messages_per_page = 50;
                     var apiUrl_with_param = apiUrl + "?messages_per_page=" + messages_per_page;
                     if ($.isNumeric(page)){
                         apiUrl_with_param += "&page=" + page;
@@ -326,6 +326,15 @@
                                 return new Message(msgdata);
                             });
                         });
+                },
+                clear: function(){
+                    var self = this;
+                    self.list = [];
+                    self.prev_request = 0;
+
+                    self.current_page = 1;
+                    self.pages = 0;
+                    self.count = -1;
                 }
             });
 
@@ -373,7 +382,7 @@
                         keywords: keywords,
                         types_list: types_list
                     };
-                    var messages_per_page = 10;
+                    var messages_per_page = 50;
                     var apiUrl_with_param = apiUrl + "?messages_per_page=" + messages_per_page;
                     if ($.isNumeric(page)){
                         apiUrl_with_param += "&page=" + page;
