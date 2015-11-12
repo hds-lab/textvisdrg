@@ -45,7 +45,8 @@ def render_mention_html(matchobj):
     return "<span class='mention'>" + matchobj.group(0) + "</span>"
 
 def render_link_html(matchobj):
-    return "<span class='link'>" + matchobj.group(0) + "</span>"
+    link = matchobj.group(0)
+    return "<span class='link'>" + '<a href="' + link + '" target="_blank">' + link + "</a>" + "</span>"
 
 def render_html_tag(text):
     pattern = r'(?<=\s)#\w+|^#\w+'

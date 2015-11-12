@@ -316,7 +316,7 @@ def precalc_categorical_dimension(dataset_id=1, dimension_key=None):
     dataset = Dataset.objects.get(id=dataset_id)
 
     # remove existing calculation
-    PrecalcCategoricalDistribution.objects.filter(dimension_key=dimension_key).delete()
+    PrecalcCategoricalDistribution.objects.filter(dataset=dataset, dimension_key=dimension_key).delete()
 
     result = datatable.generate(dataset)
     bulk = []

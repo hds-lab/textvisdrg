@@ -5,7 +5,7 @@ Fabric
 Django==1.7.5
 
 # Database Adapter
-MySQL-python
+MySQL-python==1.2.5
 
 # Cache adapter
 python-memcached

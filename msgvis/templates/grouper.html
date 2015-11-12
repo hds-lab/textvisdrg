@@ -328,12 +328,14 @@
                                     </div>
 
                                     <div class="sender">
-                                        <img class="profile_img" ng-if="Dataset.has_prefetched_images && not_empty_url(message.sender.profile_image_processed_url)"
-                                             ng-src="{% static 'media/profile_images/' %}{$ message.sender.profile_image_processed_url $}" />
-                                        <img class="profile_img" ng-if="!Dataset.has_prefetched_images && not_empty_url(message.sender.profile_image_processed_url)"
-                                             ng-src="{$ message.sender.profile_image_processed_url $}" />
-                                        <div class="name">{$ message.sender.full_name.trim() $}</div>
-                                        <div class="username">@{$ message.sender.username.trim() $}</div>
+                                        <a ng-href="https://twitter.com/{$ message.sender.username.trim() $}" target="_blank">
+                                            <img class="profile_img" ng-if="Dataset.has_prefetched_images && not_empty_url(message.sender.profile_image_processed_url)"
+                                                 ng-src="{% static 'media/profile_images/' %}{$ message.sender.profile_image_processed_url $}" />
+                                            <img class="profile_img" ng-if="!Dataset.has_prefetched_images && not_empty_url(message.sender.profile_image_processed_url)"
+                                                 ng-src="{$ message.sender.profile_image_processed_url $}" />
+                                            <div class="name">{$ message.sender.full_name.trim() $}</div>
+                                            <div class="username">@{$ message.sender.username.trim() $}</div>
+                                        </a>
                                     </div>
                                     <div class="text" ng-bind-html="message.embedded_html"></div>
 
