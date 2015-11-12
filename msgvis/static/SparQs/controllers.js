@@ -203,9 +203,9 @@
         };
 
 
-        // Callback functions for focus & dimension change events
+        // Callback functions for focus & dimension/groups change events
         Selection.changed('focus', $scope, $scope.get_example_messages);
-        Selection.changed('dimensions', $scope, ExampleMessages.clear.bind(ExampleMessages));
+        Selection.changed('dimensions,groups', $scope, ExampleMessages.clear.bind(ExampleMessages));
 
         $scope.$on('add-history', function($event, type, contents){
             History.add_record(type, contents);
