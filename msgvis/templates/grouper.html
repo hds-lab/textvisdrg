@@ -195,7 +195,7 @@
                                             </span>
                                             #{$ group.order $}
                                             <input class="form-control heading-edit" id="group-name-field" type="text"
-                                                placeholder="Group Name" ng-model="edit_params.group_name"
+                                                placeholder="Group Name" ng-model="edit_params.group_name" ng-enter="save($event, false, group)"
                                             />
                                         </div>
 
