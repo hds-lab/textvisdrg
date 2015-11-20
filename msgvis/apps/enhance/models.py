@@ -149,11 +149,15 @@ class Dictionary(models.Model):
         for msg in queryset.iterator():
             text = msg.text
             bow = gdict.doc2bow(tokenizer.tokenize(text))
+            num_tokens = len(bow)
 
             for word_index, word_freq in bow:
                 word_id = self.get_word_id(word_index)
                 document_freq = gdict.dfs[word_index]
-                tfidf = word_freq * math.log(total_documents, document_freq)
+
+                tf = float(word_freq) / float(num_tokens)
+                idf = math.log(total_documents / document_freq)
+                tfidf = tf * idf
                 batch.append(MessageWord(dictionary=self,
                                          word_id=word_id,
                                          word_index=word_index,

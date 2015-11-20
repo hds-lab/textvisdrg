@@ -25,7 +25,7 @@ class TopicModelDetailView(DetailView):
         max_words = 0
         topics = context['topic_model'].topics.all().prefetch_related('words')
         for topic in topics:
-            words = list(topic.words.order_by('-probability').prefetch_related('word'))
+            words = list(topic.word_scores.order_by('-probability').prefetch_related('word'))
             words_for_topics[topic.id] = words
             max_words = max(max_words, len(words))
 
@@ -66,17 +66,17 @@ class TopicDetailView(DetailView):
         context['topic'] = topic
         context['word'] = word
         context['topic_model'] = topic_model
-        context['topic_words'] = topic.words.prefetch_related('word')
+        context['topic_words'] = topic.words.all()
 
         #Dumb
-        topicvector_class = models.TweetTopic
+        topicvector_class = models.MessageTopic
 
 
         examples = topicvector_class.get_examples(topic=topic)
         if word:
-            examples = examples.filter(source__words__word=word)
+            examples = examples.filter(message__words__word=word)
 
-        context['examples'] = examples[:20].prefetch_related('source')
+        context['examples'] = examples[:20].prefetch_related('message')
 
 
 
