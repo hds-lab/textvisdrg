@@ -76,7 +76,7 @@ class TopicDetailView(DetailView):
         if word:
             examples = examples.filter(message__words__word=word)
 
-        context['examples'] = examples[:20].prefetch_related('message')
+        context['examples'] = examples[:100].prefetch_related('message')
 
 
 
