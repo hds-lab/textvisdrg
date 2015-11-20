@@ -92,14 +92,14 @@ class DbWordVectorIterator(object):
 
 
 class Tokenizer(object):
-    def __init__(self, texts, stemmer, *filters):
+    def __init__(self, texts, lemmatizer, *filters):
         """
         Filters is a list of objects which can be used like sets
         to determine if a word should be removed: if word in filter, then word will
         be ignored.
         """
         self.texts = texts
-        self.stemmer = stemmer
+        self.lemmatizer = lemmatizer
         self.filters = filters
         self.max_length = Word._meta.get_field('text').max_length
 
@@ -109,8 +109,8 @@ class Tokenizer(object):
 
         for text in self.texts:
             tokenized_words = self.tokenize(text)
-            if self.stemmer:
-                tokenized_words = map(lambda x: self.stemmer.stem(x), tokenized_words)
+            if self.lemmatizer:
+                tokenized_words = map(lambda x: self.lemmatizer.lemmatize(x), tokenized_words)
             yield tokenized_words
 
     def tokenize(self, text):
@@ -118,8 +118,8 @@ class Tokenizer(object):
 
         for word in self.split(text.lower()):
 
-            if self.stemmer:
-                word = self.stemmer.stem(word)
+            if self.lemmatizer:
+                word = self.lemmatizer.lemmatize(word)
 
             filter_out = False
             for f in self.filters:
@@ -173,11 +173,11 @@ class SimpleTokenizer(Tokenizer):
 
 
 class TopicContext(object):
-    def __init__(self, name, queryset, tokenizer, stemmer, filters, minimum_frequency=4):
+    def __init__(self, name, queryset, tokenizer, lemmatizer, filters, minimum_frequency=4):
         self.name = name
         self.queryset = queryset
         self.tokenizer = tokenizer
-        self.stemmer = stemmer
+        self.lemmatizer = lemmatizer
         self.filters = filters
         self.minimum_frequency = minimum_frequency
 
@@ -206,7 +206,7 @@ class TopicContext(object):
     def build_dictionary(self, dataset_id):
         texts = DbTextIterator(self.queryset)
 
-        tokenized_texts = self.tokenizer(texts, self.stemmer, *self.filters)
+        tokenized_texts = self.tokenizer(texts, self.lemmatizer, *self.filters)
         dataset = Dataset.objects.get(pk=dataset_id)
         return Dictionary._create_from_texts(tokenized_texts=tokenized_texts,
                                              name=self.name,
@@ -220,7 +220,7 @@ class TopicContext(object):
 
     def build_bows(self, dictionary):
         texts = DbTextIterator(self.queryset)
-        tokenized_texts = self.tokenizer(texts, self.stemmer, *self.filters)
+        tokenized_texts = self.tokenizer(texts, self.lemmatizer, *self.filters)
 
         dictionary._vectorize_corpus(queryset=self.queryset,
                                      tokenizer=tokenized_texts)
@@ -269,10 +269,9 @@ def default_topic_context(name, dataset_id):
         LambdaWordFilter(lambda word: word.startswith('http') and len(word) > 4)
     ]
 
-    from gensim.parsing import PorterStemmer
     return TopicContext(name=name, queryset=queryset,
                         tokenizer=SimpleTokenizer,
-                        stemmer=PorterStemmer(),
+                        lemmatizer=WordNetLemmatizer(),
                         filters=filters,
                         minimum_frequency=4)
 

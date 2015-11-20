@@ -78,7 +78,7 @@ class TopicsTest(TestCase):
         n_words = 5
         num_topics = 2
 
-        topic_a_vocab = ['cat', 'hat', 'marbles']
+        topic_a_vocab = ['catskl', 'sshat', 'ssmarble']
         topic_b_vocab = ['oppossum', 'lasso', 'amalgam']
         total_words = len(topic_a_vocab) + len(topic_b_vocab)
 
