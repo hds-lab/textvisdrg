@@ -34,23 +34,23 @@
                     {% if not word or word.id != w.id %}
                href="{% url 'topics_topic_word' model_id=topic_model.id topic_id=topic.id word_id=w.id %}"
                     {% endif %}>
-                {{ w.word.text }}
+                {{ w.text }}
             </a>
         {% endfor %}
     </div>
 
     <h2>Examples
-        {% if word %}containing <strong>"{{ word.word.text }}"</strong>{% endif %}
+        {% if word %}containing <strong>"{{ word.text }}"</strong>{% endif %}
     </h2>
 
     <div class="examples">
         {% for example in examples %}
             <div class="clearfix">
-                <span class="author">{{ example.source.user_name }}:</span>
-                <span class="text">{{ example.source.text }}</span>
+                <span class="author">{{ example.message.sender.username }}:</span>
+                <span class="text">{{ example.message.text }}</span>
 
                 <div class="pull-right">
-                    <span class="time">{{ example.source.created_at }}</span>
+                    <span class="time">{{ example.message.created_at }}</span>
                     <span class="probability">Prob for topic: {{ example.probability|floatformat:5 }}</span>
                 </div>
             </div>
