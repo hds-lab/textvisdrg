@@ -34,7 +34,7 @@
                     {% if not word or word.id != w.id %}
                href="{% url 'topics_topic_word' model_id=topic_model.id topic_id=topic.id word_id=w.id %}"
                     {% endif %}>
-                {{ w.text }}
+                {{ w.word.text }}
             </a>
         {% endfor %}
     </div>

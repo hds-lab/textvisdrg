@@ -66,7 +66,7 @@ class TopicDetailView(DetailView):
         context['topic'] = topic
         context['word'] = word
         context['topic_model'] = topic_model
-        context['topic_words'] = topic.words.all()
+        context['topic_words'] = topic.word_scores.all()
 
         #Dumb
         topicvector_class = models.MessageTopic
@@ -74,7 +74,7 @@ class TopicDetailView(DetailView):
 
         examples = topicvector_class.get_examples(topic=topic)
         if word:
-            examples = examples.filter(message__words__word=word)
+            examples = examples.filter(message__words__text=word)
 
         context['examples'] = examples[:100].prefetch_related('message')
 
@@ -91,5 +91,5 @@ class TopicWordDetailView(DetailView):
         # Call the base implementation first to get a context
         context = super(TopicWordDetailView, self).get_context_data(**kwargs)
         topicword = self.object
-        TopicDetailView.get_topic_data(context, topic=self.object.topic, word=topicword.word)
+        TopicDetailView.get_topic_data(context, topic=self.object.topic, word=topicword.word.text)
         return context
