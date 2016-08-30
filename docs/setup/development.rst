@@ -34,6 +34,12 @@ software on it, and perform the initial project setup.
     .. code-block:: bash
 
         $ vagrant up
+    
+    **If you are on mac**: You need to make sure the setup script has executable permission.
+    
+    .. code-block:: bash
+    
+        chmod setup/scripts/dev_setup.sh a+x
 
 3. Once your Ubuntu VM is started, you can SSH into it with
    ``vagrant ssh``. This will use a key-based authentication to log you
