@@ -25,7 +25,7 @@
     "angucomplete-alt": "https://github.com/nanchenchen/angucomplete-alt.git#f63553f",
     "moment": "~2.9.0",
     "d3": "^3.5",
-    "c3": "https://github.com/hds-lab/c3.git#2174d050f",
+    "c3": "https://github.com/hds-lab/c3.git#55913ff",
     "angular-spinner": "~0.6.1"
   }
 }

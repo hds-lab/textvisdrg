@@ -919,9 +919,11 @@
                     tooltip: {
                         grouped: false, // Default true
                         position: function (data, width, height, element) {
-                            var position = $(element).position();
-                            position.top += 20;
-                            position.left += 20;
+                            //var position = $(element).position();
+                            var position = {
+                                top: d3.event.offsetY + 30,
+                                left: d3.event.offsetX + 60
+                            };
                             return position;
                         }
                     },
