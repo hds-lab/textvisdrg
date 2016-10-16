@@ -229,7 +229,7 @@
                     var self = this;
                     return $http.post(apiUrl, request)
                         .success(function (data) {
-                            self.list = data.messages.map(function (msgdata) {
+                            self.list = data.messages.results.map(function (msgdata) {
                                 return new Message(msgdata);
                             });
                         });
