@@ -8,7 +8,7 @@ urlpatterns = patterns('',
                        # url(r'^explorer/$', views.ExplorerView.as_view(), name='explorer'),
                        (r'^accounts/logout/$', 'django.contrib.auth.views.logout',{'next_page': '/lariat'}),
                        url(r'^accounts/', include('django.contrib.auth.urls')),
-                       #url(r'^explorer(?:/(?P<dataset_pk>\d+))?/$', views.ExplorerView.as_view(), name='explorer'),
+                       url(r'^explorer(?:/(?P<dataset_pk>\d+))?/$', views.ExplorerView.as_view(), name='explorer'),
                        #url(r'^grouper(?:/(?P<dataset_pk>\d+))?/$', views.GrouperView.as_view(), name='grouper'),
                        url(r'^lariat(?:/(?P<dataset_pk>\d+))?/$', views.GrouperView.as_view(), name='lariat'),
 )
