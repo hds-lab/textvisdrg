@@ -39,7 +39,8 @@ software on it, and perform the initial project setup.
     
     .. code-block:: bash
     
-        chmod setup/scripts/dev_setup.sh a+x
+        cd textvisdrg
+        chmod a+x setup/scripts/dev_setup.sh 
 
 3. Once your Ubuntu VM is started, you can SSH into it with
    ``vagrant ssh``. This will use a key-based authentication to log you
