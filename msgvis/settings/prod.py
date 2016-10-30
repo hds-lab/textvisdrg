@@ -9,6 +9,11 @@ COMPRESS_OFFLINE = bool(get_env_setting('COMPRESS_OFFLINE', True))
 
 ALLOWED_HOSTS = get_env_setting("ALLOWED_HOSTS", 'localhost').split(',')
 
+# set unix_socket to specify where mysql.sock locates
+if DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
+    DATABASE_SOCK_PATH = get_env_setting('DATABASE_SOCK_PATH', '/var/lib/mysql/mysql.sock')   
+    DATABASES['default']['OPTIONS']["unix_socket"] = DATABASE_SOCK_PATH
+
 # Supervisord settings
 INSTALLED_APPS += (
     'djsupervisor',
